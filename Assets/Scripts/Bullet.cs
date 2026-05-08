@@ -11,7 +11,12 @@ public class Bullet : MonoBehaviour
     Vector3 targetPosition;
     public void SetBullet(BulletData bulletData,Vector3 _dir)
     {
-        myBulletData = bulletData;
+        myBulletData = new BulletData
+        {
+            damage = bulletData.damage,
+            distance = bulletData.distance,
+            moveSpeed = bulletData.moveSpeed
+        };
         targetPosition = transform.position + _dir.normalized * myBulletData.distance;
     }
     void Update()
@@ -35,8 +40,10 @@ public class Bullet : MonoBehaviour
             if (distance < 0.7f)
             {
                 // 这里可以添加对敌人造成伤害的逻辑
-                DataManager.allEnemyDict[i].GetComponent<Enemy>().TakeDamage(10);
-
+                Player player = GameManager.Instance.player.GetComponent<Player>();
+                Weapon weapon = player.GetCurrentWeapon();
+                int finalDamage = weapon.weaponData.Attack * (int)myBulletData.damage * player.playerData.Level * (int)player.playerData.power;// 伤害等于 武器攻击力 * 子弹伤害 * 玩家等级 * 当前游戏倍率
+                DataManager.allEnemyDict[i].GetComponent<Enemy>().TakeDamage(finalDamage);
                 Destroy(gameObject);
                 break;
             }

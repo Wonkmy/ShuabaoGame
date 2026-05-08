@@ -4,80 +4,115 @@ using UnityEngine;
 
 public class DataManager
 {
-    public static Dictionary<int, BulletData> bulletsDataDict = new Dictionary<int, BulletData>();// 子弹数据字典，将所有子弹全部抽象成可配置的数据来进行配置
-    public static Dictionary<int, EnemyData> enemyDataDict = new Dictionary<int, EnemyData>();// 怪物数据字典，将所有怪物全部抽象成可配置的数据来进行配置
-    public static List<GameObject> allEnemyDict = new List<GameObject>();// 所有敌人字典
+    public static Dictionary<int, BulletData> bulletsDataDict = new Dictionary<int, BulletData>();// 子弹数据字典
+    public static Dictionary<int, EnemyData> enemyDataDict = new Dictionary<int, EnemyData>();// 怪物数据字典
+    public static List<GameObject> allEnemyDict = new List<GameObject>();// 敌人实体字典
+    public static Dictionary<int, WeaponData> weaponDataDict = new Dictionary<int, WeaponData>();// 武器数据字典
     public static void Init()
     {
-        // ======= 子弹数据配置 =======
-        bulletsDataDict.Add(0, new BulletData
-        {
-            moveSpeed = 8,// 子弹移动速度
-            distance = 15,// 子弹飞行距离
-        });
+        LoadBulletConfig();
+        LoadEnemyConfig();
+        LoadWeaponConfig();
+    }
 
-        bulletsDataDict.Add(1, new BulletData
-        {
-            moveSpeed = 12,// 子弹移动速度
-            distance = 18,// 子弹飞行距离
-        });
-        bulletsDataDict.Add(2, new BulletData
-        {
-            moveSpeed = 15,// 子弹移动速度
-            distance = 20,// 子弹飞行距离
-        });
+    static void LoadBulletConfig()
+    {
+        TextAsset csv = Resources.Load<TextAsset>("configs/Bullet");
 
-        // ======= 怪物数据配置 =======
-        enemyDataDict.Add(0, new EnemyData
-        {
-            moveSpeed = 3,// 怪物移动速度
-            hp = 10,// 怪物血量
-            scale = 1.0f,
-            type = EnemyType.Normal// 怪物类型
-        });
+        string[] lines = csv.text.Split('\n');
 
-        enemyDataDict.Add(1, new EnemyData {
-            moveSpeed = 6,// 怪物移动速度
-            hp = 5,// 怪物血量
-            scale = 0.85f,
-            type = EnemyType.Fast// 怪物类型
-        });
-        enemyDataDict.Add(2, new EnemyData
-        {
-            moveSpeed = 1,// 怪物移动速度
-            hp = 50,// 怪物血量
-            scale = 1.5f,
-            type = EnemyType.Thick// 怪物类型
-        });
+        bulletsDataDict.Clear();
 
-        enemyDataDict.Add(3, new EnemyData
+        // 第一行是表头，所以从1开始
+        for (int i = 1; i < lines.Length; i++)
         {
-            moveSpeed = 4.5f,// 怪物移动速度
-            hp = 12,// 怪物血量
-            scale = 1.2f,
-            type = EnemyType.SelfExplosion// 怪物类型
-        });
-        enemyDataDict.Add(4, new EnemyData
-        {
-            moveSpeed = 5,// 怪物移动速度
-            hp = 20,// 怪物血量
-            scale = 1.3f,
-            type = EnemyType.Elite// 怪物类型
-        });
+            if (string.IsNullOrWhiteSpace(lines[i]))
+                continue;
 
-        enemyDataDict.Add(5, new EnemyData
+            string line = lines[i].Replace("\r", "");
+
+            string[] row = line.Split(',');
+
+            BulletData data = new BulletData();
+
+            data.id = int.Parse(row[0]);
+            data.moveSpeed = float.Parse(row[1]);
+            data.distance = float.Parse(row[2]);
+            data.damage = int.Parse(row[3]);
+
+            bulletsDataDict[data.id] = data;
+        }
+    }
+
+    static void LoadEnemyConfig()
+    {
+        TextAsset csv = Resources.Load<TextAsset>("configs/Enemy");
+
+        string[] lines = csv.text.Split('\n');
+
+        enemyDataDict.Clear();
+
+        for (int i = 1; i < lines.Length; i++)
         {
-            moveSpeed = 4,// 怪物移动速度
-            hp = 100,// 怪物血量
-            scale = 1.8f,
-            type = EnemyType.Boss// 怪物类型
-        });
+            if (string.IsNullOrWhiteSpace(lines[i]))
+                continue;
+
+            string line = lines[i].Replace("\r", "");
+
+            string[] row = line.Split(',');
+
+            EnemyData data = new EnemyData();
+
+            data.id = int.Parse(row[0]);
+            data.moveSpeed = float.Parse(row[1]);
+            data.hp = int.Parse(row[2]);
+            data.scale = float.Parse(row[3]);
+
+            // CSV中直接写数字
+            // 0 Normal
+            // 1 Fast
+            // 2 Thick
+            data.type = (EnemyType)int.Parse(row[4]);
+
+            enemyDataDict[data.id] = data;
+        }
+    }
+
+    static void LoadWeaponConfig()
+    {
+        TextAsset csv = Resources.Load<TextAsset>("configs/Weapon");
+
+        string[] lines = csv.text.Split('\n');
+
+        weaponDataDict.Clear();
+
+        for (int i = 1; i < lines.Length; i++)
+        {
+            if (string.IsNullOrWhiteSpace(lines[i]))
+                continue;
+
+            string line = lines[i].Replace("\r", "");
+
+            string[] row = line.Split(',');
+
+            WeaponData data = new WeaponData();
+
+            data.id = int.Parse(row[0]);
+            data.FireInterval = float.Parse(row[1]);
+            data.FireAngle = float.Parse(row[2]);
+            data.CurrentUsedBulletIndex = int.Parse(row[3]);
+            data.Attack = int.Parse(row[4]);
+
+            weaponDataDict[data.id] = data;
+        }
     }
 
     public static void Clear()
     {
         bulletsDataDict.Clear();
+        enemyDataDict.Clear();
         allEnemyDict.Clear();
+        weaponDataDict.Clear();
     }
 
     public static Vector3[] GetFanDirections2D(Vector3 centerDir, float totalAngle = 60f, float angleStep = 15f, bool forwardCount = false)

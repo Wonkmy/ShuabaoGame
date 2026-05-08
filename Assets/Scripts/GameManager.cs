@@ -4,7 +4,13 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public GameObject player;
+    public static GameManager Instance;
+    void Awake()
+    {
+        Instance = this;
+    }
+    public GameObject player { get;private set; }
+    public PlayerData pdata { get; set; }
     float spwanTime;
     float spwanInterval = 0.5f;
 
@@ -16,21 +22,39 @@ public class GameManager : MonoBehaviour
     {
         DataManager.Init();
         mainCamera = Camera.main;
+        GenPlayer();
     }
 
     private void Update()
     {
+        if (player)
+        {
+            player.GetComponent<Player>().PlayerUpdate();
+        }
         spwanTime += Time.deltaTime;
         if (spwanTime > spwanInterval) {
             spwanTime = 0;
             GenEnemy();
         }
     }
-
+    void GenPlayer()
+    {
+        player = Instantiate(Resources.Load<GameObject>("player"));
+        player.transform.position = Vector3.zero;
+        pdata = new PlayerData
+        {
+            Level = 1,// 玩家等级
+            Hp = 1000,// 玩家生命值
+            power = 1.0f,// 当前游戏倍率
+            MoveSpeed = 4.5f,// 玩家移动速度
+            CurrentWeaponType = WeaponType.Normal// 玩家当前使用的武器类型
+        };
+        player.GetComponent<Player>().Init(pdata);
+    }
     void GenEnemy()
     {
         GameObject newEnemy = Instantiate(Resources.Load<GameObject>("enemy"));
-        newEnemy.GetComponent<Enemy>().SetEnemy(DataManager.enemyDataDict[0]);
+        newEnemy.GetComponent<Enemy>().SetEnemy(DataManager.enemyDataDict[1]);
         newEnemy.GetComponent<Enemy>().target = player.transform;
         float x = 0;
         float y = 0;
@@ -71,6 +95,13 @@ public class GameManager : MonoBehaviour
         DataManager.allEnemyDict.Add(newEnemy);
     }
 
+    public void SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, int CurrentUsedBulletIndex)
+    {
+        GameObject newBullet_Liner = Instantiate(Resources.Load<GameObject>("bullets/"+ CurrentUsedBulletIndex));
+        newBullet_Liner.transform.position = pos;
+        newBullet_Liner.GetComponent<Bullet>().SetBullet(bulletData, dir);
+        newBullet_Liner.GetComponent<Bullet>().CanMove = true;
+    }
     Vector3 GetWorldPosByScreenPos(Vector3 screenPos)
     {
         screenPos.z = 0;
