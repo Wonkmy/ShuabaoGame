@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using static UnityEditor.PlayerSettings;
+using static UnityEngine.GraphicsBuffer;
 
 public class Bullet : MonoBehaviour
 {
@@ -23,6 +24,7 @@ public class Bullet : MonoBehaviour
     {
         if (CanMove)
         {
+            Rotate();
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, myBulletData.moveSpeed * Time.deltaTime);
             CheckCollisionOnEnemy();
             if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
@@ -30,6 +32,14 @@ public class Bullet : MonoBehaviour
                 Destroy(gameObject);
             }
         }
+    }
+
+    void Rotate()
+    {
+        var FireDirection = targetPosition - transform.position;
+        FireDirection = FireDirection.normalized;
+        float angle = Mathf.Atan2(FireDirection.y, FireDirection.x) * Mathf.Rad2Deg;
+        transform.localEulerAngles = new Vector3(0, 0, angle - 90);
     }
 
     void CheckCollisionOnEnemy()
