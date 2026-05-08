@@ -1,18 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO.Pipes;
+﻿using System;
 using UnityEngine;
-public class Player : MonoBehaviour
+public class Player : Entity
 {
-    public float moveSpeed { get; set; }
-    public Transform FirePos { get; set; }
-    public Vector3 FireDirection { get; set; }// 朝向
-    public int CurrentBulletCount { get; set; }// 当前子弹数量
-
     public PlayerData playerData;
 
     private Transform fire;
-    private Weapon weapon;// 武器类
+    private NormalWeapon weapon;// 武器类
 
     AttackType attackType;
     public void Init(PlayerData data)
@@ -25,11 +18,29 @@ public class Player : MonoBehaviour
         attackType = AttackType.Liner;
 
         playerData = data;// 拿到玩家数据
-        weapon = new NormalWeapon();
-        weapon.Init(playerData.CurrentWeaponType);
+        //weapon = new NormalWeapon();
+
+        // 根据武器类型，然后通过反射技术来实例化武器类，并传入玩家数据
+        WeaponType weaponType = DataManager.weaponDataDict[playerData.CurrentWeaponIndex].type;
+        weapon = (NormalWeapon)System.Activator.CreateInstance(Type.GetType(weaponType.ToString() + "Weapon")) ;
+
+        weapon.Init(playerData.CurrentWeaponIndex, this);
         weapon.ChangeAttackType(attackType, this);
 
         moveSpeed = playerData.MoveSpeed;
+
+        EntityTag = "player";
+    }
+
+    /// <summary>
+    /// 更换武器
+    /// 游戏中呈现：玩家可以通过某些方式（比如按键、拾取武器等）来更换当前使用的武器。每种武器都会使用不同的子弹。但是每种武器都有最基础的三种攻击方式：线性攻击、扇形攻击和环形攻击
+    /// </summary>
+    /// <param name="newWeaponId"></param>
+    public void ChangeWeapon(int newWeaponId)
+    {
+        playerData.CurrentWeaponIndex = newWeaponId;
+        weapon.Init(newWeaponId, this);
     }
     public Weapon GetCurrentWeapon()
     {

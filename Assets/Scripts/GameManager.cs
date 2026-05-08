@@ -129,7 +129,7 @@ public class GameManager : MonoBehaviour
             Hp = 1000,// 玩家生命值
             power = 1.0f,// 当前游戏倍率
             MoveSpeed = 4.5f,// 玩家移动速度
-            CurrentWeaponType = WeaponType.Normal// 玩家当前使用的武器类型
+            CurrentWeaponIndex = 0// 玩家当前使用的武器id
         };
 
         player.GetComponent<Player>().Init(pdata);
@@ -138,8 +138,8 @@ public class GameManager : MonoBehaviour
     void GenEnemy()
     {
         GameObject newEnemy = Instantiate(Resources.Load<GameObject>("enemy"));
-        newEnemy.GetComponent<Enemy>().SetEnemy(DataManager.enemyDataDict[1]);
         newEnemy.GetComponent<Enemy>().target = player.transform;
+        newEnemy.GetComponent<Enemy>().SetEnemy(DataManager.enemyDataDict[0]);// 使用序号为0的敌人数据
         float x = 0;
         float y = 0;
 
@@ -179,13 +179,13 @@ public class GameManager : MonoBehaviour
         DataManager.allEnemyDict.Add(newEnemy);
     }
 
-    public void SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, int CurrentUsedBulletIndex)
+    public void SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, int CurrentUsedBulletIndex, Entity belongWho)
     {
         GameObject newBullet_Liner = Instantiate(Resources.Load<GameObject>("bullets/" + CurrentUsedBulletIndex));
 
         newBullet_Liner.transform.position = pos;
 
-        newBullet_Liner.GetComponent<Bullet>().SetBullet(bulletData, dir);
+        newBullet_Liner.GetComponent<Bullet>().SetBullet(bulletData, dir, belongWho);
 
         newBullet_Liner.GetComponent<Bullet>().CanMove = true;
     }

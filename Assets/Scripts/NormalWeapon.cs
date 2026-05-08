@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class NormalWeapon : Weapon
 {
-    public override void Init(WeaponType weaponType)
+    public override void Init(int weaponType, Entity _entity)
     {
-        base.Init(weaponType);
+        base.Init(weaponType, _entity);
     }
     public override void AttackLiner(Vector3 fireDirection, Vector3 firePos, int currentBulletCount)
     {

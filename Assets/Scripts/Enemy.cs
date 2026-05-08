@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.IO.Pipes;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+public class Enemy : Entity
 {
-    float moveSpeed = 2.0f;
-
     int currentHp = 0;
     int totalHp = 0;
     public EnemyType enemyType;
     public Transform target;
+
+    private Weapon weapon;// 武器类
+
+    AttackType attackType;
     public void SetEnemy(EnemyData enemyData)
     {
         enemyType = enemyData.type;
@@ -18,11 +20,23 @@ public class Enemy : MonoBehaviour
         transform.localScale = Vector3.one * enemyData.scale;
         totalHp = enemyData.hp;
         currentHp = enemyData.hp;
+        FirePos = transform;
+
+        weapon = new NormalWeapon();
+        weapon.Init(enemyData.CurrentWeaponIndex, this);
+        weapon.ChangeAttackType(attackType, this);
+
+        EntityTag = "enemy";
     }
 
     private void Update()
     {
         Rotate();
+        if (weapon != null)
+        {
+            weapon.WeaponAttack();
+            weapon.ChangeAttackType(attackType, this);
+        }
         transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
         if(Vector3.Distance(transform.position, target.position) < 0.1f)
         {
@@ -33,7 +47,7 @@ public class Enemy : MonoBehaviour
 
     void Rotate()
     {
-        var FireDirection = target.position - transform.position;
+        FireDirection = target.position - transform.position;
         FireDirection = FireDirection.normalized;
         float angle = Mathf.Atan2(FireDirection.y, FireDirection.x) * Mathf.Rad2Deg;
         transform.localEulerAngles = new Vector3(0, 0, angle - 90);

@@ -10,17 +10,37 @@ public class Weapon
     private AttackData attackData;// 攻击数据包，包含攻击方向、攻击位置、当前子弹数量等信息
     float fireTime = 0.0f;
 
-    public virtual void Init(WeaponType weaponType)
+    Entity entity;// 武器所属的实体，玩家或敌人
+
+    public virtual void Init(int weaponID,Entity _entity)
     {
         weaponData = new WeaponData
         {
-             id = DataManager.weaponDataDict[(int)weaponType].id,
-             FireInterval = DataManager.weaponDataDict[(int)weaponType].FireInterval,
-             FireAngle = DataManager.weaponDataDict[(int)weaponType].FireAngle,
-             CurrentUsedBulletIndex = DataManager.weaponDataDict[(int)weaponType].CurrentUsedBulletIndex,
-             Attack = DataManager.weaponDataDict[(int)weaponType].Attack
+             id = DataManager.weaponDataDict[weaponID].id,
+             FireInterval = DataManager.weaponDataDict[weaponID].FireInterval,
+             FireAngle = DataManager.weaponDataDict[weaponID].FireAngle,
+             CurrentUsedBulletIndex = DataManager.weaponDataDict[weaponID].CurrentUsedBulletIndex,
+             Attack = DataManager.weaponDataDict[weaponID].Attack,
+             type = DataManager.weaponDataDict[weaponID].type
         };
         bulletData = new BulletData { 
+            id = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].id,
+            moveSpeed = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].moveSpeed,
+            distance = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].distance,
+            damage = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].damage
+        };
+        entity = _entity;
+    }
+    /// <summary>
+    /// 更换子弹数据，传入新的子弹ID，根据ID从DataManager中获取新的子弹数据，并更新当前武器的bulletData
+    /// 游戏中呈现：玩家通过某些方式（如拾取道具）更换武器的子弹类型，调用此方法来更新武器的子弹数据，使得玩家在攻击时使用新的子弹属性进行攻击
+    /// </summary>
+    /// <param name="bulletID"></param>
+    public void ChangeBullet(int bulletID)
+    {
+        weaponData.CurrentUsedBulletIndex = bulletID;
+        bulletData = new BulletData
+        {
             id = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].id,
             moveSpeed = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].moveSpeed,
             distance = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].distance,
@@ -37,14 +57,14 @@ public class Weapon
         }
     }
 
-    public void ChangeAttackType(AttackType attackType, Player player)
+    public void ChangeAttackType(AttackType attackType, Entity entity)
     {
         weaponAttackType = attackType;
         attackData = new AttackData
         {
-            firePos = attackType == AttackType.Cicle ? player.transform.position : player.FirePos.position,
-            fireDirection = player.FireDirection,
-            currentBulletCount = player.CurrentBulletCount
+            firePos = attackType == AttackType.Cicle ? entity.transform.position : entity.FirePos.position,
+            fireDirection = entity.FireDirection,
+            currentBulletCount = entity.CurrentBulletCount
         };
     }
     void ProcessAttack()
@@ -75,7 +95,7 @@ public class Weapon
     {
         if (currentBulletCount <= 1)
         {
-            GameManager.Instance.SpwanBulletSingle(bulletData, fireDirection, firePos, weaponData.CurrentUsedBulletIndex);
+            GameManager.Instance.SpwanBulletSingle(bulletData, fireDirection, firePos, 0, entity);
         }
         else if (currentBulletCount <= 4)
         {
@@ -83,7 +103,7 @@ public class Weapon
             {
                 // 计算currentBulletCount个数量子弹的每发子弹的偏移量，偏移量的方向垂直于攻击方向，大小为0.3f
                 Vector3 offset = Vector3.Cross(fireDirection, Vector3.forward).normalized * 0.3f * (i - (currentBulletCount - 1) / 2.0f);
-                GameManager.Instance.SpwanBulletSingle(bulletData, fireDirection, firePos + offset, weaponData.CurrentUsedBulletIndex);
+                GameManager.Instance.SpwanBulletSingle(bulletData, fireDirection, firePos + offset, 0, entity);
             }
         }
         // 如果子弹数量大于4，则转为扇形攻击方式
@@ -106,7 +126,7 @@ public class Weapon
         var allDires = DataManager.GetFanDirections2D(fireDirection, fireAngle, fireAngle / (currentBulletCount - 1));
         for (int i = 0; i < allDires.Length; i++)
         {
-            GameManager.Instance.SpwanBulletSingle(bulletData, allDires[i], firePos, weaponData.CurrentUsedBulletIndex);
+            GameManager.Instance.SpwanBulletSingle(bulletData, allDires[i], firePos, 0, entity);
         }
     }
 
@@ -123,7 +143,7 @@ public class Weapon
         {
             float angle = (360.0f / currentBulletCount) * i;
             Vector3 dir = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0);
-            GameManager.Instance.SpwanBulletSingle(bulletData, dir, firePos, weaponData.CurrentUsedBulletIndex);
+            GameManager.Instance.SpwanBulletSingle(bulletData, dir, firePos, 0, entity);
         }
     }
 }

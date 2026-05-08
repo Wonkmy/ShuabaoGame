@@ -6,12 +6,13 @@ using static UnityEngine.GraphicsBuffer;
 public class Bullet : MonoBehaviour
 {
     public BulletData myBulletData;
-
     public bool CanMove { get; set; }
-
     Vector3 targetPosition;
-    public void SetBullet(BulletData bulletData,Vector3 _dir)
+
+    Entity BelongWho;
+    public void SetBullet(BulletData bulletData,Vector3 _dir, Entity belongWho)
     {
+        BelongWho = belongWho;
         myBulletData = new BulletData
         {
             damage = bulletData.damage,
@@ -46,6 +47,8 @@ public class Bullet : MonoBehaviour
     {
         for (int i = DataManager.allEnemyDict.Count - 1; i >= 0; i--)
         {
+            Enemy enemy = DataManager.allEnemyDict[i].GetComponent<Enemy>();
+            if(enemy.EntityTag == BelongWho.EntityTag) continue;// 如果敌人和子弹属于同一方，则跳过碰撞检测
             float distance = Vector3.Distance(transform.position, DataManager.allEnemyDict[i].transform.position);
             if (distance < 0.7f)
             {

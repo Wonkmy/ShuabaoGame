@@ -73,6 +73,7 @@ public class DataManager
             // 1 Fast
             // 2 Thick
             data.type = (EnemyType)int.Parse(row[4]);
+            data.CurrentWeaponIndex = int.Parse(row[5]);
 
             enemyDataDict[data.id] = data;
         }
@@ -102,6 +103,7 @@ public class DataManager
             data.FireAngle = float.Parse(row[2]);
             data.CurrentUsedBulletIndex = int.Parse(row[3]);
             data.Attack = int.Parse(row[4]);
+            data.type = (WeaponType)int.Parse(row[5]);
 
             weaponDataDict[data.id] = data;
         }
