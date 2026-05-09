@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+[System.Serializable]
 public class Weapon
 {
     public WeaponData weaponData;
@@ -10,7 +10,7 @@ public class Weapon
     private AttackData attackData;// 攻击数据包，包含攻击方向、攻击位置、当前子弹数量等信息
     float fireTime = 0.0f;
 
-    Entity entity;// 武器所属的实体，玩家或敌人
+    public Entity entity { get; set; }// 武器所属的实体，玩家或敌人
 
     public virtual void Init(int weaponID,Entity _entity)
     {
@@ -47,25 +47,31 @@ public class Weapon
             damage = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].damage
         };
     }
-    public void WeaponAttack()
+    public void WeaponUpdate()
     {
         fireTime += Time.deltaTime;
-        if (fireTime >= weaponData.FireInterval)
+        if(entity!=null && entity.GetNearestTarget() != null)
         {
-            ProcessAttack();
-            fireTime = 0.0f;
+            if (fireTime >= weaponData.FireInterval && Vector3.Distance(entity.transform.position, entity.GetNearestTarget().transform.position) <= 10.0f)
+            {
+                ProcessAttack();
+                fireTime = 0.0f;
+            }
         }
     }
 
     public void ChangeAttackType(AttackType attackType, Entity entity)
     {
         weaponAttackType = attackType;
-        attackData = new AttackData
+        if (entity.gameObject != null)
         {
-            firePos = attackType == AttackType.Cicle ? entity.transform.position : entity.FirePos.position,
-            fireDirection = entity.FireDirection,
-            currentBulletCount = entity.CurrentBulletCount
-        };
+            attackData = new AttackData
+            {
+                firePos = attackType == AttackType.Cicle ? entity.transform.position : entity.FirePos.position,
+                fireDirection = entity.FireDirection,
+                currentBulletCount = entity.CurrentBulletCount
+            };
+        }
     }
     void ProcessAttack()
     {

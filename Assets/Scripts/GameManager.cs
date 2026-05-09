@@ -14,9 +14,6 @@ public class GameManager : MonoBehaviour
     public GameObject player { get; private set; }
 
     public PlayerData pdata { get; set; }
-
-    float spwanTime;
-
     // =========================
     // 之前固定刷怪间隔保留（已弃用）
     // float spwanInterval = 0.5f;
@@ -56,6 +53,17 @@ public class GameManager : MonoBehaviour
             player.GetComponent<Player>().PlayerUpdate();
         }
 
+        for (int i = DataManager.allEnemyDict.Count - 1; i >= 0; i--)
+        {
+            GameObject enemy = DataManager.allEnemyDict[i];
+            if (enemy)
+            {
+                enemy.GetComponent<Enemy>().EnemyUpdate();
+            }
+        }
+
+        WeaponSystem.UpdateWeapons();
+
         // 游戏时间累计
         gameTime += Time.deltaTime;
 
@@ -78,7 +86,7 @@ public class GameManager : MonoBehaviour
         waveTimer += Time.deltaTime;
 
         // 每30秒触发一次尸潮
-        if (!isWave && waveTimer >= 30)
+        if (!isWave && waveTimer >= 15)
         {
             isWave = true;
             waveTimer = 0;
@@ -90,29 +98,28 @@ public class GameManager : MonoBehaviour
         }
 
         // 尸潮持续8秒
-        if (isWave && waveTimer >= 8)
+        if (isWave && waveTimer >= 5)
         {
             isWave = false;
             waveTimer = 0;
 
             Debug.Log("尸潮结束");
+            difficulty = 0; // 尸潮结束后暂时降低难度，给玩家喘息的机会
         }
     }
 
     // 尝试刷怪
     void TrySpawnEnemy()
     {
+        if (isWave) return;// 尸潮期间不使用正常的刷怪逻辑，直接通过增加预算来实现大量刷怪
         // 防止一帧生成过多
         int maxSpawnPerFrame = 5;
 
         int currentSpawnCount = 0;
-
-        while (enemyBudget >= 1 && currentSpawnCount < maxSpawnPerFrame)
+        while (enemyBudget >= 5 && currentSpawnCount < maxSpawnPerFrame)
         {
-            enemyBudget -= 1;
-
-            GenEnemy();
-
+            enemyBudget -= 5;
+            GenEnemy(0);
             currentSpawnCount++;
         }
     }
@@ -128,18 +135,18 @@ public class GameManager : MonoBehaviour
             Level = 1,// 玩家等级
             Hp = 1000,// 玩家生命值
             power = 1.0f,// 当前游戏倍率
-            MoveSpeed = 4.5f,// 玩家移动速度
+            MoveSpeed = 2.5f,// 玩家移动速度
             CurrentWeaponIndex = 0// 玩家当前使用的武器id
         };
 
         player.GetComponent<Player>().Init(pdata);
     }
 
-    void GenEnemy()
+    void GenEnemy(int eid)
     {
         GameObject newEnemy = Instantiate(Resources.Load<GameObject>("enemy"));
         newEnemy.GetComponent<Enemy>().target = player.transform;
-        newEnemy.GetComponent<Enemy>().SetEnemy(DataManager.enemyDataDict[0]);// 使用序号为0的敌人数据
+        newEnemy.GetComponent<Enemy>().SetEnemy(DataManager.enemyDataDict[eid]);// 使用序号为0的敌人数据
         float x = 0;
         float y = 0;
 
@@ -182,33 +189,52 @@ public class GameManager : MonoBehaviour
     public void SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, int CurrentUsedBulletIndex, Entity belongWho)
     {
         GameObject newBullet_Liner = Instantiate(Resources.Load<GameObject>("bullets/" + CurrentUsedBulletIndex));
-
         newBullet_Liner.transform.position = pos;
-
         newBullet_Liner.GetComponent<Bullet>().SetBullet(bulletData, dir, belongWho);
-
         newBullet_Liner.GetComponent<Bullet>().CanMove = true;
+    }
+
+    public GameObject FindClosedEnemy(Vector3 pos)
+    {
+        GameObject closedEnemy = null;
+        float minDistance = float.MaxValue;
+        for (int i = DataManager.allEnemyDict.Count - 1; i >= 0; i--)
+        {
+            GameObject enemy = DataManager.allEnemyDict[i];
+            if (enemy)
+            {
+                float distance = Vector3.Distance(pos, enemy.transform.position);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closedEnemy = enemy;
+                }
+            }
+        }
+        return closedEnemy;
     }
 
     Vector3 GetWorldPosByScreenPos(Vector3 screenPos)
     {
         screenPos.z = 0;
-
         return mainCamera.ScreenToWorldPoint(screenPos);
     }
 
     private void OnDisable()
     {
         DataManager.Clear();
+        WeaponSystem.Clear();
     }
 
     private void OnDestroy()
     {
         DataManager.Clear();
+        WeaponSystem.Clear();
     }
 
     private void OnApplicationQuit()
     {
         DataManager.Clear();
+        WeaponSystem.Clear();
     }
 }

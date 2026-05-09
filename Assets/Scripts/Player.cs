@@ -1,13 +1,12 @@
 ﻿using System;
+using UnityEditor.MemoryProfiler;
 using UnityEngine;
 public class Player : Entity
 {
     public PlayerData playerData;
 
     private Transform fire;
-    private NormalWeapon weapon;// 武器类
-
-    AttackType attackType;
+    private Weapon weapon;// 武器类
     public void Init(PlayerData data)
     {
         fire = transform.Find("Fire");
@@ -18,14 +17,9 @@ public class Player : Entity
         attackType = AttackType.Liner;
 
         playerData = data;// 拿到玩家数据
-        //weapon = new NormalWeapon();
 
-        // 根据武器类型，然后通过反射技术来实例化武器类，并传入玩家数据
-        WeaponType weaponType = DataManager.weaponDataDict[playerData.CurrentWeaponIndex].type;
-        weapon = (NormalWeapon)System.Activator.CreateInstance(Type.GetType(weaponType.ToString() + "Weapon")) ;
-
-        weapon.Init(playerData.CurrentWeaponIndex, this);
-        weapon.ChangeAttackType(attackType, this);
+        weapon = WeaponSystem.CreateWeapon(playerData.CurrentWeaponIndex, this);
+        weapon.ChangeBullet(2);
 
         moveSpeed = playerData.MoveSpeed;
 
@@ -42,6 +36,10 @@ public class Player : Entity
         playerData.CurrentWeaponIndex = newWeaponId;
         weapon.Init(newWeaponId, this);
     }
+
+    public override Entity GetNearestTarget() {
+        return GameManager.Instance.FindClosedEnemy(transform.position)?.GetComponent<Entity>();
+    }
     public Weapon GetCurrentWeapon()
     {
         return weapon;
@@ -50,11 +48,6 @@ public class Player : Entity
     {
         Move();
         Rotate();
-
-        if (weapon != null)
-        {
-            weapon.WeaponAttack();
-        }
 
         #region 一些测试用的代码
         if (Input.GetAxis("Mouse ScrollWheel") > 0f)
@@ -65,21 +58,9 @@ public class Player : Entity
         {
             CurrentBulletCount = CurrentBulletCount - 1;
         }
-        if (weapon != null) {
-            //if (Input.GetKeyDown(KeyCode.Q))
-            //{
-            //    attackType = AttackType.Liner;
-            //}
-            //if (Input.GetKeyDown(KeyCode.W))
-            //{
-            //    attackType = AttackType.Sector;
-            //}
-            //if (Input.GetKeyDown(KeyCode.E))
-            //{
-            //    attackType = AttackType.Cicle;
-            //}
-            weapon.ChangeAttackType(attackType, this);
-        }
+        //if (weapon != null) {
+        //    weapon.ChangeAttackType(attackType, this);
+        //}
         #endregion
     }
 
@@ -87,9 +68,11 @@ public class Player : Entity
     {
         Vector3 mpos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mpos.z = 0;
+        
         FireDirection = mpos - transform.position;
         FireDirection = FireDirection.normalized;
         float angle = Mathf.Atan2(FireDirection.y, FireDirection.x) * Mathf.Rad2Deg;
+        // 这里的旋转用缓动会更好看一些，直接设置角度会有点生硬
         fire.localEulerAngles = new Vector3(0, 0, angle - 90);
     }
 

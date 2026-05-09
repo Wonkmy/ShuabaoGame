@@ -11,8 +11,6 @@ public class Enemy : Entity
     public Transform target;
 
     private Weapon weapon;// 武器类
-
-    AttackType attackType;
     public void SetEnemy(EnemyData enemyData)
     {
         enemyType = enemyData.type;
@@ -21,22 +19,15 @@ public class Enemy : Entity
         totalHp = enemyData.hp;
         currentHp = enemyData.hp;
         FirePos = transform;
+        attackType = AttackType.Liner;
 
-        weapon = new NormalWeapon();
-        weapon.Init(enemyData.CurrentWeaponIndex, this);
-        weapon.ChangeAttackType(attackType, this);
-
+        weapon = WeaponSystem.CreateWeapon(enemyData.CurrentWeaponIndex, this);
         EntityTag = "enemy";
     }
 
-    private void Update()
+    public void EnemyUpdate()
     {
         Rotate();
-        if (weapon != null)
-        {
-            weapon.WeaponAttack();
-            weapon.ChangeAttackType(attackType, this);
-        }
         transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
         if(Vector3.Distance(transform.position, target.position) < 0.1f)
         {
@@ -53,6 +44,11 @@ public class Enemy : Entity
         transform.localEulerAngles = new Vector3(0, 0, angle - 90);
     }
 
+    public override Entity GetNearestTarget()
+    {
+        return target.GetComponent<Entity>();
+    }
+
     public void TakeDamage(int damage)
     {
         currentHp -= damage;
@@ -66,6 +62,7 @@ public class Enemy : Entity
             //    Vector3 dir = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0);
             //    GameManager.Instance.SpwanBulletSingle(bulletData, dir, transform.position, 0);
             //}
+            WeaponSystem.weapons.Remove(weapon);
             Destroy(gameObject);
         }
     }

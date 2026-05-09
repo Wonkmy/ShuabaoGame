@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,5 +9,9 @@ public class Entity : MonoBehaviour
     public Vector3 FireDirection { get; set; }
     public int CurrentBulletCount { get; set; }
 
+
+    public AttackType attackType { get; set; }
     public string EntityTag { get; set; }
+
+    public virtual Entity GetNearestTarget() {  return null; }
 }
