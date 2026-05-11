@@ -58,17 +58,17 @@ public class Bullet : MonoBehaviour
                     // 这里可以添加对敌人造成伤害的逻辑
                     Player player = GameManager.Instance.player.GetComponent<Player>();
                     Weapon weapon = player.GetCurrentWeapon();
-                    int finalDamage = weapon.weaponData.Attack * (int)myBulletData.damage * player.playerData.Level * (int)player.playerData.power;// 伤害等于 武器攻击力 * 子弹伤害 * 玩家等级 * 当前游戏倍率
-                    DataManager.allEnemyDict[i].GetComponent<Entity>().TakeDamage(finalDamage);
-                    var cicleEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(BelongWho.transform.position, 10);
-                    if (cicleEnemys.Count >= 6)
+                    float critChance = weapon != null ? weapon.weaponData.Critical : 0;// 如果玩家有武器，就用武器的暴击率，否则暴击率为0
+                    float critDamageMultiplier = 1.0f;
+                    // 根据武器的暴击率来决定是否暴击，暴击伤害是普通伤害的1.5倍，并且暴击会震屏
+                    if (critChance > 0 && Random.value < critChance)
                     {
-                        GameManager.Instance.ShakeMainCamera(0.25f, 0.5f);
+                        critDamageMultiplier = 1.5f;
+                        GameManager.Instance.ShakeMainCamera(0.2f, 0.3f);
                     }
-                    else
-                    {
-                        GameManager.Instance.ShakeMainCamera(0.1f, 0.25f);
-                    }
+                    float finalDamage = weapon.weaponData.Attack * critDamageMultiplier * (int)myBulletData.damage * player.playerData.Level * (int)player.playerData.power;// 伤害等于 武器攻击力 * 武器暴击伤害倍率 * 子弹伤害 * 玩家等级 * 游戏倍率
+                    DataManager.allEnemyDict[i].GetComponent<Entity>().TakeDamage(Mathf.CeilToInt(finalDamage));
+
                     pierceLeft--;
                     if (pierceLeft <= 0)
                     {

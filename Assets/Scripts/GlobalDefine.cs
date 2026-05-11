@@ -82,6 +82,7 @@ public struct WeaponData
     public int CurrentUsedBulletIndex;// 当前使用的子弹类型索引
     public int Attack;// 武器攻击力
     public WeaponType type;
+    public float Critical;// 暴击倍率
 }
 public class PlayerData
 {

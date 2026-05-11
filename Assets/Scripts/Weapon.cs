@@ -28,7 +28,8 @@ public class Weapon
              FireAngle = DataManager.weaponDataDict[weaponID].FireAngle,
              CurrentUsedBulletIndex = DataManager.weaponDataDict[weaponID].CurrentUsedBulletIndex,
              Attack = DataManager.weaponDataDict[weaponID].Attack,
-             type = DataManager.weaponDataDict[weaponID].type
+             type = DataManager.weaponDataDict[weaponID].type,
+             Critical = DataManager.weaponDataDict[weaponID].Critical,
         };
         bulletData = new BulletData { 
             id = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].id,
