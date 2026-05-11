@@ -1,4 +1,7 @@
-﻿using System.Collections;
+﻿// 当前项目的chatgpt聊天对话“CrazyGames 游戏类型分析”
+// 具体的游戏设计在聊天对话的这个位置，直接搜索关键句即可：“好，那我们一起讨论细你说的建议”
+
+using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;

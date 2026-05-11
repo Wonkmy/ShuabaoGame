@@ -63,7 +63,16 @@ public class Weapon
         fireTime += Time.deltaTime;
         if (entity.GetNearestTarget() != null)
         {
-            var ey = entity.GetNearestTarget().gameObject;
+            GameObject ey = null;
+            if(lockedTarget == null)
+            {
+                ey = entity.GetNearestTarget().gameObject;
+            }
+            else
+            {
+                ey = lockedTarget;
+            }
+
             if (entity != null && ey != null)
             {
                 if (fireTime >= weaponData.FireInterval && Vector3.Distance(entity.transform.position, ey.transform.position) <= 10.0f)
