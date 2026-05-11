@@ -1,7 +1,5 @@
-﻿using System.Collections;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
-using static UnityEngine.GraphicsBuffer;
 
 public class Bullet : MonoBehaviour
 {
@@ -10,6 +8,8 @@ public class Bullet : MonoBehaviour
     Vector3 targetPosition;
 
     Entity BelongWho;
+
+    int pierceLeft;// 子弹的穿透次数，穿透一次就减1，减到0就销毁子弹
     public void SetBullet(BulletData bulletData,Vector3 _dir, Entity belongWho)
     {
         BelongWho = belongWho;
@@ -20,14 +20,15 @@ public class Bullet : MonoBehaviour
             moveSpeed = bulletData.moveSpeed
         };
         targetPosition = transform.position + _dir.normalized * myBulletData.distance;
+        pierceLeft = 2;
     }
-    void Update()
+    public void BulletUpdate()
     {
         if (CanMove)
         {
             Rotate();
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, myBulletData.moveSpeed * Time.deltaTime);
-            CheckCollisionOnEnemy();
+            CheckCollisionOnEntity();
             if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
             {
                 Destroy(gameObject);
@@ -43,21 +44,41 @@ public class Bullet : MonoBehaviour
         transform.localEulerAngles = new Vector3(0, 0, angle - 90);
     }
 
-    void CheckCollisionOnEnemy()
+    void CheckCollisionOnEntity()
     {
         for (int i = DataManager.allEnemyDict.Count - 1; i >= 0; i--)
         {
-            Enemy enemy = DataManager.allEnemyDict[i].GetComponent<Enemy>();
-            if(enemy.EntityTag == BelongWho.EntityTag) continue;// 如果敌人和子弹属于同一方，则跳过碰撞检测
+            Entity entity = DataManager.allEnemyDict[i].GetComponent<Entity>();
+            if(entity.EntityTag == BelongWho.EntityTag || entity.Dead) continue;// 如果敌人和子弹属于同一方，则跳过碰撞检测。或者敌人已经死了，也跳过碰撞检测。
             float distance = Vector3.Distance(transform.position, DataManager.allEnemyDict[i].transform.position);
             if (distance < 0.7f)
             {
-                // 这里可以添加对敌人造成伤害的逻辑
-                Player player = GameManager.Instance.player.GetComponent<Player>();
-                Weapon weapon = player.GetCurrentWeapon();
-                int finalDamage = weapon.weaponData.Attack * (int)myBulletData.damage * player.playerData.Level * (int)player.playerData.power;// 伤害等于 武器攻击力 * 子弹伤害 * 玩家等级 * 当前游戏倍率
-                DataManager.allEnemyDict[i].GetComponent<Enemy>().TakeDamage(finalDamage);
-                Destroy(gameObject);
+                if(BelongWho.EntityTag == "player")
+                {
+                    // 这里可以添加对敌人造成伤害的逻辑
+                    Player player = GameManager.Instance.player.GetComponent<Player>();
+                    Weapon weapon = player.GetCurrentWeapon();
+                    int finalDamage = weapon.weaponData.Attack * (int)myBulletData.damage * player.playerData.Level * (int)player.playerData.power;// 伤害等于 武器攻击力 * 子弹伤害 * 玩家等级 * 当前游戏倍率
+                    DataManager.allEnemyDict[i].GetComponent<Entity>().TakeDamage(finalDamage);
+                    var cicleEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(BelongWho.transform.position, 10);
+                    if (cicleEnemys.Count >= 6)
+                    {
+                        GameManager.Instance.ShakeMainCamera(0.25f, 0.5f);
+                    }
+                    else
+                    {
+                        GameManager.Instance.ShakeMainCamera(0.1f, 0.25f);
+                    }
+                    pierceLeft--;
+                    if (pierceLeft <= 0)
+                    {
+                        Destroy(gameObject);
+                    }
+                }
+                else
+                {
+                    GameManager.Instance.player.GetComponent<Player>().TakeDamage(2);
+                }
                 break;
             }
         }

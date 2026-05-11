@@ -1,12 +1,18 @@
 ﻿using System;
+using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEditor.MemoryProfiler;
 using UnityEngine;
 public class Player : Entity
 {
+    int currentHp = 0;
+    int totalHp = 0;
+    int level = 1;
     public PlayerData playerData;
-
     private Transform fire;
-    private Weapon weapon;// 武器类
+    int totalExp = 0;
+    int currentExp = 0;
+    int needExp = 100;
     public void Init(PlayerData data)
     {
         fire = transform.Find("Fire");
@@ -17,6 +23,12 @@ public class Player : Entity
         attackType = AttackType.Liner;
 
         playerData = data;// 拿到玩家数据
+        totalHp = (int)playerData.Hp;
+        currentHp = (int)playerData.Hp;
+
+        totalExp = 0;
+        currentExp = 0;
+        level = (int)playerData.Level;
 
         weapon = WeaponSystem.CreateWeapon(playerData.CurrentWeaponIndex, this);
         weapon.ChangeBullet(2);
@@ -40,9 +52,24 @@ public class Player : Entity
     public override Entity GetNearestTarget() {
         return GameManager.Instance.FindClosedEnemy(transform.position)?.GetComponent<Entity>();
     }
-    public Weapon GetCurrentWeapon()
+    public void AddExp(int exp)
     {
-        return weapon;
+        currentExp += exp;
+        if(currentExp >= needExp)
+        {
+            level++;
+            currentExp = currentExp - needExp;
+            needExp = (int)(needExp * 1.25f);
+        }
+    }
+    public float GetExpProgress()
+    {
+        return (float)currentExp / needExp;
+    }
+
+    public float GetHpProgress()
+    {
+        return (float)currentHp / totalHp;
     }
     public void PlayerUpdate()
     {
@@ -80,7 +107,46 @@ public class Player : Entity
     {
         float x = Input.GetAxis("Horizontal");
         float y = Input.GetAxis("Vertical");
+
         Vector3 dir = new Vector3(x, y, 0);
-        transform.position = Vector3.Lerp(transform.position, transform.position + dir, moveSpeed * Time.deltaTime);
+
+        transform.position += dir * moveSpeed * Time.deltaTime;
+
+        Vector3 spos = GameManager.Instance.mainCamera.WorldToScreenPoint(transform.position);
+
+        // 玩家半径（或者半宽半高）
+        float offset = 0.5f;
+
+        // 先转换一下偏移到屏幕距离
+        Vector3 offsetScreen =
+            GameManager.Instance.mainCamera.WorldToScreenPoint(new Vector3(offset, offset, 0)) -
+            GameManager.Instance.mainCamera.WorldToScreenPoint(Vector3.zero);
+
+        float ox = offsetScreen.x;
+        float oy = offsetScreen.y;
+
+        // 左右边界
+        spos.x = Mathf.Clamp(spos.x, ox, Screen.width - ox);
+
+        // 上下边界
+        spos.y = Mathf.Clamp(spos.y, oy, Screen.height - oy);
+
+        Vector3 wpos = GameManager.Instance.mainCamera.ScreenToWorldPoint(spos);
+
+        wpos.z = transform.position.z;
+
+        transform.position = wpos;
+    }
+
+    public override void TakeDamage(int damage)
+    {
+        currentHp -= damage;
+        if (currentHp <= 0)
+        {
+            currentHp = 0;
+            Dead = true;
+
+            WeaponSystem.RemoveWeapon(weapon);// 先移除武器，避免在销毁敌人后还调用武器的Update方法
+        }
     }
 }

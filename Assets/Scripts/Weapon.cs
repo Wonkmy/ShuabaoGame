@@ -12,6 +12,11 @@ public class Weapon
 
     public Entity entity { get; set; }// 武器所属的实体，玩家或敌人
 
+    public List<GameObject> spawnedBullets;// 此武器生成的子弹列表
+
+    float fireFlashDuration = 0.2f;// 枪口火花持续时间
+    float fireFlashTimer = 0.0f;// 枪口火花计时器
+
     public virtual void Init(int weaponID,Entity _entity)
     {
         weaponData = new WeaponData
@@ -30,6 +35,7 @@ public class Weapon
             damage = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].damage
         };
         entity = _entity;
+        spawnedBullets = new List<GameObject>();
     }
     /// <summary>
     /// 更换子弹数据，传入新的子弹ID，根据ID从DataManager中获取新的子弹数据，并更新当前武器的bulletData
@@ -47,6 +53,7 @@ public class Weapon
             damage = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].damage
         };
     }
+
     public void WeaponUpdate()
     {
         fireTime += Time.deltaTime;
@@ -63,7 +70,7 @@ public class Weapon
     public void ChangeAttackType(AttackType attackType, Entity entity)
     {
         weaponAttackType = attackType;
-        if (entity.gameObject != null)
+        if (entity && entity.gameObject != null)
         {
             attackData = new AttackData
             {
@@ -75,6 +82,21 @@ public class Weapon
     }
     void ProcessAttack()
     {
+        // 枪口火花，一个黄色的小球来表示，0.2秒后销毁
+        GameObject newExpBall = GameManager.Instance.SpwanSingleCircle(attackData.firePos);
+        newExpBall.GetComponent<SpriteRenderer>().color = Color.yellow;
+        if (newExpBall)
+        {
+            while (fireFlashTimer < fireFlashDuration)
+            {
+                fireFlashTimer += Time.deltaTime;
+                // 这里可以添加枪口火花的动画效果，比如缩放和颜色变化
+                // 例如：可以让枪口火花在0.2秒内从一个小球逐渐变大，然后再逐渐变小，最后销毁
+                newExpBall.transform.localScale = Vector3.Lerp(Vector3.one * 0.8f, Vector3.one * 0.4f, fireFlashTimer / fireFlashDuration);
+            }
+            Object.Destroy(newExpBall);
+        }
+
         switch (weaponAttackType)
         {
             case AttackType.Liner:
@@ -101,7 +123,8 @@ public class Weapon
     {
         if (currentBulletCount <= 1)
         {
-            GameManager.Instance.SpwanBulletSingle(bulletData, fireDirection, firePos, 0, entity);
+            var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, fireDirection, firePos, 0, entity);
+            spawnedBullets.Add(bullet);
         }
         else if (currentBulletCount <= 4)
         {
@@ -109,7 +132,8 @@ public class Weapon
             {
                 // 计算currentBulletCount个数量子弹的每发子弹的偏移量，偏移量的方向垂直于攻击方向，大小为0.3f
                 Vector3 offset = Vector3.Cross(fireDirection, Vector3.forward).normalized * 0.3f * (i - (currentBulletCount - 1) / 2.0f);
-                GameManager.Instance.SpwanBulletSingle(bulletData, fireDirection, firePos + offset, 0, entity);
+                var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, fireDirection, firePos + offset, 0, entity);
+                spawnedBullets.Add(bullet);
             }
         }
         // 如果子弹数量大于4，则转为扇形攻击方式
@@ -132,7 +156,8 @@ public class Weapon
         var allDires = DataManager.GetFanDirections2D(fireDirection, fireAngle, fireAngle / (currentBulletCount - 1));
         for (int i = 0; i < allDires.Length; i++)
         {
-            GameManager.Instance.SpwanBulletSingle(bulletData, allDires[i], firePos, 0, entity);
+            var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, allDires[i], firePos, 0, entity);
+            spawnedBullets.Add(bullet);
         }
     }
 
@@ -149,7 +174,8 @@ public class Weapon
         {
             float angle = (360.0f / currentBulletCount) * i;
             Vector3 dir = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0);
-            GameManager.Instance.SpwanBulletSingle(bulletData, dir, firePos, 0, entity);
+            var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, dir, firePos, 0, entity);
+            spawnedBullets.Add(bullet);
         }
     }
 }

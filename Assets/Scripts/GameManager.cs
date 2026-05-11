@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,7 +14,8 @@ public class GameManager : MonoBehaviour
     }
 
     public GameObject player { get; private set; }
-
+    public Transform playerExpSlider { get; private set; }
+    public Transform playerHpSlider { get; private set; }
     public PlayerData pdata { get; set; }
     // =========================
     // 之前固定刷怪间隔保留（已弃用）
@@ -32,18 +35,32 @@ public class GameManager : MonoBehaviour
     bool isWave = false;
     float waveTimer = 0;
 
-    private Camera mainCamera;
+    public Camera mainCamera { get; set; }
 
     // 敌人生成到屏幕外的偏移距离
     private float offset = 100f;
+
+    // 震屏幕相关
+    private float shakeTime = 0;
+    private float shakeDuration = 0;
+    private float shakeStrength = 0;
+
+    private Vector3 cameraOriginPos;
 
     void Start()
     {
         DataManager.Init();
 
         mainCamera = Camera.main;
+        cameraOriginPos = mainCamera.transform.localPosition;
 
         GenPlayer();
+
+        GameObject expobj = Instantiate(Resources.Load<GameObject>("exp"));
+        GameObject hpobj = Instantiate(Resources.Load<GameObject>("hp"));
+
+        playerExpSlider = expobj.transform;
+        playerHpSlider = hpobj.transform;
     }
 
     private void Update()
@@ -51,6 +68,24 @@ public class GameManager : MonoBehaviour
         if (player)
         {
             player.GetComponent<Player>().PlayerUpdate();
+            if (playerExpSlider != null)
+            {
+                Vector3 spos = new Vector3(50, Screen.height - 50, 0);
+                Vector3 wpos = mainCamera.ScreenToWorldPoint(spos);
+                wpos.z = 0;
+                playerExpSlider.transform.position = wpos;
+
+                playerExpSlider.Find("slider").localScale = new Vector3(player.GetComponent<Player>().GetExpProgress(), 1, 1);
+            }
+            if (playerHpSlider != null)
+            {
+                Vector3 spos = new Vector3(50, Screen.height - 150, 0);
+                Vector3 wpos = mainCamera.ScreenToWorldPoint(spos);
+                wpos.z = 0;
+                playerHpSlider.transform.position = wpos;
+
+                playerHpSlider.Find("slider").localScale = new Vector3(player.GetComponent<Player>().GetHpProgress(), 1, 1);
+            }
         }
 
         for (int i = DataManager.allEnemyDict.Count - 1; i >= 0; i--)
@@ -60,6 +95,27 @@ public class GameManager : MonoBehaviour
             {
                 enemy.GetComponent<Enemy>().EnemyUpdate();
             }
+        }
+
+        for (int i = DataManager.allDamageText.Count - 1; i >=0 ; i--)
+        {
+            DamageText damageText = DataManager.allDamageText[i].GetComponent<DamageText>();
+            if (damageText.Dead) {
+                Destroy(DataManager.allDamageText[i]);// 销毁对象
+                DataManager.allDamageText.RemoveAt(i);// 从列表中移除
+            }
+            else
+            {
+                if (DataManager.allDamageText[i] != null)
+                {
+                    DataManager.allDamageText[i].GetComponent<DamageText>().DamageTextUpdate();
+                }
+            }
+        }
+
+        for (int i = DataManager.allExpBall.Count - 1; i >= 0; i--)
+        {
+            DataManager.allExpBall[i].GetComponent<ExpBall>().ExpBallUpdate();
         }
 
         WeaponSystem.UpdateWeapons();
@@ -78,6 +134,32 @@ public class GameManager : MonoBehaviour
 
         // 刷怪
         TrySpawnEnemy();
+
+        // 
+        DrawGrid();
+
+        // 震屏逻辑
+        if (shakeTime > 0)
+        {
+            shakeTime -= Time.deltaTime;
+
+            // 越接近结束震动越弱
+            float power = shakeTime / shakeDuration;
+
+            Vector3 offset = new Vector3(
+                Random.Range(-1f, 1f),
+                Random.Range(-1f, 1f),
+                0
+            ) * shakeStrength * power;
+
+            mainCamera.transform.localPosition = cameraOriginPos + offset;
+
+            // 结束后恢复
+            if (shakeTime <= 0)
+            {
+                mainCamera.transform.localPosition = cameraOriginPos;
+            }
+        }
     }
 
     // 尸潮逻辑
@@ -186,14 +268,48 @@ public class GameManager : MonoBehaviour
         DataManager.allEnemyDict.Add(newEnemy);
     }
 
-    public void SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, int CurrentUsedBulletIndex, Entity belongWho)
+    public GameObject SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, int CurrentUsedBulletIndex, Entity belongWho)
     {
         GameObject newBullet_Liner = Instantiate(Resources.Load<GameObject>("bullets/" + CurrentUsedBulletIndex));
         newBullet_Liner.transform.position = pos;
         newBullet_Liner.GetComponent<Bullet>().SetBullet(bulletData, dir, belongWho);
         newBullet_Liner.GetComponent<Bullet>().CanMove = true;
+        return newBullet_Liner;
     }
 
+    public GameObject SpwanExpBall(Vector3 pos, int expValue)
+    {
+        GameObject newExpBall = SpwanSingleCircle(pos);
+        newExpBall.transform.localScale = Vector3.one * 0.2f;
+        newExpBall.GetComponent<SpriteRenderer>().color = Color.cyan;
+        newExpBall.AddComponent<ExpBall>().SetExpValue(expValue, player);
+        DataManager.allExpBall.Add(newExpBall);
+        return newExpBall;
+    }
+    public GameObject SpwanSingleCircle(Vector3 pos)// cicle  0.4  0.2
+    {
+        GameObject newExpBall = Instantiate(Resources.Load<GameObject>("cicle"));
+        newExpBall.transform.position = pos;
+        return newExpBall;
+    }
+
+    public List<GameObject> FindCicleAllEnemysByDistance(Vector3 pos, float distance)
+    {
+        List<GameObject> enemys = new List<GameObject>();
+        for (int i = DataManager.allEnemyDict.Count - 1; i >= 0; i--)
+        {
+            GameObject enemy = DataManager.allEnemyDict[i];
+            if (enemy && enemy.GetComponent<Enemy>().Dead == false)
+            {
+                float dis = Vector3.Distance(pos, enemy.transform.position);
+                if (dis <= distance)
+                {
+                    enemys.Add(enemy);
+                }
+            }
+        }
+        return enemys;
+    }
     public GameObject FindClosedEnemy(Vector3 pos)
     {
         GameObject closedEnemy = null;
@@ -219,22 +335,126 @@ public class GameManager : MonoBehaviour
         screenPos.z = 0;
         return mainCamera.ScreenToWorldPoint(screenPos);
     }
+    List<GameObject> lineObjs = new List<GameObject>();
+
+    private void DrawGrid()
+    {
+        int size = 3;
+
+        // 使用屏幕四个角转换世界坐标，而不是直接用Screen.width/height
+        Vector3 lb = mainCamera.ScreenToWorldPoint(new Vector3(0, 0, 0));
+        Vector3 rt = mainCamera.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, 0));
+
+        float padding = 100;
+
+        float startX = Mathf.Floor((lb.x - padding) / size) * size;
+        float endX = Mathf.Ceil((rt.x + padding) / size) * size;
+
+        float startY = Mathf.Floor((lb.y - padding) / size) * size;
+        float endY = Mathf.Ceil((rt.y + padding) / size) * size;
+
+        int verticalCount = Mathf.FloorToInt((endX - startX) / size) + 1;
+        int horizontalCount = Mathf.FloorToInt((endY - startY) / size) + 1;
+
+        int needCount = verticalCount + horizontalCount;
+
+        // 不再Destroy，每次只创建不足的部分
+        while (lineObjs.Count < needCount)
+        {
+            GameObject line = new GameObject("GridLine");
+
+            LineRenderer liner = line.AddComponent<LineRenderer>();
+            liner.positionCount = 2;
+            liner.startWidth = 0.08f;
+            liner.endWidth = 0.08f;
+
+            // 只创建一次材质
+            liner.material = new Material(Shader.Find("Sprites/Default"));
+
+            liner.startColor = new Color(0.16f, 0.17f, 0.2f);
+            liner.endColor = new Color(0.16f, 0.17f, 0.2f);
+
+            lineObjs.Add(line);
+        }
+
+        // 多余的线直接隐藏
+        for (int i = needCount; i < lineObjs.Count; i++)
+        {
+            lineObjs[i].SetActive(false);
+        }
+
+        int index = 0;
+
+        // 绘制竖线
+        for (float x = startX; x <= endX; x += size)
+        {
+            GameObject line = lineObjs[index];
+            line.SetActive(true);
+
+            LineRenderer liner = line.GetComponent<LineRenderer>();
+
+            liner.SetPosition(0, new Vector3(x, startY, 0));
+            liner.SetPosition(1, new Vector3(x, endY, 0));
+
+            index++;
+        }
+
+        // 绘制横线
+        for (float y = startY; y <= endY; y += size)
+        {
+            GameObject line = lineObjs[index];
+            line.SetActive(true);
+
+            LineRenderer liner = line.GetComponent<LineRenderer>();
+
+            liner.SetPosition(0, new Vector3(startX, y, 0));
+            liner.SetPosition(1, new Vector3(endX, y, 0));
+
+            index++;
+        }
+    }
+
+    /// <summary>
+    /// 震屏
+    /// </summary>
+    /// <param name="power"></param>
+    public void ShakeMainCamera(float duration, float strength)
+    {
+        shakeDuration = duration;
+        shakeStrength = strength;
+        shakeTime = duration;
+    }
 
     private void OnDisable()
     {
         DataManager.Clear();
         WeaponSystem.Clear();
+        lineObjs.Clear();
+        foreach (var l in lineObjs)
+        {
+            Destroy(l);
+        }
     }
 
     private void OnDestroy()
     {
         DataManager.Clear();
         WeaponSystem.Clear();
+        lineObjs.Clear();
+        foreach (var l in lineObjs)
+        {
+            Destroy(l);
+        }
     }
 
     private void OnApplicationQuit()
     {
         DataManager.Clear();
         WeaponSystem.Clear();
+        lineObjs.Clear();
+        foreach (var l in lineObjs)
+        {
+            Destroy(l);
+        }
     }
 }
