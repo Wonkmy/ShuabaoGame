@@ -17,6 +17,8 @@ public class Weapon
     float fireFlashDuration = 0.2f;// 枪口火花持续时间
     float fireFlashTimer = 0.0f;// 枪口火花计时器
 
+    public GameObject lockedTarget;// 锁定的目标实体，敌人
+
     public virtual void Init(int weaponID,Entity _entity)
     {
         weaponData = new WeaponData
@@ -36,6 +38,7 @@ public class Weapon
         };
         entity = _entity;
         spawnedBullets = new List<GameObject>();
+        lockedTarget = null;
     }
     /// <summary>
     /// 更换子弹数据，传入新的子弹ID，根据ID从DataManager中获取新的子弹数据，并更新当前武器的bulletData
@@ -57,12 +60,18 @@ public class Weapon
     public void WeaponUpdate()
     {
         fireTime += Time.deltaTime;
-        if(entity!=null && entity.GetNearestTarget() != null)
+        if (entity.GetNearestTarget() != null)
         {
-            if (fireTime >= weaponData.FireInterval && Vector3.Distance(entity.transform.position, entity.GetNearestTarget().transform.position) <= 10.0f)
+            var ey = entity.GetNearestTarget().gameObject;
+            if (entity != null && ey != null)
             {
-                ProcessAttack();
-                fireTime = 0.0f;
+                if (fireTime >= weaponData.FireInterval && Vector3.Distance(entity.transform.position, ey.transform.position) <= 10.0f)
+                {
+                    fireFlashTimer = 0.0f;
+                    lockedTarget = ey;
+                    ProcessAttack();
+                    fireTime = 0.0f;
+                }
             }
         }
     }
@@ -91,7 +100,6 @@ public class Weapon
             {
                 fireFlashTimer += Time.deltaTime;
                 // 这里可以添加枪口火花的动画效果，比如缩放和颜色变化
-                // 例如：可以让枪口火花在0.2秒内从一个小球逐渐变大，然后再逐渐变小，最后销毁
                 newExpBall.transform.localScale = Vector3.Lerp(Vector3.one * 0.8f, Vector3.one * 0.4f, fireFlashTimer / fireFlashDuration);
             }
             Object.Destroy(newExpBall);

@@ -73,6 +73,8 @@ public class Player : Entity
     }
     public void PlayerUpdate()
     {
+        if(Dead) { return; }
+
         Move();
         Rotate();
 
@@ -85,22 +87,30 @@ public class Player : Entity
         {
             CurrentBulletCount = CurrentBulletCount - 1;
         }
-        //if (weapon != null) {
-        //    weapon.ChangeAttackType(attackType, this);
-        //}
         #endregion
     }
 
     void Rotate()
     {
-        Vector3 mpos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mpos.z = 0;
-        
-        FireDirection = mpos - transform.position;
+        if (weapon.lockedTarget == null)
+        {
+            Vector3 mpos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mpos.z = 0;
+            RotateToDetination(mpos);
+        }
+        else
+        {
+            RotateToDetination(weapon.lockedTarget.transform.position);
+        }
+    }
+
+    public override void RotateToDetination(Vector3 pos)
+    {
+        FireDirection = pos - transform.position;
         FireDirection = FireDirection.normalized;
         float angle = Mathf.Atan2(FireDirection.y, FireDirection.x) * Mathf.Rad2Deg;
         // 这里的旋转用缓动会更好看一些，直接设置角度会有点生硬
-        fire.localEulerAngles = new Vector3(0, 0, angle - 90);
+        transform.localEulerAngles = new Vector3(0, 0, angle - 90);
     }
 
     void Move()

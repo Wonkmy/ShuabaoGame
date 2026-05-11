@@ -19,6 +19,7 @@ public class Entity : MonoBehaviour
 
     public virtual Entity GetNearestTarget() {  return null; }
     public virtual void TakeDamage(int damage) { }
+    public virtual void RotateToDetination(Vector3 target) { }
 
     public Weapon GetCurrentWeapon()
     {
