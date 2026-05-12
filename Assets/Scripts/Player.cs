@@ -67,19 +67,14 @@ public class Player : Entity
 
             switch (random)
             {
-                // +1子弹
                 case 0:
                     Debug.Log("+1子弹");
                     CurrentBulletCount += 1;
                     break;
-
-                // 攻速
                 case 1:
                     Debug.Log("攻速增加");
                     weapon.ChangeFireInterval(0.05f);
                     break;
-
-                // 增加倍率
                 case 2:
                     Debug.Log("增加倍率");
                     playerData.power += 0.25f;

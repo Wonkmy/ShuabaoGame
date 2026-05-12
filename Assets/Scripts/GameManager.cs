@@ -58,6 +58,9 @@ public class GameManager : MonoBehaviour
     {
         DataManager.Init();
 
+        // 基础难度固定
+        difficulty = 3;
+
         mainCamera = Camera.main;
         cameraEffect = mainCamera.GetComponent<CameraEffect>();
         cameraOriginPos = mainCamera.transform.localPosition;
@@ -143,9 +146,7 @@ public class GameManager : MonoBehaviour
 
         // 游戏时间累计
         gameTime += Time.deltaTime;
-
-        // 难度持续提升
-        difficulty = 1 + gameTime * 0.12f;
+        difficulty = Mathf.Clamp(2 + Mathf.FloorToInt(gameTime / 30f), 2, 8);
 
         // 累积刷怪预算
         enemyBudget += Time.deltaTime * difficulty;
@@ -183,6 +184,31 @@ public class GameManager : MonoBehaviour
             {
                 mainCamera.transform.localPosition = cameraOriginPos;
             }
+        }
+
+        // 测试代码
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            Time.timeScale = 1;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            Time.timeScale = 2;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            Time.timeScale = 5;
+        }
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            player.GetComponent<Player>().AddExp(100);
+        }
+        if (Input.GetKeyDown(KeyCode.O))
+        {
+            isWave = false;
+            waveTimer = 15;
         }
     }
 
@@ -273,7 +299,7 @@ public class GameManager : MonoBehaviour
         pdata = new PlayerData
         {
             Level = 1,// 玩家等级
-            Hp = 100,// 玩家生命值
+            Hp = 10000,// 玩家生命值
             power = 1.0f,// 当前游戏倍率
             MoveSpeed = 3.5f,// 玩家移动速度
             CurrentWeaponIndex = 0// 玩家当前使用的武器id
@@ -491,6 +517,31 @@ public class GameManager : MonoBehaviour
         shakeTime = duration;
     }
 
+    private void OnGUI()
+    {
+        GUIStyle style = new GUIStyle();
+
+        style.fontSize = 24;
+        style.normal.textColor = Color.white;
+
+        GUILayout.BeginArea(new Rect(20, 20, 500, 1000));
+
+        GUILayout.Label("===== DEBUG =====", style);
+
+        GUILayout.Label("Game Time : " + gameTime.ToString("F1"), style);
+
+        GUILayout.Label("Difficulty : " + difficulty, style);
+
+        GUILayout.Label("Enemy Budget : " + enemyBudget.ToString("F1"), style);
+
+        GUILayout.Label("Enemy Count : " + DataManager.allEnemyDict.Count, style);
+
+        GUILayout.Label("Player Level : " + pdata.Level, style);
+
+        GUILayout.Label("Is Wave : " + isWave, style);
+
+        GUILayout.EndArea();
+    }
     private void OnDisable()
     {
         DataManager.Clear();

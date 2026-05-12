@@ -21,7 +21,7 @@ public class ExpBall : MonoBehaviour
             return;
         }
         float distance = Vector3.Distance(transform.position, _target.transform.position);
-        if (distance <= 5)
+        if (distance <= 8)
         {
             transform.position = Vector3.MoveTowards(transform.position, _target.transform.position, 5f * Time.deltaTime);
             if (Vector3.Distance(transform.position, _target.transform.position) < 0.1f)
