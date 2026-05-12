@@ -21,6 +21,8 @@ public class Entity : MonoBehaviour
     public virtual void TakeDamage(int damage) { }
     public virtual void RotateToDetination(Vector3 target) { }
 
+    public virtual void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount = 3) { }
+
     public Weapon GetCurrentWeapon()
     {
         return weapon;

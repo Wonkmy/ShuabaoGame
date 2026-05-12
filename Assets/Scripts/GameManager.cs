@@ -20,10 +20,6 @@ public class GameManager : MonoBehaviour
     public Transform playerExpSlider { get; private set; }
     public Transform playerHpSlider { get; private set; }
     public PlayerData pdata { get; set; }
-    // =========================
-    // 之前固定刷怪间隔保留（已弃用）
-    // float spwanInterval = 0.5f;
-    // =========================
 
     // 当前刷怪预算
     float enemyBudget = 0;
@@ -40,6 +36,7 @@ public class GameManager : MonoBehaviour
     int maxSpawnPerFrame = 5;
 
     public Camera mainCamera { get; set; }
+    public CameraEffect cameraEffect { get; set; }
 
     // 敌人生成到屏幕外的偏移距离
     private float offset = 100f;
@@ -62,6 +59,7 @@ public class GameManager : MonoBehaviour
         DataManager.Init();
 
         mainCamera = Camera.main;
+        cameraEffect = mainCamera.GetComponent<CameraEffect>();
         cameraOriginPos = mainCamera.transform.localPosition;
 
         GenPlayer();
@@ -161,7 +159,7 @@ public class GameManager : MonoBehaviour
         // 刷怪
         TrySpawnEnemy();
 
-        // 
+        // 绘制网格
         DrawGrid();
 
         // 震屏逻辑
@@ -198,19 +196,28 @@ public class GameManager : MonoBehaviour
         {
             isWave = true;
             waveTimer = 0;
-            player.GetComponent<Player>().CurrentBulletCount = 10;
+            player.GetComponent<Player>().ChangeWeaponAttackType(AttackType.Sector, 10);
             Debug.Log("尸潮开始");
+            foreach (var enemy in DataManager.allEnemyDict)
+            {
+                enemy.GetComponent<Enemy>().ChangeWeaponAttackType(AttackType.Sector);
+            }
             mainCamera.backgroundColor = new Color(0.2627f, 0f, 0f);
             StartCoroutine(ShowFlashWarningTxt());
         }
 
         // 尸潮持续8秒
-        if (isWave && waveTimer >= 5)
+        if (isWave && waveTimer >= 8)
         {
             isWave = false;
             waveTimer = 0;
             player.GetComponent<Player>().CurrentBulletCount = 3;
+            player.GetComponent<Player>().ChangeWeaponAttackType(AttackType.Sector);
             Debug.Log("尸潮结束");
+            foreach (var enemy in DataManager.allEnemyDict)
+            {
+                enemy.GetComponent<Enemy>().ChangeWeaponAttackType(AttackType.Liner, 1);
+            }
             mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
             difficulty = Mathf.Max(1, difficulty * 0.5f); // 尸潮结束后暂时降低难度，给玩家喘息的机会
         }
@@ -246,7 +253,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            maxSpawnPerFrame = 5;
+            maxSpawnPerFrame = 4;
         }
         int currentSpawnCount = 0;
         while (enemyBudget >= 5 && currentSpawnCount < maxSpawnPerFrame)
@@ -266,7 +273,7 @@ public class GameManager : MonoBehaviour
         pdata = new PlayerData
         {
             Level = 1,// 玩家等级
-            Hp = 1000,// 玩家生命值
+            Hp = 100,// 玩家生命值
             power = 1.0f,// 当前游戏倍率
             MoveSpeed = 3.5f,// 玩家移动速度
             CurrentWeaponIndex = 0// 玩家当前使用的武器id

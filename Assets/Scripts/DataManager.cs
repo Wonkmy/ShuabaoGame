@@ -121,33 +121,40 @@ public class DataManager
         allExpBall.Clear();
     }
 
-    public static Vector3[] GetFanDirections2D(Vector3 centerDir, float totalAngle = 60f, float angleStep = 15f, bool forwardCount = false)
+    public static Vector3[] GetFanDirections2D(Vector3 centerDir, int count)
     {
-        int count;
-        float startAngle;
-
-        if (forwardCount)
-        {
-            count = Mathf.FloorToInt(totalAngle / angleStep) + 1;
-            startAngle = 0f;
-        }
-        else
-        {
-            float halfAngle = totalAngle * 0.5f;
-            count = Mathf.FloorToInt(totalAngle / angleStep) + 1;
-            startAngle = -halfAngle;
-        }
-
         Vector3[] directions = new Vector3[count];
 
-        // 计算中心方向的基础角度（从X轴正方向逆时针）
+        // 单发子弹
+        if (count <= 1)
+        {
+            directions[0] = centerDir.normalized;
+            return directions;
+        }
+
+        // 每发子弹之间间隔角度
+        float angleStep = 8f;
+
+        // 根据子弹数量自动计算总角度
+        float totalAngle = angleStep * (count - 1);
+
+        // 左右对称
+        float startAngle = -totalAngle * 0.5f;
+
+        // 基础方向角度
         float baseAngle = Mathf.Atan2(centerDir.y, centerDir.x) * Mathf.Rad2Deg;
 
         for (int i = 0; i < count; i++)
         {
             float angle = baseAngle + startAngle + i * angleStep;
+
             float rad = angle * Mathf.Deg2Rad;
-            directions[i] = new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0);
+
+            directions[i] = new Vector3(
+                Mathf.Cos(rad),
+                Mathf.Sin(rad),
+                0
+            );
         }
 
         return directions;

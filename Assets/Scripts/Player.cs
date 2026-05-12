@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEditor.MemoryProfiler;
@@ -60,6 +61,34 @@ public class Player : Entity
             level++;
             currentExp = currentExp - needExp;
             needExp = (int)(needExp * 1.25f);
+
+            // 升级啦!
+            int random = UnityEngine.Random.Range(0, 4);
+
+            switch (random)
+            {
+                // +1子弹
+                case 0:
+                    Debug.Log("+1子弹");
+                    CurrentBulletCount += 1;
+                    break;
+
+                // 攻速
+                case 1:
+                    Debug.Log("攻速增加");
+                    weapon.ChangeFireInterval(0.05f);
+                    break;
+
+                // 增加倍率
+                case 2:
+                    Debug.Log("增加倍率");
+                    playerData.power += 0.25f;
+                    break;
+                case 3:
+                    Debug.Log("增加移速");
+                    moveSpeed += 0.5f;
+                    break;
+            }
         }
     }
     public float GetExpProgress()
@@ -79,6 +108,12 @@ public class Player : Entity
         Rotate();
     }
 
+    public override void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount = 3)
+    {
+        this.attackType = attackType;
+        CurrentBulletCount = _currentBulletCount;
+        weapon.ChangeAttackType(this.attackType, this, _currentBulletCount);
+    }
     void Rotate()
     {
         if (Input.GetMouseButton(0))
@@ -151,12 +186,31 @@ public class Player : Entity
     public override void TakeDamage(int damage)
     {
         currentHp -= damage;
+        GetComponentInChildren<SpriteRenderer>().color = Color.red;
+        StartCoroutine(ResetColor());
+
+        float percent = Mathf.Clamp01((float)currentHp / totalHp);
+
+        if (percent <= 0.3f)
+        {
+            GameManager.Instance.cameraEffect.intensity = Mathf.Clamp01(1 - (percent / 0.3f));
+        }
+        else
+        {
+            GameManager.Instance.cameraEffect.intensity = 0;
+        }
+
         if (currentHp <= 0)
         {
             currentHp = 0;
             Dead = true;
 
-            WeaponSystem.RemoveWeapon(weapon);// 先移除武器，避免在销毁敌人后还调用武器的Update方法
+            WeaponSystem.RemoveWeapon(weapon);
         }
+    }
+    IEnumerator ResetColor()
+    {
+        yield return new WaitForSeconds(0.1f);
+        GetComponentInChildren<SpriteRenderer>().color = Color.white;
     }
 }

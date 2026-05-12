@@ -136,7 +136,7 @@ public class Weapon
                 AttackLiner(attackData.fireDirection, attackData.firePos, attackData.currentBulletCount);
                 break;
             case AttackType.Sector:
-                AttackSector(weaponData.FireAngle, attackData.fireDirection, attackData.firePos, attackData.currentBulletCount);
+                AttackSector(attackData.fireDirection, attackData.firePos, attackData.currentBulletCount);
                 break;
             case AttackType.Cicle:
                 AttackCicle(attackData.fireDirection, attackData.firePos, attackData.currentBulletCount);
@@ -172,7 +172,7 @@ public class Weapon
         // 如果子弹数量大于4，则转为扇形攻击方式
         else
         {
-            AttackSector(120, fireDirection, firePos, currentBulletCount);
+            AttackSector(fireDirection, firePos, currentBulletCount);
         }
     }
 
@@ -184,12 +184,17 @@ public class Weapon
     /// <param name="fireDirection"></param>
     /// <param name="firePos"></param>
     /// <param name="currentBulletCount"></param>
-    public virtual void AttackSector(float fireAngle, Vector3 fireDirection, Vector3 firePos, int currentBulletCount)
+    public virtual void AttackSector(Vector3 fireDirection, Vector3 firePos, int currentBulletCount)
     {
-        var allDires = DataManager.GetFanDirections2D(fireDirection, fireAngle, fireAngle / (currentBulletCount - 1));
+        var allDires = DataManager.GetFanDirections2D(fireDirection, currentBulletCount);
         for (int i = 0; i < allDires.Length; i++)
         {
             var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, allDires[i], firePos, 0, entity);
+            // 如果i是总数的中间的那个子弹，则给这个子弹添加一个额外的效果
+            if(i == currentBulletCount / 2)
+            {
+                bullet.GetComponent<Bullet>().canTriggerHitStop = true;
+            }
             spawnedBullets.Add(bullet);
         }
     }

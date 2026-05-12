@@ -18,7 +18,7 @@ public class DamageText : MonoBehaviour
     public void DamageTextUpdate()
     {
         Life -= Time.deltaTime;
-        transform.position += new Vector3(0, 1.8f * Time.deltaTime, 0);
+        transform.position += new Vector3(0, 2.8f * Time.deltaTime, 0);
         if(Life <= 0)
         {
             Life = 0;

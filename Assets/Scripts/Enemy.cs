@@ -30,17 +30,17 @@ public class Enemy : Entity
     {
         if (Dead) { return; }
         Rotate();
-        if (CanMove)
+        if (target != null && CanMove && Vector3.Distance(transform.position,target.position) > 5.5f)
         {
             transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
         }
-        if(Vector3.Distance(transform.position, target.position) < 0.1f)
-        {
-            DataManager.allEnemyDict.Remove(gameObject);
-            Destroy(gameObject);
-        }
     }
-
+    public override void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount = 3)
+    {
+        this.attackType = attackType;
+        CurrentBulletCount = _currentBulletCount;
+        weapon.ChangeAttackType(this.attackType, this, _currentBulletCount);
+    }
     void Rotate()
     {
         FireDirection = target.position - transform.position;
@@ -83,6 +83,8 @@ public class Enemy : Entity
 
     IEnumerator DeathEffect()
     {
+        WeaponSystem.RemoveWeapon(weapon);// 先移除武器，避免在销毁敌人后还调用武器的Update方法
+
         float duration = 0.4f;
         float elapsed = 0f;
         Vector3 originalScale = transform.localScale;
@@ -94,18 +96,16 @@ public class Enemy : Entity
             // 旋转
             transform.rotation = Quaternion.Euler(0, 0, t * 360) * originalRotation;
             // 缩小
-            transform.localScale = Vector3.Lerp(originalScale, Vector3.one * 1.5f, t);
+            transform.localScale = Vector3.Lerp(originalScale, Vector3.one * 1.25f, t);
             yield return null;
             // 再恢复，有一种膨胀后爆炸的感觉
-            transform.localScale = Vector3.Lerp(Vector3.one * 1.5f, Vector3.zero, t);
+            transform.localScale = Vector3.Lerp(Vector3.one * 1.25f, Vector3.zero, t);
             yield return null;
         }
         // 确保最终状态
         transform.rotation = Quaternion.Euler(0, 0, 360) * originalRotation;
         transform.localScale = Vector3.zero;
-
-
-        WeaponSystem.RemoveWeapon(weapon);// 先移除武器，避免在销毁敌人后还调用武器的Update方法
+        
         DataManager.allEnemyDict.Remove(gameObject);// 从敌人字典中移除
         Destroy(gameObject);
     }
