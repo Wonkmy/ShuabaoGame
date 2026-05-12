@@ -107,6 +107,7 @@ public struct AttackData
 public class UpgradeData
 {
     public string name;
-
+    // 流派tag
+    public string tag;
     public System.Action action;
 }

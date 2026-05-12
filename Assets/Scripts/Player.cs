@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEditor.MemoryProfiler;
@@ -16,6 +17,8 @@ public class Player : Entity
 
     Vector3 MoveDir;
     float MoveAngle;
+
+    public Dictionary<string, int> buildDict = new Dictionary<string, int>();
     public void Init(PlayerData data)
     {
         fire = transform.Find("Fire");

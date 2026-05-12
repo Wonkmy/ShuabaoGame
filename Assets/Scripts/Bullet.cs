@@ -82,7 +82,32 @@ public class Bullet : MonoBehaviour
                         critDamageMultiplier = 1.5f;
                         GameManager.Instance.ShakeMainCamera(0.2f, 0.3f);
                     }
-                    float finalDamage = weapon.weaponData.Attack * critDamageMultiplier * (int)myBulletData.damage * player.playerData.Level * (int)player.playerData.power;// 伤害等于 武器攻击力 * 武器暴击伤害倍率 * 子弹伤害 * 玩家等级 * 游戏倍率
+                    // 旧的伤害公式================================================================
+                    //float finalDamage = weapon.weaponData.Attack * critDamageMultiplier * (int)myBulletData.damage * player.playerData.Level * player.playerData.power;// 伤害等于 武器攻击力 * 武器暴击伤害倍率 * 子弹伤害 * 玩家等级 * 游戏倍率
+                    // ================================================================
+                    //  新的伤害公式================================================================
+                    // 基础攻击
+                    float attack = weapon.weaponData.Attack * (int)myBulletData.damage * player.playerData.Level;
+
+                    // 用power类比成熟公式里的“攻击成长”
+                    float powerAttack = attack * player.playerData.power;
+
+                    // 用等级类比“防御”
+                    float defence = player.playerData.Level * 5;
+
+                    // 用子弹damage类比“穿透”
+                    float penetrate = (int)myBulletData.damage * 2;
+
+                    // 成熟伤害衰减公式
+                    float fValue = 100.0f / (100.0f + Mathf.Max(defence - penetrate, 0));
+
+                    // 保底伤害
+                    fValue = Mathf.Max(fValue, 0.5f);
+
+                    // 最终伤害
+                    float finalDamage = powerAttack * critDamageMultiplier * fValue;
+                    // ================================================================
+
                     entity.TakeDamage(Mathf.CeilToInt(finalDamage));
                     foreach (var _e in allEnemys)
                     {

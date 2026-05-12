@@ -85,9 +85,14 @@ public class GameManager : MonoBehaviour
 
     void LoadDefaultUpgradeConfig()
     {
+        // =========================
+        // 基础成长（只保留少量）
+        // =========================
+
         DataManager.upgradeList.Add(new UpgradeData()
         {
             name = "+1子弹",
+            tag = "bullet",
             action = () =>
             {
                 player.GetComponent<Player>().CurrentBulletCount += 1;
@@ -96,7 +101,8 @@ public class GameManager : MonoBehaviour
 
         DataManager.upgradeList.Add(new UpgradeData()
         {
-            name = "攻速+20%",
+            name = "攻速提升",
+            tag = "attack_speed",
             action = () =>
             {
                 player.GetComponent<Player>().weapon.ChangeFireInterval(0.05f);
@@ -105,22 +111,134 @@ public class GameManager : MonoBehaviour
 
         DataManager.upgradeList.Add(new UpgradeData()
         {
-            name = "增加倍率",
+            name = "伤害倍率提升",
+            tag = "power",
             action = () =>
             {
                 player.GetComponent<Player>().playerData.power += 0.25f;
             }
         });
 
+        // =========================
+        // 真正构筑开始
+        // =========================
+
+        // 超级散射
         DataManager.upgradeList.Add(new UpgradeData()
         {
-            name = "增加移速",
+            name = "超级散射",
+            tag = "bullet",
             action = () =>
             {
-                player.GetComponent<Player>().moveSpeed += 0.5f;
+                player.GetComponent<Player>().CurrentBulletCount += 4;
+            }
+        });
+
+        // 精准射击
+        DataManager.upgradeList.Add(new UpgradeData()
+        {
+            name = "精准射击",
+            tag = "power",
+            action = () =>
+            {
+                // 子弹减少
+                player.GetComponent<Player>().CurrentBulletCount =
+                    Mathf.Max(1,
+                    player.GetComponent<Player>().CurrentBulletCount - 2);
+
+                // 高倍率
+                player.GetComponent<Player>().playerData.power += 1f;
+            }
+        });
+
+        // 狂暴机枪
+        DataManager.upgradeList.Add(new UpgradeData()
+        {
+            name = "狂暴机枪",
+            tag = "attack_speed",
+            action = () =>
+            {
+                // 超高攻速
+                player.GetComponent<Player>().weapon.ChangeFireInterval(0.5f);
+
+                // 子弹伤害降低
+                player.GetComponent<Player>().playerData.power -= 0.15f;
+            }
+        });
+
+        // 游击模式
+        DataManager.upgradeList.Add(new UpgradeData()
+        {
+            name = "游击模式",
+            tag = "move_speed",
+            action = () =>
+            {
+                player.GetComponent<Player>().moveSpeed += 3f;
+
+                // 移速高但伤害降低
+                player.GetComponent<Player>().playerData.power -= 0.2f;
+            }
+        });
+
+        // 重装炮台
+        DataManager.upgradeList.Add(new UpgradeData()
+        {
+            name = "重装炮台",
+            tag = "power",
+            action = () =>
+            {
+                player.GetComponent<Player>().playerData.power += 1.5f;
+
+                // 降低移速
+                player.GetComponent<Player>().moveSpeed -= 2f;
+
+                // 降低攻速
+                player.GetComponent<Player>().weapon.ChangeFireInterval(-0.05f);
             }
         });
     }
+    //void LoadDefaultUpgradeConfig()
+    //{
+    //    DataManager.upgradeList.Add(new UpgradeData()
+    //    {
+    //        name = "+1子弹",
+    //        tag = "bullet",
+    //        action = () =>
+    //        {
+    //            player.GetComponent<Player>().CurrentBulletCount += 1;
+    //        }
+    //    });
+
+    //    DataManager.upgradeList.Add(new UpgradeData()
+    //    {
+    //        name = "攻速+20%",
+    //        tag = "attack_speed",
+    //        action = () =>
+    //        {
+    //            player.GetComponent<Player>().weapon.ChangeFireInterval(0.05f);
+    //        }
+    //    });
+
+    //    DataManager.upgradeList.Add(new UpgradeData()
+    //    {
+    //        name = "增加倍率",
+    //        tag = "power",
+    //        action = () =>
+    //        {
+    //            player.GetComponent<Player>().playerData.power += 0.25f;
+    //        }
+    //    });
+
+    //    DataManager.upgradeList.Add(new UpgradeData()
+    //    {
+    //        name = "增加移速",
+    //        tag = "move_speed",
+    //        action = () =>
+    //        {
+    //            player.GetComponent<Player>().moveSpeed += 0.5f;
+    //        }
+    //    });
+    //}
 
     public void ShowLevelUpPanel(bool show)
     {
