@@ -11,7 +11,7 @@ public static class WeaponSystem
         WeaponType weaponType = DataManager.weaponDataDict[weaponId].type;
         Weapon weapon = (Weapon)System.Activator.CreateInstance(Type.GetType(weaponType.ToString() + "Weapon"));
         weapon.Init(weaponId, entity);
-        weapon.ChangeAttackType(AttackType.Liner, entity);
+        weapon.ChangeAttackType(AttackType.Liner, entity,entity.CurrentBulletCount);
         weapons.Add(weapon);
         return weapon;
     }
@@ -41,7 +41,7 @@ public static class WeaponSystem
                     }
                 }
             }
-            weapons[i].ChangeAttackType(weapons[i].entity.attackType, weapons[i].entity);
+            weapons[i].ChangeAttackType(weapons[i].entity.attackType, weapons[i].entity, weapons[i].entity.CurrentBulletCount);
         }
     }
 

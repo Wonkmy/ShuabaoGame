@@ -37,6 +37,7 @@ public class GameManager : MonoBehaviour
     // 尸潮相关
     bool isWave = false;
     float waveTimer = 0;
+    int maxSpawnPerFrame = 5;
 
     public Camera mainCamera { get; set; }
 
@@ -49,6 +50,12 @@ public class GameManager : MonoBehaviour
     private float shakeStrength = 0;
 
     private Vector3 cameraOriginPos;
+
+    // 命中顿帧效果相关
+    public float HitStopDuration = 0.1f;
+    public float HitStopIntensity = 0.5f;
+
+    GameObject warningObject;
 
     void Start()
     {
@@ -64,10 +71,23 @@ public class GameManager : MonoBehaviour
 
         playerExpSlider = expobj.transform;
         playerHpSlider = hpobj.transform;
+
+        warningObject = SpwanWorldTxt("尸潮来袭！");
+        warningObject.transform.position = Vector3.zero;
+        warningObject.SetActive(false);
     }
 
     private void Update()
     {
+        if (HitStopIntensity > 0)
+        {
+            HitStopIntensity -= Time.deltaTime;
+        }
+        if (HitStopDuration > 0)
+        {
+            HitStopDuration -= Time.deltaTime;
+            return;
+        }
         if (player)
         {
             player.GetComponent<Player>().PlayerUpdate();
@@ -131,10 +151,13 @@ public class GameManager : MonoBehaviour
 
         // 累积刷怪预算
         enemyBudget += Time.deltaTime * difficulty;
-
+        
         // 尸潮逻辑
         UpdateWave();
-
+        if (isWave)
+        {
+            enemyBudget += Time.deltaTime * 25;
+        }
         // 刷怪
         TrySpawnEnemy();
 
@@ -175,11 +198,10 @@ public class GameManager : MonoBehaviour
         {
             isWave = true;
             waveTimer = 0;
-
-            // 尸潮直接增加预算
-            enemyBudget += 40;
-
+            player.GetComponent<Player>().CurrentBulletCount = 10;
             Debug.Log("尸潮开始");
+            mainCamera.backgroundColor = new Color(0.2627f, 0f, 0f);
+            StartCoroutine(ShowFlashWarningTxt());
         }
 
         // 尸潮持续8秒
@@ -187,19 +209,45 @@ public class GameManager : MonoBehaviour
         {
             isWave = false;
             waveTimer = 0;
-
+            player.GetComponent<Player>().CurrentBulletCount = 3;
             Debug.Log("尸潮结束");
-            difficulty = 0; // 尸潮结束后暂时降低难度，给玩家喘息的机会
+            mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
+            difficulty = Mathf.Max(1, difficulty * 0.5f); // 尸潮结束后暂时降低难度，给玩家喘息的机会
         }
+    }
+
+    IEnumerator ShowFlashWarningTxt()
+    {
+        warningObject.SetActive(true);
+        float timer = 0;
+        while (timer < 2)
+        {
+            timer += Time.deltaTime;
+            // 每0.5秒闪烁一次
+            if (Mathf.FloorToInt(timer * 2) % 2 == 0)
+            {
+                warningObject.SetActive(true);
+            }
+            else
+            {
+                warningObject.SetActive(false);
+            }
+            yield return null;
+        }
+        warningObject.SetActive(false);
     }
 
     // 尝试刷怪
     void TrySpawnEnemy()
     {
-        if (isWave) return;// 尸潮期间不使用正常的刷怪逻辑，直接通过增加预算来实现大量刷怪
-        // 防止一帧生成过多
-        int maxSpawnPerFrame = 5;
-
+        if (isWave)
+        {
+            maxSpawnPerFrame = 10;
+        }
+        else
+        {
+            maxSpawnPerFrame = 5;
+        }
         int currentSpawnCount = 0;
         while (enemyBudget >= 5 && currentSpawnCount < maxSpawnPerFrame)
         {
@@ -220,7 +268,7 @@ public class GameManager : MonoBehaviour
             Level = 1,// 玩家等级
             Hp = 1000,// 玩家生命值
             power = 1.0f,// 当前游戏倍率
-            MoveSpeed = 2.5f,// 玩家移动速度
+            MoveSpeed = 3.5f,// 玩家移动速度
             CurrentWeaponIndex = 0// 玩家当前使用的武器id
         };
 
@@ -294,6 +342,14 @@ public class GameManager : MonoBehaviour
         GameObject newExpBall = Instantiate(Resources.Load<GameObject>("cicle"));
         newExpBall.transform.position = pos;
         return newExpBall;
+    }
+
+    public GameObject SpwanWorldTxt(string txt)
+    {
+        GameObject newWarningTxt = Instantiate(Resources.Load<GameObject>("warning_txt"));
+        newWarningTxt.GetComponent<TextMesh>().color = Color.red;
+        newWarningTxt.GetComponent<TextMesh>().text = txt;
+        return newWarningTxt;
     }
 
     public List<GameObject> FindCicleAllEnemysByDistance(Vector3 pos, float distance)

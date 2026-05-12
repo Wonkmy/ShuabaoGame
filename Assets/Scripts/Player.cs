@@ -10,29 +10,29 @@ public class Player : Entity
     int level = 1;
     public PlayerData playerData;
     private Transform fire;
-    int totalExp = 0;
     int currentExp = 0;
     int needExp = 100;
+
+    Vector3 MoveDir;
+    float MoveAngle;
     public void Init(PlayerData data)
     {
         fire = transform.Find("Fire");
         FirePos = fire.Find("firePos");
 
-        CurrentBulletCount = 1;
+        CurrentBulletCount = 3;
         FireDirection = Vector3.up;
-        attackType = AttackType.Liner;
 
         playerData = data;// 拿到玩家数据
         totalHp = (int)playerData.Hp;
         currentHp = (int)playerData.Hp;
 
-        totalExp = 0;
         currentExp = 0;
         level = (int)playerData.Level;
 
         weapon = WeaponSystem.CreateWeapon(playerData.CurrentWeaponIndex, this);
         weapon.ChangeBullet(2);
-
+        attackType = AttackType.Sector;
         moveSpeed = playerData.MoveSpeed;
 
         EntityTag = "player";
@@ -77,30 +77,30 @@ public class Player : Entity
 
         Move();
         Rotate();
-
-        #region 一些测试用的代码
-        if (Input.GetAxis("Mouse ScrollWheel") > 0f)
-        {
-            CurrentBulletCount = CurrentBulletCount + 1;
-        }
-        else if(Input.GetAxis("Mouse ScrollWheel") < 0f)
-        {
-            CurrentBulletCount = CurrentBulletCount - 1;
-        }
-        #endregion
     }
 
     void Rotate()
     {
-        if (weapon.lockedTarget == null)
+        if (Input.GetMouseButton(0))
         {
             Vector3 mpos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mpos.z = 0;
             RotateToDetination(mpos);
+            return;
         }
-        else
+
+        // 其次判断是否有锁定目标
+        if (weapon.lockedTarget != null)
         {
             RotateToDetination(weapon.lockedTarget.transform.position);
+        }
+        else if (MoveDir != Vector3.zero)
+        {
+            MoveAngle = Mathf.Atan2(MoveDir.y, MoveDir.x) * Mathf.Rad2Deg;
+            float targetAngle = MoveAngle - 90;
+            float currentZ = transform.localEulerAngles.z;
+            float smoothAngle = Mathf.LerpAngle(currentZ, targetAngle, Time.deltaTime * 60);
+            transform.localEulerAngles = new Vector3(0, 0, smoothAngle);
         }
     }
 
@@ -118,9 +118,9 @@ public class Player : Entity
         float x = Input.GetAxis("Horizontal");
         float y = Input.GetAxis("Vertical");
 
-        Vector3 dir = new Vector3(x, y, 0);
+        MoveDir = new Vector3(x, y, 0);
 
-        transform.position += dir * moveSpeed * Time.deltaTime;
+        transform.position += MoveDir * moveSpeed * Time.deltaTime;
 
         Vector3 spos = GameManager.Instance.mainCamera.WorldToScreenPoint(transform.position);
 

@@ -10,6 +10,7 @@ public class Bullet : MonoBehaviour
     Entity BelongWho;
 
     int pierceLeft;// 子弹的穿透次数，穿透一次就减1，减到0就销毁子弹
+    bool isExecuteHitStop = false;// 是否已经执行过命中顿帧，防止同一颗子弹多次命中时重复执行顿帧
     public void SetBullet(BulletData bulletData,Vector3 _dir, Entity belongWho)
     {
         BelongWho = belongWho;
@@ -50,11 +51,13 @@ public class Bullet : MonoBehaviour
         {
             Entity entity = DataManager.allEnemyDict[i].GetComponent<Entity>();
             if(entity.EntityTag == BelongWho.EntityTag || entity.Dead) continue;// 如果敌人和子弹属于同一方，则跳过碰撞检测。或者敌人已经死了，也跳过碰撞检测。
-            float distance = Vector3.Distance(transform.position, DataManager.allEnemyDict[i].transform.position);
-            if (distance < 0.7f)
+            if (BelongWho.EntityTag == "player")
             {
-                if(BelongWho.EntityTag == "player")
+                float distance = Vector3.Distance(transform.position, DataManager.allEnemyDict[i].transform.position);
+                if (distance < 0.7f)
                 {
+                    // 溅射伤害，先获得当前被命中的敌人的周围一定范围内的所有敌人，然后对这些敌人造成伤害，伤害值是被命中敌人伤害值的一半
+                    List<GameObject> allEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(entity.transform.position, 2.0f);
                     // 这里可以添加对敌人造成伤害的逻辑
                     Player player = GameManager.Instance.player.GetComponent<Player>();
                     Weapon weapon = player.GetCurrentWeapon();
@@ -68,18 +71,35 @@ public class Bullet : MonoBehaviour
                     }
                     float finalDamage = weapon.weaponData.Attack * critDamageMultiplier * (int)myBulletData.damage * player.playerData.Level * (int)player.playerData.power;// 伤害等于 武器攻击力 * 武器暴击伤害倍率 * 子弹伤害 * 玩家等级 * 游戏倍率
                     DataManager.allEnemyDict[i].GetComponent<Entity>().TakeDamage(Mathf.CeilToInt(finalDamage));
-
+                    foreach (var _e in allEnemys)
+                    {
+                        _e.GetComponent<Entity>().TakeDamage((int)(finalDamage * 0.5f));
+                    }
+                    // 这里加一个命中时的顿帧效果
+                    if (!isExecuteHitStop)
+                    {
+                        isExecuteHitStop = true;
+                        if (GameManager.Instance.HitStopIntensity <= 0)
+                        {
+                            GameManager.Instance.HitStopIntensity = 0.1f;
+                            GameManager.Instance.HitStopDuration = 0.07f;
+                        }
+                    }
                     pierceLeft--;
                     if (pierceLeft <= 0)
                     {
                         Destroy(gameObject);
                     }
+                    break;
                 }
-                else
+            }
+            else
+            {
+                float distance = Vector3.Distance(transform.position, GameManager.Instance.player.transform.position);
+                if(distance < 0.7f)
                 {
                     GameManager.Instance.player.GetComponent<Player>().TakeDamage(2);
                 }
-                break;
             }
         }
     }

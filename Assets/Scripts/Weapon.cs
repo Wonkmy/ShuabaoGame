@@ -16,6 +16,7 @@ public class Weapon
 
     float fireFlashDuration = 0.2f;// 枪口火花持续时间
     float fireFlashTimer = 0.0f;// 枪口火花计时器
+    float fireInterval = 0;// 武器的攻击频率。单独拿出来是后面需要动态修改达到成长与爽感
 
     public GameObject lockedTarget;// 锁定的目标实体，敌人
 
@@ -40,6 +41,7 @@ public class Weapon
         entity = _entity;
         spawnedBullets = new List<GameObject>();
         lockedTarget = null;
+        fireInterval = weaponData.FireInterval;
     }
     /// <summary>
     /// 更换子弹数据，传入新的子弹ID，根据ID从DataManager中获取新的子弹数据，并更新当前武器的bulletData
@@ -58,13 +60,26 @@ public class Weapon
         };
     }
 
+    /// <summary>
+    /// 修改武器的攻击频率。Note：数值越小，频率越高
+    /// </summary>
+    /// <param name="v"></param>
+    public void ChangeFireInterval(float v)
+    {
+        fireInterval -= v;
+        if (fireInterval <= 0.1f)
+        {
+            fireInterval = 0.1f;
+        }
+    }
+
     public void WeaponUpdate()
     {
         fireTime += Time.deltaTime;
         if (entity.GetNearestTarget() != null)
         {
             GameObject ey = null;
-            if(lockedTarget == null)
+            if (lockedTarget == null)
             {
                 ey = entity.GetNearestTarget().gameObject;
             }
@@ -72,10 +87,10 @@ public class Weapon
             {
                 ey = lockedTarget;
             }
-
+            entity.RotateToDetination(ey.transform.position);// 发现目标后立刻转向目标，防止出现未转向目标就攻击的情况
             if (entity != null && ey != null)
             {
-                if (fireTime >= weaponData.FireInterval && Vector3.Distance(entity.transform.position, ey.transform.position) <= 10.0f)
+                if (fireTime >= fireInterval && Vector3.Distance(entity.transform.position, ey.transform.position) <= 10.0f)
                 {
                     fireFlashTimer = 0.0f;
                     lockedTarget = ey;
@@ -86,7 +101,7 @@ public class Weapon
         }
     }
 
-    public void ChangeAttackType(AttackType attackType, Entity entity)
+    public void ChangeAttackType(AttackType attackType, Entity entity,int _currentBulletCount = 3)
     {
         weaponAttackType = attackType;
         if (entity && entity.gameObject != null)
@@ -95,7 +110,7 @@ public class Weapon
             {
                 firePos = attackType == AttackType.Cicle ? entity.transform.position : entity.FirePos.position,
                 fireDirection = entity.FireDirection,
-                currentBulletCount = entity.CurrentBulletCount
+                currentBulletCount = _currentBulletCount
             };
         }
     }

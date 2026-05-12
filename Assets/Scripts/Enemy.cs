@@ -17,6 +17,7 @@ public class Enemy : Entity
         currentHp = enemyData.hp;
         FirePos = transform;
         attackType = AttackType.Liner;
+        CurrentBulletCount = 1;
 
         weapon = WeaponSystem.CreateWeapon(enemyData.CurrentWeaponIndex, this);
         EntityTag = "enemy";
@@ -56,6 +57,10 @@ public class Enemy : Entity
     public override void TakeDamage(int damage)
     {
         currentHp -= damage;
+
+        GetComponentInChildren<SpriteRenderer>().color = Color.red;
+        StartCoroutine(ResetColor());
+
         GameObject newBullet = Instantiate(Resources.Load<GameObject>("damage_txt"));
         newBullet.transform.position = transform.position + new Vector3(0, 0.5f, 0);
         newBullet.GetComponent<DamageText>().SetDamageText(damage);
@@ -68,6 +73,12 @@ public class Enemy : Entity
             // 旋转缩小然后死亡
             StartCoroutine(DeathEffect());
         }
+    }
+
+    IEnumerator ResetColor()
+    {
+        yield return new WaitForSeconds(0.1f);
+        GetComponentInChildren<SpriteRenderer>().color = Color.white;
     }
 
     IEnumerator DeathEffect()
@@ -83,7 +94,7 @@ public class Enemy : Entity
             // 旋转
             transform.rotation = Quaternion.Euler(0, 0, t * 360) * originalRotation;
             // 缩小
-            transform.localScale = Vector3.Lerp(originalScale, Vector3.one * 2.5f, t);
+            transform.localScale = Vector3.Lerp(originalScale, Vector3.one * 1.5f, t);
             yield return null;
             // 再恢复，有一种膨胀后爆炸的感觉
             transform.localScale = Vector3.Lerp(Vector3.one * 1.5f, Vector3.zero, t);
