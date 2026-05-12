@@ -63,27 +63,7 @@ public class Player : Entity
             needExp = (int)(needExp * 1.25f);
 
             // 升级啦!
-            int random = UnityEngine.Random.Range(0, 4);
-
-            switch (random)
-            {
-                case 0:
-                    Debug.Log("+1子弹");
-                    CurrentBulletCount += 1;
-                    break;
-                case 1:
-                    Debug.Log("攻速增加");
-                    weapon.ChangeFireInterval(0.05f);
-                    break;
-                case 2:
-                    Debug.Log("增加倍率");
-                    playerData.power += 0.25f;
-                    break;
-                case 3:
-                    Debug.Log("增加移速");
-                    moveSpeed += 0.5f;
-                    break;
-            }
+            GameManager.Instance.ShowLevelUpPanel(true);
         }
     }
     public float GetExpProgress()

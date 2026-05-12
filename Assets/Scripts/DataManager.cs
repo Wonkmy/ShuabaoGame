@@ -10,6 +10,8 @@ public class DataManager
     public static List<GameObject> allDamageText =  new List<GameObject>();// 伤害文本字典
     public static List<GameObject> allExpBall = new List<GameObject>();// 经验球字典
     public static Dictionary<int, WeaponData> weaponDataDict = new Dictionary<int, WeaponData>();// 武器数据字典
+    public static List<UpgradeData> upgradeList = new List<UpgradeData>();// 升级选项列表
+
     public static void Init()
     {
         LoadBulletConfig();
@@ -119,6 +121,7 @@ public class DataManager
         weaponDataDict.Clear();
         allDamageText.Clear();
         allExpBall.Clear();
+        upgradeList.Clear();
     }
 
     public static Vector3[] GetFanDirections2D(Vector3 centerDir, int count)

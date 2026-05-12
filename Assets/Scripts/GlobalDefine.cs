@@ -102,3 +102,11 @@ public struct AttackData
     public Vector3 firePos;
     public int currentBulletCount;
 }
+
+//升级数据结构
+public class UpgradeData
+{
+    public string name;
+
+    public System.Action action;
+}

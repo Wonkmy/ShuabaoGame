@@ -20,6 +20,7 @@ public class GameManager : MonoBehaviour
     public Transform playerExpSlider { get; private set; }
     public Transform playerHpSlider { get; private set; }
     public PlayerData pdata { get; set; }
+    public GameObject levelPanel { get; set; }
 
     // 当前刷怪预算
     float enemyBudget = 0;
@@ -57,6 +58,8 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         DataManager.Init();
+        LoadDefaultUpgradeConfig();
+
 
         // 基础难度固定
         difficulty = 3;
@@ -69,6 +72,8 @@ public class GameManager : MonoBehaviour
 
         GameObject expobj = Instantiate(Resources.Load<GameObject>("exp"));
         GameObject hpobj = Instantiate(Resources.Load<GameObject>("hp"));
+        levelPanel = GameObject.Find("Canvas/ChooseOnePanel");
+        levelPanel.SetActive(false);
 
         playerExpSlider = expobj.transform;
         playerHpSlider = hpobj.transform;
@@ -78,6 +83,51 @@ public class GameManager : MonoBehaviour
         warningObject.SetActive(false);
     }
 
+    void LoadDefaultUpgradeConfig()
+    {
+        DataManager.upgradeList.Add(new UpgradeData()
+        {
+            name = "+1子弹",
+            action = () =>
+            {
+                player.GetComponent<Player>().CurrentBulletCount += 1;
+            }
+        });
+
+        DataManager.upgradeList.Add(new UpgradeData()
+        {
+            name = "攻速+20%",
+            action = () =>
+            {
+                player.GetComponent<Player>().weapon.ChangeFireInterval(0.05f);
+            }
+        });
+
+        DataManager.upgradeList.Add(new UpgradeData()
+        {
+            name = "增加倍率",
+            action = () =>
+            {
+                player.GetComponent<Player>().playerData.power += 0.25f;
+            }
+        });
+
+        DataManager.upgradeList.Add(new UpgradeData()
+        {
+            name = "增加移速",
+            action = () =>
+            {
+                player.GetComponent<Player>().moveSpeed += 0.5f;
+            }
+        });
+    }
+
+    public void ShowLevelUpPanel(bool show)
+    {
+        levelPanel.SetActive(show);
+        levelPanel.GetComponent<ChooseOnePanel>().Init();
+        Time.timeScale = show == true ? 0 : 1;
+    }
     private void Update()
     {
         if (HitStopIntensity > 0)
