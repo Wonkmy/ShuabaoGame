@@ -18,8 +18,8 @@ public class Enemy : Entity
         currentHp = enemyData.hp;
 
         FirePos = transform;
-        attackType = AttackType.Liner;
-        CurrentBulletCount = 1;
+        attackType = AttackType.Sector;
+        CurrentBulletCount = 3;
         weapon = WeaponSystem.CreateWeapon(enemyData.CurrentWeaponIndex, this);
         EntityTag = "enemy";
 

@@ -6,9 +6,9 @@ using UnityEngine.UI;
 
 public class GameOverPanel : MonoBehaviour
 {
-    public Text infoText;
-    public Button restartGameBtn;
-    public Button revivalBtn;
+    private Text infoText;
+    private Button restartGameBtn;
+    private Button revivalBtn;
     public void Init(float gameTime,int killCount,float difficulty, int pLevel)
     {
         infoText = transform.Find("Container/list/info").GetComponent<Text>();
@@ -24,17 +24,21 @@ public class GameOverPanel : MonoBehaviour
         stringBuilder.Append(difficultyStr + "\n");
         stringBuilder.Append(pLevelStr);
 
+        infoText.text = stringBuilder.ToString();   
+
         restartGameBtn = transform.Find("Container/list/Option1Btn").GetComponent<Button>();
         revivalBtn = transform.Find("Container/list/Option2Btn").GetComponent<Button>();
 
         restartGameBtn.onClick.AddListener(() =>
         {
             GameManager.Instance.RestartGame();
+            GameManager.Instance.ShowGameOverPanel(false);
         });
 
         revivalBtn.onClick.AddListener(() =>
         {
             GameManager.Instance.Revival();
+            GameManager.Instance.ShowGameOverPanel(false);
         });
     }
 }

@@ -52,8 +52,18 @@ public class GameManager : MonoBehaviour
     {
         DataManager.Init();
         LoadDefaultUpgradeConfig();
+        SpwanExpAndHpBar();
 
         Init();
+    }
+
+    void SpwanExpAndHpBar()
+    {
+        GameObject expobj = Instantiate(Resources.Load<GameObject>("exp"));
+        GameObject hpobj = Instantiate(Resources.Load<GameObject>("hp"));
+
+        playerExpSlider = expobj.transform;
+        playerHpSlider = hpobj.transform;
     }
     void Init()
     {
@@ -64,14 +74,8 @@ public class GameManager : MonoBehaviour
         mainCamera = Camera.main;
         cameraEffect = mainCamera.GetComponent<CameraEffect>();
         cameraOriginPos = mainCamera.transform.localPosition;
-
         GenPlayer();
 
-        GameObject expobj = Instantiate(Resources.Load<GameObject>("exp"));
-        GameObject hpobj = Instantiate(Resources.Load<GameObject>("hp"));
-
-        playerExpSlider = expobj.transform;
-        playerHpSlider = hpobj.transform;
 
         warningObject = SpwanWorldTxt("尸潮来袭！");
         warningObject.transform.position = Vector3.zero;
@@ -262,12 +266,12 @@ public class GameManager : MonoBehaviour
     public void ShowGameOverPanel(bool show)
     {
         gameOverPanel.SetActive(show);
+        Player playerC = player.GetComponent<Player>();
         // 将存活时长、击杀数、最高难度、玩家等级等数据传递给结算界面
-        gameOverPanel.GetComponent<GameOverPanel>().Init(gameTime, player.GetComponent<Player>().KilledCount, difficulty, pdata.Level);
-        ResetAlLGameDatas();
+        gameOverPanel.GetComponent<GameOverPanel>().Init(gameTime, playerC.KilledCount, difficulty, playerC.GetCurrentLevel());
     }
 
-    void ResetAlLGameDatas() {
+    void ResetAllGameDatas() {
         try
         {
             // 清理所有敌人和子弹、数据、字典、玩家已有的构筑列表buildDict、HasCritExplosion、HasPierceExplosion、HasLowBulletHighDamage
@@ -287,6 +291,10 @@ public class GameManager : MonoBehaviour
             HitStopIntensity = 0;
             safeSide = 0;
             warningObject = null;
+            GameManager.Instance.cameraEffect.intensity = 0;
+            mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
+            Destroy(player);
+            player = null;
         }
         catch (System.Exception e)
         {
@@ -294,6 +302,7 @@ public class GameManager : MonoBehaviour
         }
     }
     public void RestartGame() {
+        ResetAllGameDatas();
         Init();
     }
     public void Revival() { 
@@ -448,15 +457,12 @@ public class GameManager : MonoBehaviour
             isWave = true;
             waveTimer = 0;
             player.GetComponent<Player>().CurrentBulletCount += 10;
-            player.GetComponent<Player>().ChangeWeaponAttackType(AttackType.Sector);
             Debug.Log("尸潮开始");
             safeSide = Random.Range(0, 4);
             Debug.Log("本轮尸潮安全区是：" + (safeSide == 0 ? "左" : safeSide == 1 ? "右" : safeSide == 2 ? "下" : "上"));
             foreach (var enemy in DataManager.allEnemyDict)
             {
-                enemy.GetComponent<Enemy>().CurrentBulletCount = 5;
                 enemy.GetComponent<Enemy>().AddShield();
-                enemy.GetComponent<Enemy>().ChangeWeaponAttackType(AttackType.Sector);
             }
             mainCamera.backgroundColor = new Color(0.2627f, 0f, 0f);
             StartCoroutine(ShowFlashWarningTxt());
@@ -468,13 +474,7 @@ public class GameManager : MonoBehaviour
             isWave = false;
             waveTimer = 0;
             player.GetComponent<Player>().CurrentBulletCount -= 10;
-            player.GetComponent<Player>().ChangeWeaponAttackType(AttackType.Sector);
             Debug.Log("尸潮结束");
-            foreach (var enemy in DataManager.allEnemyDict)
-            {
-                enemy.GetComponent<Enemy>().CurrentBulletCount = 3;
-                enemy.GetComponent<Enemy>().ChangeWeaponAttackType(AttackType.Sector);
-            }
             mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
             difficulty = Mathf.Max(1, difficulty * 0.5f); // 尸潮结束后暂时降低难度，给玩家喘息的机会
         }
@@ -532,7 +532,7 @@ public class GameManager : MonoBehaviour
             Level = 1,// 玩家等级
             Hp = 100,// 玩家生命值
             power = 1.0f,// 当前游戏倍率
-            MoveSpeed = 3.5f,// 玩家移动速度
+            MoveSpeed = 6f,// 玩家移动速度
             CurrentWeaponIndex = 0// 玩家当前使用的武器id
         };
 

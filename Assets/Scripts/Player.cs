@@ -75,10 +75,15 @@ public class Player : Entity
             level++;
             currentExp = currentExp - needExp;
             needExp = (int)(needExp * 1.25f);
-
+            // 升级时稍微增加一点移速
+            moveSpeed += 1f;
             // 升级啦!
             GameManager.Instance.ShowLevelUpPanel(true);
         }
+    }
+    public int GetCurrentLevel()
+    {
+        return level;
     }
     public float GetExpProgress()
     {
