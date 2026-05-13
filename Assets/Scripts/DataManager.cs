@@ -108,7 +108,7 @@ public class DataManager
             data.CurrentUsedBulletIndex = int.Parse(row[3]);
             data.Attack = int.Parse(row[4]);
             data.type = (WeaponType)int.Parse(row[5]);
-
+            data.Critical = float.Parse(row[6]);
             weaponDataDict[data.id] = data;
         }
     }

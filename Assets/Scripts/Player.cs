@@ -89,8 +89,7 @@ public class Player : Entity
     public override void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount = 3)
     {
         this.attackType = attackType;
-        CurrentBulletCount = _currentBulletCount;
-        weapon.ChangeAttackType(this.attackType, this, _currentBulletCount);
+        weapon.ChangeAttackType(this.attackType, this, CurrentBulletCount);
     }
     void Rotate()
     {

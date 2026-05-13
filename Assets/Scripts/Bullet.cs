@@ -9,10 +9,13 @@ public class Bullet : MonoBehaviour
 
     Entity BelongWho;
 
-    int pierceLeft;// 子弹的穿透次数，穿透一次就减1，减到0就销毁子弹
+    public int PierceLeft { get; set; }// 子弹的穿透次数，穿透一次就减1，减到0就销毁子弹
     bool isExecuteHitStop = false;// 是否已经执行过命中顿帧，防止同一颗子弹多次命中时重复执行顿帧
 
     public bool canTriggerHitStop = true;// 是否可以触发命中顿帧，防止扇形发射的子弹每一颗都触发顿帧导致游戏卡顿
+
+    private Vector3 moveDir;
+    private float lifeTime = 0f;
     public void SetBullet(BulletData bulletData,Vector3 _dir, Entity belongWho)
     {
         BelongWho = belongWho;
@@ -22,21 +25,44 @@ public class Bullet : MonoBehaviour
             distance = bulletData.distance,
             moveSpeed = bulletData.moveSpeed
         };
-        targetPosition = transform.position + _dir.normalized * myBulletData.distance;
-        pierceLeft = 2;
+        if (BelongWho.EntityTag == "enemy")
+        {
+            float randomAngle = Random.Range(-4f, 4f);
+            moveDir = Quaternion.Euler(0, 0, randomAngle) * _dir.normalized;
+            targetPosition = transform.position + moveDir * myBulletData.distance;
+        }
+        else
+        {
+            targetPosition = transform.position + _dir.normalized * myBulletData.distance;
+        }
+        lifeTime = 2.0f;
     }
-    public void BulletUpdate()
+    public void Update()
     {
         if (CanMove)
         {
             Rotate();
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, myBulletData.moveSpeed * Time.deltaTime);
+            if(BelongWho.EntityTag == "enemy")
+            {
+                transform.position += moveDir * myBulletData.moveSpeed * Time.deltaTime;
+                lifeTime -= Time.deltaTime;
+                if (lifeTime <= 0)
+                {
+                    Destroy(gameObject);
+                }
+            }
+            else
+            {
+                transform.position = Vector3.MoveTowards(transform.position, targetPosition, myBulletData.moveSpeed * Time.deltaTime);
+                if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+                {
+                    Destroy(gameObject);
+                }
+            }
+            
             CheckCollisionOnEnemy();
             CheckCollisionOnPlayer();
-            if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
-            {
-                Destroy(gameObject);
-            }
+            
         }
     }
 
@@ -64,6 +90,15 @@ public class Bullet : MonoBehaviour
             for (int i = DataManager.allEnemyDict.Count - 1; i >= 0; i--)
             {
                 Entity entity = DataManager.allEnemyDict[i].GetComponent<Entity>();
+                if(entity.EntityTag == "enemy")
+                {
+                    Enemy _enemy = (Enemy)entity;
+                    if (_enemy.hasShield)
+                    {
+                        _enemy.RemoveShild();
+                        continue;
+                    }
+                }
                 if (entity.EntityTag == BelongWho.EntityTag || entity.Dead) continue;// 如果敌人和子弹属于同一方，则跳过碰撞检测。或者敌人已经死了，也跳过碰撞检测。
 
                 float distance = Vector3.Distance(transform.position, DataManager.allEnemyDict[i].transform.position);
@@ -81,51 +116,37 @@ public class Bullet : MonoBehaviour
                     {
                         critDamageMultiplier = 1.5f;
                         GameManager.Instance.ShakeMainCamera(0.2f, 0.3f);
+
+                        // 这里加一个命中时的顿帧效果
+                        if (!isExecuteHitStop && canTriggerHitStop)
+                        {
+                            isExecuteHitStop = true;
+                            if (GameManager.Instance.HitStopIntensity <= 0)
+                            {
+                                GameManager.Instance.HitStopIntensity = 0.08f;
+                                GameManager.Instance.HitStopDuration = 0.05f;
+                            }
+                        }
                     }
-                    // 旧的伤害公式================================================================
-                    //float finalDamage = weapon.weaponData.Attack * critDamageMultiplier * (int)myBulletData.damage * player.playerData.Level * player.playerData.power;// 伤害等于 武器攻击力 * 武器暴击伤害倍率 * 子弹伤害 * 玩家等级 * 游戏倍率
-                    // ================================================================
-                    //  新的伤害公式================================================================
+                    // 伤害公式 最终伤害 = 基础攻击 * (1 + power) * 暴击伤害倍率 * 伤害衰减
                     // 基础攻击
                     float attack = weapon.weaponData.Attack * (int)myBulletData.damage * player.playerData.Level;
-
-                    // 用power类比成熟公式里的“攻击成长”
                     float powerAttack = attack * player.playerData.power;
-
-                    // 用等级类比“防御”
                     float defence = player.playerData.Level * 5;
-
-                    // 用子弹damage类比“穿透”
                     float penetrate = (int)myBulletData.damage * 2;
-
-                    // 成熟伤害衰减公式
                     float fValue = 100.0f / (100.0f + Mathf.Max(defence - penetrate, 0));
-
-                    // 保底伤害
                     fValue = Mathf.Max(fValue, 0.5f);
-
                     // 最终伤害
                     float finalDamage = powerAttack * critDamageMultiplier * fValue;
-                    // ================================================================
-
                     entity.TakeDamage(Mathf.CeilToInt(finalDamage));
+
                     foreach (var _e in allEnemys)
                     {
                         if(_e == entity.gameObject) continue;// 如果是被命中的敌人，就跳过，不要对它造成两次伤害
                         _e.GetComponent<Entity>().TakeDamage((int)(finalDamage * 0.5f));
                     }
-                    // 这里加一个命中时的顿帧效果
-                    if (!isExecuteHitStop && canTriggerHitStop)
-                    {
-                        isExecuteHitStop = true;
-                        if (GameManager.Instance.HitStopIntensity <= 0)
-                        {
-                            GameManager.Instance.HitStopIntensity = 0.08f;
-                            GameManager.Instance.HitStopDuration = 0.06f;
-                        }
-                    }
-                    pierceLeft--;
-                    if (pierceLeft <= 0)
+                    PierceLeft--;
+                    if (PierceLeft <= 0)
                     {
                         Destroy(gameObject);
                     }

@@ -8,6 +8,7 @@ public class Enemy : Entity
     int totalHp = 0;
     public EnemyType enemyType;
     public Transform target;
+    public bool hasShield = false;
     public void SetEnemy(EnemyData enemyData)
     {
         enemyType = enemyData.type;
@@ -15,10 +16,10 @@ public class Enemy : Entity
         transform.localScale = Vector3.one * enemyData.scale;
         totalHp = enemyData.hp;
         currentHp = enemyData.hp;
+
         FirePos = transform;
         attackType = AttackType.Liner;
         CurrentBulletCount = 1;
-
         weapon = WeaponSystem.CreateWeapon(enemyData.CurrentWeaponIndex, this);
         EntityTag = "enemy";
 
@@ -35,11 +36,25 @@ public class Enemy : Entity
             transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
         }
     }
+    public void AddShield()
+    {
+        hasShield = true;
+        GameObject newShield = Instantiate(Resources.Load<GameObject>("shield"), transform);
+        newShield.transform.localPosition = new Vector3(0, 1, 0);
+    }
+    public void RemoveShild()
+    {
+        Transform shield = transform.Find("shield(Clone)");
+        if (shield != null)
+        {
+            Destroy(shield.gameObject);
+        }
+        hasShield = false;
+    }
     public override void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount = 3)
     {
         this.attackType = attackType;
-        CurrentBulletCount = _currentBulletCount;
-        weapon.ChangeAttackType(this.attackType, this, _currentBulletCount);
+        weapon.ChangeAttackType(this.attackType, this, CurrentBulletCount);
     }
     void Rotate()
     {

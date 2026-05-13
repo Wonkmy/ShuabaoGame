@@ -15,7 +15,7 @@ public class Entity : MonoBehaviour
     public AttackType attackType { get; set; }
     public string EntityTag { get; set; }
 
-    public Weapon weapon;// 武器类
+    protected Weapon weapon;// 武器类
 
     public virtual Entity GetNearestTarget() {  return null; }
     public virtual void TakeDamage(int damage) { }

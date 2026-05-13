@@ -3,9 +3,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
 
 public class GameManager : MonoBehaviour
 {
@@ -20,38 +18,32 @@ public class GameManager : MonoBehaviour
     public Transform playerExpSlider { get; private set; }
     public Transform playerHpSlider { get; private set; }
     public PlayerData pdata { get; set; }
-    public GameObject levelPanel { get; set; }
+    public GameObject levelPanel;
 
     // 当前刷怪预算
     float enemyBudget = 0;
-
     // 游戏时间
     float gameTime = 0;
-
     // 当前难度
     float difficulty = 1;
-
     // 尸潮相关
     bool isWave = false;
     float waveTimer = 0;
     int maxSpawnPerFrame = 5;
-
+    public int safeSide = 0;// 尸潮来袭时的安全区，0左1右2下3上
+    // 相机相关
     public Camera mainCamera { get; set; }
     public CameraEffect cameraEffect { get; set; }
-
-    // 敌人生成到屏幕外的偏移距离
-    private float offset = 100f;
-
+    private Vector3 cameraOriginPos;
     // 震屏幕相关
     private float shakeTime = 0;
     private float shakeDuration = 0;
     private float shakeStrength = 0;
-
-    private Vector3 cameraOriginPos;
-
+    // 敌人生成到屏幕外的偏移距离
+    private float offset = 100f;
     // 命中顿帧效果相关
-    public float HitStopDuration = 0.1f;
-    public float HitStopIntensity = 0.5f;
+    public float HitStopDuration { get; set; }
+    public float HitStopIntensity { get; set; }
 
     GameObject warningObject;
 
@@ -72,8 +64,6 @@ public class GameManager : MonoBehaviour
 
         GameObject expobj = Instantiate(Resources.Load<GameObject>("exp"));
         GameObject hpobj = Instantiate(Resources.Load<GameObject>("hp"));
-        levelPanel = GameObject.Find("Canvas/ChooseOnePanel");
-        levelPanel.SetActive(false);
 
         playerExpSlider = expobj.transform;
         playerHpSlider = hpobj.transform;
@@ -101,13 +91,33 @@ public class GameManager : MonoBehaviour
 
         DataManager.upgradeList.Add(new UpgradeData()
         {
-            name = "攻速提升",
-            tag = "attack_speed",
+            name = "+5攻击力",
+            tag = "attack",
             action = () =>
             {
-                player.GetComponent<Player>().weapon.ChangeFireInterval(0.05f);
+                player.GetComponent<Player>().GetCurrentWeapon().ChangeAttack(5);
             }
         });
+        DataManager.upgradeList.Add(new UpgradeData()
+        {
+            name = "+1穿透",
+            tag = "bullet",
+            action = () =>
+            {
+                player.GetComponent<Player>().GetCurrentWeapon().ChangeBulletPierce(1);
+            }
+        });
+
+
+        //DataManager.upgradeList.Add(new UpgradeData()
+        //{
+        //    name = "攻速提升",
+        //    tag = "attack_speed",
+        //    action = () =>
+        //    {
+        //        player.GetComponent<Player>().GetCurrentWeapon().ChangeFireInterval(0.05f);
+        //    }
+        //});
 
         DataManager.upgradeList.Add(new UpgradeData()
         {
@@ -130,7 +140,14 @@ public class GameManager : MonoBehaviour
             tag = "bullet",
             action = () =>
             {
-                player.GetComponent<Player>().CurrentBulletCount += 4;
+                // 加一个最大的子弹数限制，这里限制为不能超过10发
+                int maxBullet = 10;
+                int v = player.GetComponent<Player>().CurrentBulletCount + 3;
+                if (v >= maxBullet)
+                {
+                    v = maxBullet;
+                }
+                player.GetComponent<Player>().CurrentBulletCount = v;
             }
         });
 
@@ -142,9 +159,7 @@ public class GameManager : MonoBehaviour
             action = () =>
             {
                 // 子弹减少
-                player.GetComponent<Player>().CurrentBulletCount =
-                    Mathf.Max(1,
-                    player.GetComponent<Player>().CurrentBulletCount - 2);
+                player.GetComponent<Player>().CurrentBulletCount = Mathf.Max(1, player.GetComponent<Player>().CurrentBulletCount - 2);
 
                 // 高倍率
                 player.GetComponent<Player>().playerData.power += 1f;
@@ -159,7 +174,7 @@ public class GameManager : MonoBehaviour
             action = () =>
             {
                 // 超高攻速
-                player.GetComponent<Player>().weapon.ChangeFireInterval(0.5f);
+                player.GetComponent<Player>().GetCurrentWeapon().ChangeFireInterval(0.25f);
 
                 // 子弹伤害降低
                 player.GetComponent<Player>().playerData.power -= 0.15f;
@@ -193,52 +208,10 @@ public class GameManager : MonoBehaviour
                 player.GetComponent<Player>().moveSpeed -= 2f;
 
                 // 降低攻速
-                player.GetComponent<Player>().weapon.ChangeFireInterval(-0.05f);
+                player.GetComponent<Player>().GetCurrentWeapon().ChangeFireInterval(-0.05f);
             }
         });
     }
-    //void LoadDefaultUpgradeConfig()
-    //{
-    //    DataManager.upgradeList.Add(new UpgradeData()
-    //    {
-    //        name = "+1子弹",
-    //        tag = "bullet",
-    //        action = () =>
-    //        {
-    //            player.GetComponent<Player>().CurrentBulletCount += 1;
-    //        }
-    //    });
-
-    //    DataManager.upgradeList.Add(new UpgradeData()
-    //    {
-    //        name = "攻速+20%",
-    //        tag = "attack_speed",
-    //        action = () =>
-    //        {
-    //            player.GetComponent<Player>().weapon.ChangeFireInterval(0.05f);
-    //        }
-    //    });
-
-    //    DataManager.upgradeList.Add(new UpgradeData()
-    //    {
-    //        name = "增加倍率",
-    //        tag = "power",
-    //        action = () =>
-    //        {
-    //            player.GetComponent<Player>().playerData.power += 0.25f;
-    //        }
-    //    });
-
-    //    DataManager.upgradeList.Add(new UpgradeData()
-    //    {
-    //        name = "增加移速",
-    //        tag = "move_speed",
-    //        action = () =>
-    //        {
-    //            player.GetComponent<Player>().moveSpeed += 0.5f;
-    //        }
-    //    });
-    //}
 
     public void ShowLevelUpPanel(bool show)
     {
@@ -390,10 +363,15 @@ public class GameManager : MonoBehaviour
         {
             isWave = true;
             waveTimer = 0;
-            player.GetComponent<Player>().ChangeWeaponAttackType(AttackType.Sector, 10);
+            player.GetComponent<Player>().CurrentBulletCount += 10;
+            player.GetComponent<Player>().ChangeWeaponAttackType(AttackType.Sector);
             Debug.Log("尸潮开始");
+            safeSide = Random.Range(0, 4);
+            Debug.Log("本轮尸潮安全区是：" + (safeSide == 0 ? "左" : safeSide == 1 ? "右" : safeSide == 2 ? "下" : "上"));
             foreach (var enemy in DataManager.allEnemyDict)
             {
+                enemy.GetComponent<Enemy>().CurrentBulletCount = 5;
+                enemy.GetComponent<Enemy>().AddShield();
                 enemy.GetComponent<Enemy>().ChangeWeaponAttackType(AttackType.Sector);
             }
             mainCamera.backgroundColor = new Color(0.2627f, 0f, 0f);
@@ -405,12 +383,13 @@ public class GameManager : MonoBehaviour
         {
             isWave = false;
             waveTimer = 0;
-            player.GetComponent<Player>().CurrentBulletCount = 3;
+            player.GetComponent<Player>().CurrentBulletCount -= 10;
             player.GetComponent<Player>().ChangeWeaponAttackType(AttackType.Sector);
             Debug.Log("尸潮结束");
             foreach (var enemy in DataManager.allEnemyDict)
             {
-                enemy.GetComponent<Enemy>().ChangeWeaponAttackType(AttackType.Liner, 1);
+                enemy.GetComponent<Enemy>().CurrentBulletCount = 3;
+                enemy.GetComponent<Enemy>().ChangeWeaponAttackType(AttackType.Sector);
             }
             mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
             difficulty = Mathf.Max(1, difficulty * 0.5f); // 尸潮结束后暂时降低难度，给玩家喘息的机会
@@ -453,7 +432,7 @@ public class GameManager : MonoBehaviour
         while (enemyBudget >= 5 && currentSpawnCount < maxSpawnPerFrame)
         {
             enemyBudget -= 5;
-            GenEnemy(0);
+            GenEnemy();
             currentSpawnCount++;
         }
     }
@@ -467,7 +446,7 @@ public class GameManager : MonoBehaviour
         pdata = new PlayerData
         {
             Level = 1,// 玩家等级
-            Hp = 10000,// 玩家生命值
+            Hp = 100,// 玩家生命值
             power = 1.0f,// 当前游戏倍率
             MoveSpeed = 3.5f,// 玩家移动速度
             CurrentWeaponIndex = 0// 玩家当前使用的武器id
@@ -476,16 +455,29 @@ public class GameManager : MonoBehaviour
         player.GetComponent<Player>().Init(pdata);
     }
 
-    void GenEnemy(int eid)
+    void GenEnemy()
     {
         GameObject newEnemy = Instantiate(Resources.Load<GameObject>("enemy"));
         newEnemy.GetComponent<Enemy>().target = player.transform;
-        newEnemy.GetComponent<Enemy>().SetEnemy(DataManager.enemyDataDict[eid]);// 使用序号为0的敌人数据
+        int enemyId = 0;
+        if (isWave)
+        {
+            enemyId = Random.Range(0, 3);
+        }
+        newEnemy.GetComponent<Enemy>().SetEnemy(DataManager.enemyDataDict[enemyId]);// 使用序号为enemyId的敌人数据
         float x = 0;
         float y = 0;
 
         // 0 左 1 右 2 下 3 上
         int side = Random.Range(0, 4);
+        if (isWave)
+        {
+            // 安全方向不生成敌人
+            while (side == safeSide)
+            {
+                side = Random.Range(0, 4);
+            }
+        }
 
         switch (side)
         {

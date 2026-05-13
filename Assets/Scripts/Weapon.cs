@@ -17,6 +17,8 @@ public class Weapon
     float fireFlashDuration = 0.2f;// 枪口火花持续时间
     float fireFlashTimer = 0.0f;// 枪口火花计时器
     float fireInterval = 0;// 武器的攻击频率。单独拿出来是后面需要动态修改达到成长与爽感
+    float attack = 0;// 武器的攻击力。单独拿出来是后面需要动态修改达到成长与爽感
+    int bulletPierce = 0;// 武器的子弹穿透力。单独拿出来是后面需要动态修改达到成长与爽感
 
     public GameObject lockedTarget;// 锁定的目标实体，敌人
 
@@ -32,7 +34,8 @@ public class Weapon
              type = DataManager.weaponDataDict[weaponID].type,
              Critical = DataManager.weaponDataDict[weaponID].Critical,
         };
-        bulletData = new BulletData { 
+        bulletData = new BulletData
+        {
             id = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].id,
             moveSpeed = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].moveSpeed,
             distance = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].distance,
@@ -41,7 +44,17 @@ public class Weapon
         entity = _entity;
         spawnedBullets = new List<GameObject>();
         lockedTarget = null;
-        fireInterval = weaponData.FireInterval;
+        attack = weaponData.Attack;
+        if (this.entity.EntityTag == "enemy")
+        {
+            fireInterval = weaponData.FireInterval + Random.Range(-0.1f, 0.1f);
+            bulletPierce = 1;
+        }
+        else
+        {
+            fireInterval = weaponData.FireInterval;
+            bulletPierce = 2;
+        }
     }
     /// <summary>
     /// 更换子弹数据，传入新的子弹ID，根据ID从DataManager中获取新的子弹数据，并更新当前武器的bulletData
@@ -59,7 +72,22 @@ public class Weapon
             damage = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].damage
         };
     }
-
+    /// <summary>
+    /// 修改武器的子弹穿透力
+    /// </summary>
+    /// <param name="v"></param>
+    public void ChangeBulletPierce(int v)
+    {
+        bulletPierce += v;
+        if(bulletPierce >= 5)// 穿透力最大为5
+        {
+            bulletPierce = 5;
+        }
+    }
+    public void ChangeAttack(int v)
+    {
+        attack += v;
+    }
     /// <summary>
     /// 修改武器的攻击频率。Note：数值越小，频率越高
     /// </summary>
@@ -194,6 +222,7 @@ public class Weapon
             if(i == currentBulletCount / 2)
             {
                 bullet.GetComponent<Bullet>().canTriggerHitStop = true;
+                bullet.GetComponent<Bullet>().PierceLeft = bulletPierce;
             }
             spawnedBullets.Add(bullet);
         }
@@ -213,6 +242,7 @@ public class Weapon
             float angle = (360.0f / currentBulletCount) * i;
             Vector3 dir = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0);
             var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, dir, firePos, 0, entity);
+            bullet.GetComponent<Bullet>().PierceLeft = bulletPierce;
             spawnedBullets.Add(bullet);
         }
     }
