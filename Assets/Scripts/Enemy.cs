@@ -120,7 +120,10 @@ public class Enemy : Entity
         // 确保最终状态
         transform.rotation = Quaternion.Euler(0, 0, 360) * originalRotation;
         transform.localScale = Vector3.zero;
-        
+
+        // 增加击杀统计
+        GameManager.Instance.player.GetComponent<Player>().AddKilledCount();
+
         DataManager.allEnemyDict.Remove(gameObject);// 从敌人字典中移除
         Destroy(gameObject);
     }

@@ -19,7 +19,9 @@ public class GameManager : MonoBehaviour
     public Transform playerHpSlider { get; private set; }
     public PlayerData pdata { get; set; }
     public GameObject levelPanel;
+    public GameObject gameOverPanel;
 
+    public bool GameOver { get; set; }
     // 当前刷怪预算
     float enemyBudget = 0;
     // 游戏时间
@@ -46,13 +48,16 @@ public class GameManager : MonoBehaviour
     public float HitStopIntensity { get; set; }
 
     GameObject warningObject;
-
-    void Start()
+    private void Start()
     {
         DataManager.Init();
         LoadDefaultUpgradeConfig();
 
-
+        Init();
+    }
+    void Init()
+    {
+        GameOver = false;
         // 基础难度固定
         difficulty = 3;
 
@@ -205,10 +210,44 @@ public class GameManager : MonoBehaviour
                 player.GetComponent<Player>().playerData.power += 1.5f;
 
                 // 降低移速
-                player.GetComponent<Player>().moveSpeed -= 2f;
+                player.GetComponent<Player>().moveSpeed -= 1f;
 
                 // 降低攻速
                 player.GetComponent<Player>().GetCurrentWeapon().ChangeFireInterval(-0.05f);
+            }
+        });
+
+        // 暴击爆炸
+        DataManager.upgradeList.Add(new UpgradeData()
+        {
+            name = "暴击爆炸",
+            tag = "crit",
+
+            action = () =>
+            {
+                player.GetComponent<Player>().HasCritExplosion = true;
+            }
+        });
+
+        DataManager.upgradeList.Add(new UpgradeData()
+        {
+            name = "穿透爆炸",
+            tag = "pierce",
+
+            action = () =>
+            {
+                player.GetComponent<Player>().HasPierceExplosion = true;
+            }
+        });
+
+        DataManager.upgradeList.Add(new UpgradeData()
+        {
+            name = "精准重炮",
+            tag = "power",
+
+            action = () =>
+            {
+                player.GetComponent<Player>().HasLowBulletHighDamage = true;
             }
         });
     }
@@ -219,8 +258,53 @@ public class GameManager : MonoBehaviour
         levelPanel.GetComponent<ChooseOnePanel>().Init();
         Time.timeScale = show == true ? 0 : 1;
     }
+
+    public void ShowGameOverPanel(bool show)
+    {
+        gameOverPanel.SetActive(show);
+        // 将存活时长、击杀数、最高难度、玩家等级等数据传递给结算界面
+        gameOverPanel.GetComponent<GameOverPanel>().Init(gameTime, player.GetComponent<Player>().KilledCount, difficulty, pdata.Level);
+        ResetAlLGameDatas();
+    }
+
+    void ResetAlLGameDatas() {
+        try
+        {
+            // 清理所有敌人和子弹、数据、字典、玩家已有的构筑列表buildDict、HasCritExplosion、HasPierceExplosion、HasLowBulletHighDamage
+            DataManager.Clear();
+            WeaponSystem.Clear();
+            Player playerConponent = player.GetComponent<Player>();
+            playerConponent.HasCritExplosion = false;
+            playerConponent.HasPierceExplosion = false;
+            playerConponent.HasLowBulletHighDamage = false;
+            playerConponent.buildDict.Clear();
+            // 重置尸潮、难度、预算、游戏时间等所有数据
+            isWave = false;
+            difficulty = 3;
+            enemyBudget = 0;
+            gameTime = 0;
+            HitStopDuration = 0;
+            HitStopIntensity = 0;
+            safeSide = 0;
+            warningObject = null;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("ShowGameOverPanel error: " + e.Message);
+        }
+    }
+    public void RestartGame() {
+        Init();
+    }
+    public void Revival() { 
+    
+    }
     private void Update()
     {
+        if(GameOver)
+        {
+            return;
+        }
         if (HitStopIntensity > 0)
         {
             HitStopIntensity -= Time.deltaTime;

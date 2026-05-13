@@ -19,6 +19,17 @@ public class Player : Entity
     float MoveAngle;
 
     public Dictionary<string, int> buildDict = new Dictionary<string, int>();
+
+    public int KilledCount { get;private set; }
+
+    public bool HasCritExplosion { get; set; }
+    public bool HasPierceExplosion { get; set; }
+    public bool HasLowBulletHighDamage { get; set; }
+
+    public void AddKilledCount()
+    {
+        KilledCount++;
+    }
     public void Init(PlayerData data)
     {
         fire = transform.Find("Fire");
@@ -181,8 +192,12 @@ public class Player : Entity
         {
             currentHp = 0;
             Dead = true;
-
+            
             WeaponSystem.RemoveWeapon(weapon);
+            
+            GameManager.Instance.GameOver = true;
+            // 显示游戏结束界面
+            GameManager.Instance.ShowGameOverPanel(true);
         }
     }
     IEnumerator ResetColor()

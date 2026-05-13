@@ -29,17 +29,6 @@ public static class WeaponSystem
         for(int i = weapons.Count - 1; i >= 0; i--)
         {
             weapons[i].WeaponUpdate();
-            //for (int j = 0; j < weapons[i].spawnedBullets.Count; j++)
-            //{
-            //    if (weapons[i].spawnedBullets[j] != null)
-            //    {
-            //        Bullet bullet = weapons[i].spawnedBullets[j].GetComponent<Bullet>();
-            //        if (bullet != null)
-            //        {
-            //            bullet.BulletUpdate();
-            //        }
-            //    }
-            //}
             weapons[i].ChangeAttackType(weapons[i].entity.attackType, weapons[i].entity, weapons[i].entity.CurrentBulletCount);
         }
     }

@@ -6,11 +6,12 @@ public class DataManager
 {
     public static Dictionary<int, BulletData> bulletsDataDict = new Dictionary<int, BulletData>();// 子弹数据字典
     public static Dictionary<int, EnemyData> enemyDataDict = new Dictionary<int, EnemyData>();// 怪物数据字典
+    public static Dictionary<int, WeaponData> weaponDataDict = new Dictionary<int, WeaponData>();// 武器数据字典
+    public static List<UpgradeData> upgradeList = new List<UpgradeData>();// 升级选项数据列表
+
     public static List<GameObject> allEnemyDict = new List<GameObject>();// 敌人实体字典
     public static List<GameObject> allDamageText =  new List<GameObject>();// 伤害文本字典
     public static List<GameObject> allExpBall = new List<GameObject>();// 经验球字典
-    public static Dictionary<int, WeaponData> weaponDataDict = new Dictionary<int, WeaponData>();// 武器数据字典
-    public static List<UpgradeData> upgradeList = new List<UpgradeData>();// 升级选项列表
 
     public static void Init()
     {
@@ -115,13 +116,33 @@ public class DataManager
 
     public static void Clear()
     {
-        bulletsDataDict.Clear();
-        enemyDataDict.Clear();
+        // 销毁所有敌人
+        foreach (var enemy in DataManager.allEnemyDict)
+        {
+            if (enemy)
+            {
+                Object.Destroy(enemy);
+            }
+        }
+        // 销毁所有伤害文本
+        foreach (var damageText in DataManager.allDamageText)
+        {
+            if (damageText)
+            {
+                Object.Destroy(damageText);
+            }
+        }
+        // 销毁所有经验球
+        foreach (var expBall in DataManager.allExpBall)
+        {
+            if (expBall)
+            {
+                Object.Destroy(expBall);
+            }
+        }
         allEnemyDict.Clear();
-        weaponDataDict.Clear();
         allDamageText.Clear();
         allExpBall.Clear();
-        upgradeList.Clear();
     }
 
     public static Vector3[] GetFanDirections2D(Vector3 centerDir, int count)

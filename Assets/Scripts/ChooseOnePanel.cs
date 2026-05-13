@@ -7,7 +7,8 @@ public class ChooseOnePanel : MonoBehaviour
 {
     // 选项按钮列表
     public List<Button> optionButtons;
-    public void Init() {
+    public void Init()
+    {
         Player player = GameManager.Instance.player.GetComponent<Player>();
 
         // 临时升级池
@@ -15,6 +16,47 @@ public class ChooseOnePanel : MonoBehaviour
 
         // 原始升级池
         tempList.AddRange(DataManager.upgradeList);
+
+        // =========================
+        // 传奇词条条件过滤
+        // =========================
+        for (int i = tempList.Count - 1; i >= 0; i--)
+        {
+            UpgradeData data = tempList[i];
+
+            // 暴击爆炸
+            if (data.name == "暴击爆炸")
+            {
+                if (!player.buildDict.ContainsKey("crit") ||
+                    player.buildDict["crit"] < 5)
+                {
+                    tempList.RemoveAt(i);
+                    continue;
+                }
+            }
+
+            // 穿透爆炸
+            if (data.name == "穿透爆炸")
+            {
+                if (!player.buildDict.ContainsKey("pierce") ||
+                    player.buildDict["pierce"] < 5)
+                {
+                    tempList.RemoveAt(i);
+                    continue;
+                }
+            }
+
+            // 子弹风暴
+            if (data.name == "子弹风暴")
+            {
+                if (!player.buildDict.ContainsKey("bullet") ||
+                    player.buildDict["bullet"] < 8)
+                {
+                    tempList.RemoveAt(i);
+                    continue;
+                }
+            }
+        }
 
         // 根据当前流派增加权重
         for (int i = 0; i < DataManager.upgradeList.Count; i++)
