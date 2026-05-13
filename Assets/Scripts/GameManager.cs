@@ -32,7 +32,7 @@ public class GameManager : MonoBehaviour
     bool isWave = false;
     float waveTimer = 0;
     int maxSpawnPerFrame = 5;
-    public int safeSide = 0;// 尸潮来袭时的安全区，0左1右2下3上
+    int safeSide = 0;// 尸潮来袭时的安全区，0左1右2下3上
     // 相机相关
     public Camera mainCamera { get; set; }
     public CameraEffect cameraEffect { get; set; }
