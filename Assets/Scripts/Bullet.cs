@@ -128,7 +128,8 @@ public class Bullet : MonoBehaviour
 
         if (distance < 0.7f)
         {
-            player.TakeDamage(Mathf.CeilToInt(myBulletData.damage),false);
+            Enemy enemy = (Enemy)BelongWho;
+            player.TakeDamage(Mathf.CeilToInt(myBulletData.damage + enemy.Damage),false);
 
             Destroy(gameObject);
         }
@@ -182,9 +183,9 @@ public class Bullet : MonoBehaviour
         {
             isCrit = true;
 
-            critDamageMultiplier = 1.5f;
+            critDamageMultiplier = 1.35f;
 
-            HandleCrit();
+            HandleCrit(entity);
         }
 
         // 基础伤害
@@ -192,11 +193,9 @@ public class Bullet : MonoBehaviour
 
         float powerAttack = attack * player.playerData.power;
 
-        float defence = player.playerData.Level * 5;
+        float penetrate = (int)myBulletData.damage * 1.2f;
 
-        float penetrate = (int)myBulletData.damage * 2;
-
-        float fValue = 100.0f / (100.0f + Mathf.Max(defence - penetrate, 0));
+        float fValue = 100.0f / (100.0f + Mathf.Max(3 - penetrate, 0));
 
         fValue = Mathf.Max(fValue, 0.5f);
 
@@ -236,10 +235,13 @@ public class Bullet : MonoBehaviour
         }
     }
 
-    void HandleCrit()
+    void HandleCrit(Entity entity)
     {
-        GameManager.Instance.ShakeMainCamera(0.2f, 0.3f);
-
+        Enemy enemy = entity as Enemy;
+        if (enemy.enemyType == EnemyType.Boss || enemy.enemyType == EnemyType.Elite)
+        {
+            GameManager.Instance.ShakeMainCamera(0.2f, 0.3f);
+        }
         if (!isExecuteHitStop && canTriggerHitStop)
         {
             isExecuteHitStop = true;

@@ -48,6 +48,7 @@ public struct EnemyData
     public int id;
     public float moveSpeed;// 移动速度
     public int hp;// 血量
+    public float damage;// 伤害
     public float scale;// 体型
     public EnemyType type;// 怪物类型
     public int CurrentWeaponIndex;// 持有的武器id

@@ -39,7 +39,7 @@ public class DamageText : MonoBehaviour
 
     private Vector3 targetScale;
 
-    public void SetDamageText(int damage, bool isCrit, float _life = 0.35f)
+    public void SetDamageText(int damage, bool isCrit, float _life = 0.45f)
     {
         textMesh.text = "-" + damage.ToString();
 
@@ -49,8 +49,8 @@ public class DamageText : MonoBehaviour
 
         // 随机漂浮方向
         moveDir = new Vector3(
-            Random.Range(-0.6f, 0.6f),
-            Random.Range(2.5f, 3.5f),
+            Random.Range(-1.6f, 1.6f),
+            Random.Range(3.5f, 3.5f),
             0);
 
         // 暴击

@@ -10,14 +10,19 @@ public class Enemy : Entity
     public Transform target;
     public bool hasShield = false;
     public bool IsSpecialEnemy { get; set; }// 是否是特殊怪物（精英怪和Boss）
+
+    public float Damage { get; set; }
     public void SetEnemy(EnemyData enemyData)
     {
         view = GetComponentInChildren<SpriteRenderer>();
         enemyType = enemyData.type;
         moveSpeed = enemyData.moveSpeed;
         transform.localScale = Vector3.one * enemyData.scale;
+
         totalHp = enemyData.hp;
         currentHp = enemyData.hp;
+        Damage = enemyData.damage;
+
 
         view.sprite = Resources.Load<Sprite>("sprites/" + enemyType.ToString().ToLower());
 
@@ -25,6 +30,12 @@ public class Enemy : Entity
         attackType = AttackType.Sector;
         CurrentBulletCount = 3;
         weapon = WeaponSystem.CreateWeapon(enemyData.CurrentWeaponIndex, this);
+
+        if(enemyType == EnemyType.Boss)
+        {
+            weapon.ChangeBullet(2);
+        }
+
         EntityTag = "enemy";
 
         CanMove = true;
@@ -80,10 +91,12 @@ public class Enemy : Entity
         GetComponentInChildren<SpriteRenderer>().color = Color.red;
         StartCoroutine(ResetColor());
 
-        GameObject newBullet = Instantiate(Resources.Load<GameObject>("damage_txt"));
-        newBullet.transform.position = transform.position + new Vector3(0, 0.5f, 0);
-        newBullet.GetComponent<DamageText>().SetDamageText(damage, isCrit);
-        DataManager.allDamageText.Add(newBullet);
+        GameObject newdamage = Instantiate(Resources.Load<GameObject>("damage_txt"));
+        float randomOffsetX = Random.Range(-0.3f, 0.3f);
+        float randomOffsetY = Random.Range(0.3f, 0.7f);
+        newdamage.transform.position = transform.position + new Vector3(randomOffsetX, randomOffsetY, 0);
+        newdamage.GetComponent<DamageText>().SetDamageText(damage, isCrit);
+        DataManager.allDamageText.Add(newdamage);
         if (currentHp <= 0)
         {
             Dead = true;
@@ -127,11 +140,23 @@ public class Enemy : Entity
 
         // 增加击杀统计
         GameManager.Instance.player.GetComponent<Player>().AddKilledCount();
-
+        if(enemyType == EnemyType.Thick)
+        {
+            GameManager.Instance.player.GetComponent<Player>().AddHP(20);// 击杀厚皮怪物回复20点生命值
+        }
         if (IsSpecialEnemy)
         {
             GameManager.Instance.IsSpecialEvent = false;// 结束特殊事件
         }
+
+        // 如果是精英怪或血厚怪，生成一个加血道具
+        if (enemyType == EnemyType.Elite || enemyType == EnemyType.Thick)
+        {
+            GameObject newAddHp = Instantiate(Resources.Load<GameObject>("add_hp"), transform.position, Quaternion.identity);
+            newAddHp.GetComponent<AddHP>().SetAddHP(10, GameManager.Instance.player);
+        }
+
+        Instantiate(Resources.Load<GameObject>("deadFX"), transform.position, Quaternion.identity);
 
         DataManager.allEnemyDict.Remove(gameObject);// 从敌人字典中移除
         Destroy(gameObject);

@@ -200,19 +200,19 @@ public class GameManager : MonoBehaviour
         });
 
         // 狂暴机枪
-        DataManager.upgradeList.Add(new UpgradeData()
-        {
-            name = "狂暴机枪",
-            tag = "attack_speed",
-            action = () =>
-            {
-                // 超高攻速
-                player.GetComponent<Player>().GetCurrentWeapon().ChangeFireInterval(0.25f);
+        //DataManager.upgradeList.Add(new UpgradeData()
+        //{
+        //    name = "狂暴机枪",
+        //    tag = "attack_speed",
+        //    action = () =>
+        //    {
+        //        // 超高攻速
+        //        player.GetComponent<Player>().GetCurrentWeapon().ChangeFireInterval(0.05f);
 
-                // 子弹伤害降低
-                player.GetComponent<Player>().playerData.power -= 0.15f;
-            }
-        });
+        //        // 子弹伤害降低
+        //        player.GetComponent<Player>().playerData.power -= 0.15f;
+        //    }
+        //});
 
         // 游击模式
         DataManager.upgradeList.Add(new UpgradeData()
@@ -313,6 +313,7 @@ public class GameManager : MonoBehaviour
             HitStopDuration = 0;
             HitStopIntensity = 0;
             safeSide = 0;
+            waveTimer = 0;
             // 波次计时器
             spawnWaveTimer = 0;
             // 波次间隔
@@ -324,6 +325,7 @@ public class GameManager : MonoBehaviour
             // 特殊事件相关
             IsSpecialEvent = false;
             specialEventTimer = 0;
+
 
             warningObject = null;
             GameManager.Instance.cameraEffect.intensity = 0;
@@ -577,6 +579,9 @@ public class GameManager : MonoBehaviour
     // 波次刷怪更新
     void UpdateSpawnWave()
     {
+        if (DataManager.allEnemyDict.Count >= 15)
+            return;
+
         spawnWaveTimer += Time.deltaTime;
 
         // 时间到，生成波次
@@ -632,7 +637,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            count = Random.Range(3, 7);
+            count = Random.Range(2, 6);
         }
 
         Vector3 centerPos = GetEnemyGroupCenter();
@@ -647,8 +652,7 @@ public class GameManager : MonoBehaviour
         // =========================
         // 创建动态预警
         // =========================
-        GameObject warning =
-            ShowWarning(centerObj.transform);
+        GameObject warning = ShowWarning(centerObj.transform);
 
         // 预警时间
         yield return new WaitForSeconds(0.8f);
@@ -845,9 +849,9 @@ public class GameManager : MonoBehaviour
         return wpos;
     }
 
-    public GameObject SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, int CurrentUsedBulletIndex, Entity belongWho)
+    public GameObject SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, string CurrentUsedBulletPrefab, Entity belongWho)
     {
-        GameObject newBullet_Liner = Instantiate(Resources.Load<GameObject>("bullets/" + CurrentUsedBulletIndex));
+        GameObject newBullet_Liner = Instantiate(Resources.Load<GameObject>("bullets/" + CurrentUsedBulletPrefab));
         newBullet_Liner.transform.position = pos;
         newBullet_Liner.GetComponent<Bullet>().SetBullet(bulletData, dir, belongWho);
         newBullet_Liner.GetComponent<Bullet>().CanMove = true;
@@ -1010,34 +1014,34 @@ public class GameManager : MonoBehaviour
         shakeTime = duration;
     }
 
-    private void OnGUI()
-    {
-        GUIStyle style = new GUIStyle();
+    //private void OnGUI()
+    //{
+    //    GUIStyle style = new GUIStyle();
 
-        style.fontSize = 24;
-        style.normal.textColor = Color.white;
+    //    style.fontSize = 24;
+    //    style.normal.textColor = Color.white;
 
-        GUILayout.BeginArea(new Rect(20, 20, 500, 1000));
+    //    GUILayout.BeginArea(new Rect(20, 20, 500, 1000));
 
-        GUILayout.Label("===== DEBUG =====", style);
+    //    GUILayout.Label("===== DEBUG =====", style);
 
-        GUILayout.Label("Game Time : " + gameTime.ToString("F1"), style);
+    //    GUILayout.Label("Game Time : " + gameTime.ToString("F1"), style);
 
-        GUILayout.Label("Difficulty : " + difficulty, style);
+    //    GUILayout.Label("Difficulty : " + difficulty, style);
 
-        //GUILayout.Label("Enemy Budget : " + enemyBudget.ToString("F1"), style);
-        GUILayout.Label("Wave Group Count : " + currentWaveGroupCount, style);
+    //    //GUILayout.Label("Enemy Budget : " + enemyBudget.ToString("F1"), style);
+    //    GUILayout.Label("Wave Group Count : " + currentWaveGroupCount, style);
 
-        GUILayout.Label("Enemy Per Group : " + enemyCountPerGroup, style);
+    //    GUILayout.Label("Enemy Per Group : " + enemyCountPerGroup, style);
 
-        GUILayout.Label("Enemy Count : " + DataManager.allEnemyDict.Count, style);
+    //    GUILayout.Label("Enemy Count : " + DataManager.allEnemyDict.Count, style);
 
-        GUILayout.Label("Player Level : " + pdata.Level, style);
+    //    GUILayout.Label("Player Level : " + pdata.Level, style);
 
-        GUILayout.Label("Is Wave : " + isWave, style);
+    //    GUILayout.Label("Is Wave : " + isWave, style);
 
-        GUILayout.EndArea();
-    }
+    //    GUILayout.EndArea();
+    //}
     private void OnDisable()
     {
         DataManager.Clear();

@@ -71,14 +71,15 @@ public class DataManager
             data.id = int.Parse(row[0]);
             data.moveSpeed = float.Parse(row[1]);
             data.hp = int.Parse(row[2]);
-            data.scale = float.Parse(row[3]);
+            data.damage = float.Parse(row[3]);
+            data.scale = float.Parse(row[4]);
 
             // CSV中直接写数字
             // 0 Normal
             // 1 Fast
             // 2 Thick
-            data.type = (EnemyType)int.Parse(row[4]);
-            data.CurrentWeaponIndex = int.Parse(row[5]);
+            data.type = (EnemyType)int.Parse(row[5]);
+            data.CurrentWeaponIndex = int.Parse(row[6]);
 
             enemyDataDict[data.id] = data;
         }

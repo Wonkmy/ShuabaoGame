@@ -70,6 +70,15 @@ public class Player : Entity
     public override Entity GetNearestTarget() {
         return GameManager.Instance.FindClosedEnemy(transform.position)?.GetComponent<Entity>();
     }
+
+    public void AddHP(int v)
+    {
+        currentHp += v;
+        if (currentHp > totalHp)
+        {
+            currentHp = totalHp;
+        }
+    }
     public void AddExp(int exp)
     {
         currentExp += exp;
@@ -79,7 +88,7 @@ public class Player : Entity
             currentExp = currentExp - needExp;
             needExp = (int)(needExp * 1.25f);
             // 升级时稍微增加一点移速
-            moveSpeed += 1f;
+            moveSpeed += 0.05f;
             // 升级啦!
             GameManager.Instance.ShowLevelUpPanel(true);
         }
