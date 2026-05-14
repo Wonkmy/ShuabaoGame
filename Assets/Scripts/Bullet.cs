@@ -128,7 +128,7 @@ public class Bullet : MonoBehaviour
 
         if (distance < 0.7f)
         {
-            player.TakeDamage(Mathf.CeilToInt(myBulletData.damage));
+            player.TakeDamage(Mathf.CeilToInt(myBulletData.damage),false);
 
             Destroy(gameObject);
         }
@@ -211,7 +211,7 @@ public class Bullet : MonoBehaviour
         }
 
         // 主目标伤害
-        entity.TakeDamage(Mathf.CeilToInt(finalDamage));
+        entity.TakeDamage(Mathf.CeilToInt(finalDamage), isCrit);
 
         // 原本AOE
         HandleAOE(entity, finalDamage);
@@ -262,7 +262,7 @@ public class Bullet : MonoBehaviour
             if (e == entity.gameObject)
                 continue;
 
-            e.GetComponent<Entity>().TakeDamage(Mathf.CeilToInt(finalDamage * 0.5f));
+            e.GetComponent<Entity>().TakeDamage(Mathf.CeilToInt(finalDamage * 0.5f),false);
         }
     }
 
@@ -275,7 +275,7 @@ public class Bullet : MonoBehaviour
             if (e == entity.gameObject)
                 continue;
 
-            e.GetComponent<Entity>().TakeDamage(Mathf.CeilToInt(finalDamage * 0.8f));
+            e.GetComponent<Entity>().TakeDamage(Mathf.CeilToInt(finalDamage * 0.8f),true);
         }
     }
 
@@ -285,7 +285,7 @@ public class Bullet : MonoBehaviour
 
         foreach (var e in allEnemys)
         {
-            e.GetComponent<Entity>().TakeDamage(Mathf.CeilToInt(finalDamage * 0.3f));
+            e.GetComponent<Entity>().TakeDamage(Mathf.CeilToInt(finalDamage * 0.3f), false);
         }
     }
 }

@@ -19,7 +19,7 @@ public class Entity : MonoBehaviour
     protected SpriteRenderer view;// 角色的SpriteRenderer组件
 
     public virtual Entity GetNearestTarget() {  return null; }
-    public virtual void TakeDamage(int damage) { }
+    public virtual void TakeDamage(int damage,bool isCrit) { }
     public virtual void RotateToDetination(Vector3 target) { }
 
     public virtual void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount = 3) { }

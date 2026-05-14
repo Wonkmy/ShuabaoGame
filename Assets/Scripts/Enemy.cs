@@ -73,7 +73,7 @@ public class Enemy : Entity
         return target.GetComponent<Entity>();
     }
 
-    public override void TakeDamage(int damage)
+    public override void TakeDamage(int damage, bool isCrit)
     {
         currentHp -= damage;
 
@@ -82,7 +82,7 @@ public class Enemy : Entity
 
         GameObject newBullet = Instantiate(Resources.Load<GameObject>("damage_txt"));
         newBullet.transform.position = transform.position + new Vector3(0, 0.5f, 0);
-        newBullet.GetComponent<DamageText>().SetDamageText(damage);
+        newBullet.GetComponent<DamageText>().SetDamageText(damage, isCrit);
         DataManager.allDamageText.Add(newBullet);
         if (currentHp <= 0)
         {

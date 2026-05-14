@@ -179,7 +179,7 @@ public class Player : Entity
         transform.position = wpos;
     }
 
-    public override void TakeDamage(int damage)
+    public override void TakeDamage(int damage,bool isCrit)
     {
         if (IsInvincible) return;
         currentHp -= damage;
