@@ -16,6 +16,7 @@ public class Entity : MonoBehaviour
     public string EntityTag { get; set; }
 
     protected Weapon weapon;// 武器类
+    protected SpriteRenderer view;// 角色的SpriteRenderer组件
 
     public virtual Entity GetNearestTarget() {  return null; }
     public virtual void TakeDamage(int damage) { }

@@ -26,6 +26,9 @@ public class Player : Entity
     public bool HasPierceExplosion { get; set; }
     public bool HasLowBulletHighDamage { get; set; }
 
+    // 是否是无敌状态，测试用.
+    public bool IsInvincible { get; set; }
+
     public void AddKilledCount()
     {
         KilledCount++;
@@ -178,6 +181,7 @@ public class Player : Entity
 
     public override void TakeDamage(int damage)
     {
+        if (IsInvincible) return;
         currentHp -= damage;
         GetComponentInChildren<SpriteRenderer>().color = Color.red;
         StartCoroutine(ResetColor());

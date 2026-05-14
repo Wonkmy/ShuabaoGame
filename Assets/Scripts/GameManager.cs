@@ -4,6 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class GameManager : MonoBehaviour
 {
@@ -23,7 +24,22 @@ public class GameManager : MonoBehaviour
 
     public bool GameOver { get; set; }
     // 当前刷怪预算
-    float enemyBudget = 0;
+    //float enemyBudget = 0;
+    // =========================
+    // 波次刷怪系统
+    // =========================
+
+    // 波次计时器
+    float spawnWaveTimer = 0;
+
+    // 波次间隔
+    float spawnWaveInterval = 4f;
+
+    // 每组怪物数量
+    int enemyCountPerGroup = 6;
+
+    // 当前波次组数量
+    int currentWaveGroupCount = 1;
     // 游戏时间
     float gameTime = 0;
     // 当前难度
@@ -48,12 +64,20 @@ public class GameManager : MonoBehaviour
     public float HitStopIntensity { get; set; }
 
     GameObject warningObject;
+
+    // 特殊事件相关
+    private float specialEventTimer = 0;
+    private float specoalApperInterval = 45f;// 特殊事件出现间隔
+    public bool IsSpecialEvent { get; set; }// 是否正在进行特殊事件
+    private EnemyType[] enemyTypes;// 特殊事件专用的敌人类型：精英、Boss
     private void Start()
     {
         DataManager.Init();
         LoadDefaultUpgradeConfig();
         SpwanExpAndHpBar();
-
+        enemyTypes = new EnemyType[2];
+        enemyTypes[0] = EnemyType.Elite;
+        enemyTypes[1] = EnemyType.Boss;
         Init();
     }
 
@@ -285,11 +309,22 @@ public class GameManager : MonoBehaviour
             // 重置尸潮、难度、预算、游戏时间等所有数据
             isWave = false;
             difficulty = 3;
-            enemyBudget = 0;
             gameTime = 0;
             HitStopDuration = 0;
             HitStopIntensity = 0;
             safeSide = 0;
+            // 波次计时器
+            spawnWaveTimer = 0;
+            // 波次间隔
+            spawnWaveInterval = 4f;
+            // 每组怪物数量
+            enemyCountPerGroup = 6;
+            // 当前波次组数量
+            currentWaveGroupCount = 1;
+            // 特殊事件相关
+            IsSpecialEvent = false;
+            specialEventTimer = 0;
+
             warningObject = null;
             GameManager.Instance.cameraEffect.intensity = 0;
             mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
@@ -382,17 +417,33 @@ public class GameManager : MonoBehaviour
         gameTime += Time.deltaTime;
         difficulty = Mathf.Clamp(2 + Mathf.FloorToInt(gameTime / 30f), 2, 8);
 
-        // 累积刷怪预算
-        enemyBudget += Time.deltaTime * difficulty;
-        
-        // 尸潮逻辑
-        UpdateWave();
-        if (isWave)
+        // 特殊事件逻辑
+        specialEventTimer += Time.deltaTime;
+
+        // 时间到了并且当前没有特殊事件
+        if (!IsSpecialEvent && specialEventTimer >= specoalApperInterval)
         {
-            enemyBudget += Time.deltaTime * 25;
+            specialEventTimer = 0;
+
+            IsSpecialEvent = true;
+
+            EnemyType enemyType = enemyTypes[Random.Range(0, enemyTypes.Length)];
+
+            SpawnSpecialEnemy(enemyType);
+
+            Debug.Log("特殊事件开始");
         }
-        // 刷怪
-        TrySpawnEnemy();
+
+        // 只有非特殊事件时
+        // 才正常刷怪
+        if (!IsSpecialEvent)
+        {
+            // 尸潮逻辑
+            UpdateWave();
+
+            // 波次刷怪
+            UpdateSpawnWave();
+        }
 
         // 绘制网格
         DrawGrid();
@@ -444,6 +495,28 @@ public class GameManager : MonoBehaviour
             isWave = false;
             waveTimer = 15;
         }
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            player.GetComponent<Player>().IsInvincible = true;
+        }
+    }
+
+    // 生成特殊敌人
+    void SpawnSpecialEnemy(EnemyType enemyType)
+    {
+        GameObject newEnemy = Instantiate(Resources.Load<GameObject>("enemy"));
+
+        Enemy enemy = newEnemy.GetComponent<Enemy>();
+
+        enemy.target = player.transform;
+        enemy.SetEnemy(DataManager.enemyDataDict[(int)enemyType]);
+        enemy.IsSpecialEnemy = true;
+        // 屏幕外随机位置
+        Vector3 centerPos = GetEnemyGroupCenter();
+
+        newEnemy.transform.position = centerPos;
+
+        DataManager.allEnemyDict.Add(newEnemy);
     }
 
     // 尸潮逻辑
@@ -501,26 +574,122 @@ public class GameManager : MonoBehaviour
         warningObject.SetActive(false);
     }
 
-    // 尝试刷怪
-    void TrySpawnEnemy()
+    // 波次刷怪更新
+    void UpdateSpawnWave()
     {
+        spawnWaveTimer += Time.deltaTime;
+
+        // 时间到，生成波次
+        if (spawnWaveTimer >= spawnWaveInterval)
+        {
+            spawnWaveTimer = 0;
+
+            SpawnWave();
+        }
+
+        // 难度成长
+        currentWaveGroupCount = Mathf.Clamp(1 + Mathf.FloorToInt(gameTime / 60f), 1, 5);
+
+        enemyCountPerGroup = Mathf.Clamp(6 + Mathf.FloorToInt(gameTime / 30f), 6, 20);
+    }
+
+    // 生成一整个波次
+    void SpawnWave()
+    {
+        // =========================
+        // 尸潮
+        // =========================
         if (isWave)
         {
-            maxSpawnPerFrame = 10;
+            // 尸潮保持单方向大群
+            StartCoroutine(SpawnEnemyGroup(0));
+
+            return;
         }
-        else
+
+        // =========================
+        // 普通波次
+
+        // 随机生成1~3个敌群
+        int groupCount = Random.Range(1, 4);
+
+        for (int i = 0; i < groupCount; i++)
         {
-            maxSpawnPerFrame = 4;
-        }
-        int currentSpawnCount = 0;
-        while (enemyBudget >= 5 && currentSpawnCount < maxSpawnPerFrame)
-        {
-            enemyBudget -= 5;
-            GenEnemy();
-            currentSpawnCount++;
+            StartCoroutine(SpawnEnemyGroup(i * 0.25f));
         }
     }
 
+    // 生成一组敌人
+    IEnumerator SpawnEnemyGroup(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        int count = 0;
+
+        if (isWave)
+        {
+            count = enemyCountPerGroup * 2;
+        }
+        else
+        {
+            count = Random.Range(3, 7);
+        }
+
+        Vector3 centerPos = GetEnemyGroupCenter();
+
+        // =========================
+        // 创建敌群中心
+        // =========================
+        GameObject centerObj = new GameObject("EnemyGroupCenter");
+
+        centerObj.transform.position = centerPos;
+
+        // =========================
+        // 创建动态预警
+        // =========================
+        GameObject warning =
+            ShowWarning(centerObj.transform);
+
+        // 预警时间
+        yield return new WaitForSeconds(0.8f);
+
+        Destroy(warning);
+
+        // =========================
+        // 正式生成
+        // =========================
+        for (int i = 0; i < count; i++)
+        {
+            float spreadRadius = 0;
+
+            if (isWave)
+            {
+                spreadRadius = 6f;
+            }
+            else
+            {
+                spreadRadius = 4f;
+            }
+
+            Vector2 randomOffset = Random.insideUnitCircle * spreadRadius;
+
+            Vector3 spawnPos = centerPos + new Vector3(randomOffset.x, randomOffset.y, 0);
+
+            GenEnemy(spawnPos);
+        }
+
+        Destroy(centerObj);
+    }
+
+    GameObject ShowWarning(Transform target)
+    {
+        GameObject obj = Instantiate(Resources.Load<GameObject>("warning"));
+
+        obj.GetComponent<EnemyWarning>().target = target;
+
+        return obj;
+    }
+    
     void GenPlayer()
     {
         player = Instantiate(Resources.Load<GameObject>("player"));
@@ -594,6 +763,86 @@ public class GameManager : MonoBehaviour
         newEnemy.transform.position = wpos;
 
         DataManager.allEnemyDict.Add(newEnemy);
+    }
+
+    void GenEnemy(Vector3 spawnPos)
+    {
+        GameObject newEnemy = Instantiate(Resources.Load<GameObject>("enemy"));
+
+        newEnemy.GetComponent<Enemy>().target = player.transform;
+
+        int enemyId = 0;
+        if (isWave)
+        {
+            enemyId = Random.Range(0, 3);
+        }
+        else
+        {
+            // 根据游戏时间和难度来决定敌人类型，随着时间推移更强的敌人出现概率增加。但是不会生成最后一个和倒数第二个，因为最后一个通常是boss，倒数第二个通常是特殊敌人
+            enemyId = Random.Range(0, Mathf.Min(2 + Mathf.FloorToInt(gameTime / 60f), DataManager.enemyDataDict.Count - 2));
+        }
+        newEnemy.GetComponent<Enemy>().SetEnemy(DataManager.enemyDataDict[enemyId]);
+
+        newEnemy.transform.position = spawnPos;
+
+        DataManager.allEnemyDict.Add(newEnemy);
+    }
+    Vector3 GetEnemyGroupCenter()
+    {
+        float x = 0;
+        float y = 0;
+
+        // 0 左 1 右 2 下 3 上 4 左上 5 右上 6 左下 7 右下
+        int side = Random.Range(0, 8);
+
+        if (isWave)
+        {
+            while (side == safeSide)
+            {
+                side = Random.Range(0, 8);
+            }
+        }
+
+        switch (side)
+        {
+            case 0:
+                x = -offset;
+                y = Random.Range(0, Screen.height);
+                break;
+            case 1:
+                x = Screen.width + offset;
+                y = Random.Range(0, Screen.height);
+                break;
+            case 2:
+                x = Random.Range(0, Screen.width);
+                y = -offset;
+                break;
+            case 3:
+                x = Random.Range(0, Screen.width);
+                y = Screen.height + offset;
+                break;
+            case 4:
+                x = -offset;
+                y = Screen.height + offset;
+                break;
+            case 5:
+                x = Screen.width + offset;
+                y = Screen.height + offset;
+                break;
+            case 6:
+                x = -offset;
+                y = -offset;
+                break;
+            case 7:
+                x = Screen.width + offset;
+                y = -offset;
+                break;
+        }
+
+        Vector3 wpos = GetWorldPosByScreenPos(new Vector3(x, y, 0));
+        wpos.z = 0;
+
+        return wpos;
     }
 
     public GameObject SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, int CurrentUsedBulletIndex, Entity belongWho)
@@ -776,7 +1025,10 @@ public class GameManager : MonoBehaviour
 
         GUILayout.Label("Difficulty : " + difficulty, style);
 
-        GUILayout.Label("Enemy Budget : " + enemyBudget.ToString("F1"), style);
+        //GUILayout.Label("Enemy Budget : " + enemyBudget.ToString("F1"), style);
+        GUILayout.Label("Wave Group Count : " + currentWaveGroupCount, style);
+
+        GUILayout.Label("Enemy Per Group : " + enemyCountPerGroup, style);
 
         GUILayout.Label("Enemy Count : " + DataManager.allEnemyDict.Count, style);
 

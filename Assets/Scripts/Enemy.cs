@@ -9,13 +9,17 @@ public class Enemy : Entity
     public EnemyType enemyType;
     public Transform target;
     public bool hasShield = false;
+    public bool IsSpecialEnemy { get; set; }// 是否是特殊怪物（精英怪和Boss）
     public void SetEnemy(EnemyData enemyData)
     {
+        view = GetComponentInChildren<SpriteRenderer>();
         enemyType = enemyData.type;
         moveSpeed = enemyData.moveSpeed;
         transform.localScale = Vector3.one * enemyData.scale;
         totalHp = enemyData.hp;
         currentHp = enemyData.hp;
+
+        view.sprite = Resources.Load<Sprite>("sprites/" + enemyType.ToString().ToLower());
 
         FirePos = transform;
         attackType = AttackType.Sector;
@@ -123,6 +127,11 @@ public class Enemy : Entity
 
         // 增加击杀统计
         GameManager.Instance.player.GetComponent<Player>().AddKilledCount();
+
+        if (IsSpecialEnemy)
+        {
+            GameManager.Instance.IsSpecialEvent = false;// 结束特殊事件
+        }
 
         DataManager.allEnemyDict.Remove(gameObject);// 从敌人字典中移除
         Destroy(gameObject);

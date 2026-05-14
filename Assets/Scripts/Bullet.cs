@@ -143,18 +143,6 @@ public class Bullet : MonoBehaviour
         {
             Entity entity = DataManager.allEnemyDict[i].GetComponent<Entity>();
 
-            if (entity.EntityTag == "enemy")
-            {
-                Enemy enemy = (Enemy)entity;
-
-                if (enemy.hasShield)
-                {
-                    enemy.RemoveShild();
-
-                    continue;
-                }
-            }
-
             if (entity.EntityTag == BelongWho.EntityTag || entity.Dead)
             {
                 continue;
@@ -164,8 +152,16 @@ public class Bullet : MonoBehaviour
 
             if (distance < 0.7f)
             {
-                HandleDamage(entity);
+                if (entity.EntityTag == "enemy")
+                {
+                    Enemy enemy = (Enemy)entity;
 
+                    if (enemy.hasShield)
+                    {
+                        enemy.RemoveShild();
+                    }
+                }
+                HandleDamage(entity);
                 break;
             }
         }
