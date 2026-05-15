@@ -189,13 +189,14 @@ public class Bullet : MonoBehaviour
         }
 
         // 基础伤害
-        float attack = weapon.weaponData.Attack * (int)myBulletData.damage * player.playerData.Level;
+        float attack = weapon.weaponData.Attack * (int)myBulletData.damage;
 
         float powerAttack = attack * player.playerData.power;
 
-        float penetrate = (int)myBulletData.damage * 1.2f;
-
-        float fValue = 100.0f / (100.0f + Mathf.Max(3 - penetrate, 0));
+        Enemy enemy = (Enemy)entity;
+        float penetrate = PierceLeft;
+        float defence = 1.8f * (1.25f + (int)enemy.enemyType);// 敌人类型越高，防御越高
+        float fValue = 100.0f / (100.0f + Mathf.Max(defence - penetrate, 0));
 
         fValue = Mathf.Max(fValue, 0.5f);
 
@@ -210,7 +211,7 @@ public class Bullet : MonoBehaviour
         }
 
         // 主目标伤害
-        entity.TakeDamage(Mathf.CeilToInt(finalDamage), isCrit);
+        entity.TakeDamage(Mathf.FloorToInt(finalDamage), isCrit);
 
         // 原本AOE
         HandleAOE(entity, finalDamage);
@@ -264,7 +265,7 @@ public class Bullet : MonoBehaviour
             if (e == entity.gameObject)
                 continue;
 
-            e.GetComponent<Entity>().TakeDamage(Mathf.CeilToInt(finalDamage * 0.5f),false);
+            e.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(finalDamage * 0.5f),false);
         }
     }
 
@@ -277,7 +278,7 @@ public class Bullet : MonoBehaviour
             if (e == entity.gameObject)
                 continue;
 
-            e.GetComponent<Entity>().TakeDamage(Mathf.CeilToInt(finalDamage * 0.8f),true);
+            e.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(finalDamage * 0.8f),true);
         }
     }
 
@@ -287,7 +288,7 @@ public class Bullet : MonoBehaviour
 
         foreach (var e in allEnemys)
         {
-            e.GetComponent<Entity>().TakeDamage(Mathf.CeilToInt(finalDamage * 0.3f), false);
+            e.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(finalDamage * 0.3f), false);
         }
     }
 }

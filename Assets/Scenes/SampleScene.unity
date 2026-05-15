@@ -1100,6 +1100,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelPanel: {fileID: 54184021}
   gameOverPanel: {fileID: 1156865705}
+  playerPowerScore: 0
 --- !u!4 &1357866542
 Transform:
   m_ObjectHideFlags: 0

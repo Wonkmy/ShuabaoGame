@@ -13,7 +13,7 @@ public class Player : Entity
     public PlayerData playerData;
     private Transform fire;
     int currentExp = 0;
-    int needExp = 100;
+    int needExp = 50;
 
     Vector3 MoveDir;
     float MoveAngle;
@@ -32,6 +32,10 @@ public class Player : Entity
     public void AddKilledCount()
     {
         KilledCount++;
+    }
+    public void AddKilledCount(int count)
+    {
+        KilledCount += count;
     }
     public void Init(PlayerData data)
     {
@@ -70,7 +74,11 @@ public class Player : Entity
     public override Entity GetNearestTarget() {
         return GameManager.Instance.FindClosedEnemy(transform.position)?.GetComponent<Entity>();
     }
-
+    public void FilledTotalHp()
+    {
+        // 直接加满血
+        currentHp = totalHp;
+    }
     public void AddHP(int v)
     {
         currentHp += v;
@@ -95,6 +103,11 @@ public class Player : Entity
     }
     public int GetCurrentLevel()
     {
+        return level;
+    }
+    public int SetCurrentLevel(int newLevel)
+    {
+        level = newLevel;
         return level;
     }
     public float GetExpProgress()

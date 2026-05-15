@@ -91,17 +91,45 @@ public class Enemy : Entity
         GetComponentInChildren<SpriteRenderer>().color = Color.red;
         StartCoroutine(ResetColor());
 
-        GameObject newdamage = Instantiate(Resources.Load<GameObject>("damage_txt"));
+        Transform _canvas = GameObject.Find("Canvas").transform;
+        GameObject newdamage = Instantiate(Resources.Load<GameObject>("damage_txt"), _canvas);
+        RectTransform canvasRect = _canvas.GetComponent<RectTransform>();
+
+        
+
         float randomOffsetX = Random.Range(-0.3f, 0.3f);
         float randomOffsetY = Random.Range(0.3f, 0.7f);
-        newdamage.transform.position = transform.position + new Vector3(randomOffsetX, randomOffsetY, 0);
+        Vector3 worldPos = transform.position + new Vector3(randomOffsetX, randomOffsetY, 0);
+        Vector3 screenPoint = Camera.main.WorldToScreenPoint(worldPos);
+
+        Vector2 localPoint;
+        // 关键转换API
+        bool isInside = RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRect,   
+            screenPoint,  
+            null,         
+            out localPoint
+        );
+
+        newdamage.GetComponent<RectTransform>().anchoredPosition = localPoint;
         newdamage.GetComponent<DamageText>().SetDamageText(damage, isCrit);
         DataManager.allDamageText.Add(newdamage);
         if (currentHp <= 0)
         {
             Dead = true;
             CanMove = false;
-            GameManager.Instance.SpwanExpBall(transform.position, Mathf.CeilToInt(totalHp / 10.0f));
+            float baseExp;
+            switch (enemyType)
+            {
+                case EnemyType.Normal: baseExp = 2; break;
+                case EnemyType.Fast: baseExp = 3; break;
+                case EnemyType.Elite: baseExp = 6; break;
+                case EnemyType.Thick: baseExp = 8; break;
+                case EnemyType.Boss: baseExp = 10; break;
+                default: baseExp = 0; break;
+            }
+            int finalExp = (int)(baseExp * (isCrit ? 1.25f : 1f));
+            GameManager.Instance.SpwanExpBall(transform.position, Mathf.FloorToInt(finalExp));
             // 旋转缩小然后死亡
             StartCoroutine(DeathEffect());
         }
@@ -152,8 +180,12 @@ public class Enemy : Entity
         // 如果是精英怪或血厚怪，生成一个加血道具
         if (enemyType == EnemyType.Elite || enemyType == EnemyType.Thick)
         {
-            GameObject newAddHp = Instantiate(Resources.Load<GameObject>("add_hp"), transform.position, Quaternion.identity);
-            newAddHp.GetComponent<AddHP>().SetAddHP(10, GameManager.Instance.player);
+            float r = Random.Range(0f, 1f);
+            if(r < 0.233f)
+            {
+                GameObject newAddHp = Instantiate(Resources.Load<GameObject>("add_hp"), transform.position, Quaternion.identity);
+                newAddHp.GetComponent<AddHP>().SetAddHP(10, GameManager.Instance.player, true);
+            }
         }
 
         Instantiate(Resources.Load<GameObject>("deadFX"), transform.position, Quaternion.identity);

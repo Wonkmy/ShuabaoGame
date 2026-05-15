@@ -1,35 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-//public class DamageText : MonoBehaviour
-//{
-//    public TextMesh textMesh;
-
-//    public float Life { get; set; }
-//    public bool Dead { get; set; }
-
-//    public void SetDamageText(int damage,float _life = 0.35f)
-//    {
-//        textMesh.text = "-" + damage.ToString();
-//        Life = _life;
-//        Dead = false;
-//    }
-//    public void DamageTextUpdate()
-//    {
-//        Life -= Time.deltaTime;
-//        transform.position += new Vector3(0, 2.8f * Time.deltaTime, 0);
-//        if(Life <= 0)
-//        {
-//            Life = 0;
-//            Dead = true;
-//        }
-//    }
-//}
 
 public class DamageText : MonoBehaviour
 {
-    public TextMesh textMesh;
+    public Text textMesh;
 
     public float Life { get; set; }
 
@@ -49,16 +26,16 @@ public class DamageText : MonoBehaviour
 
         // 随机漂浮方向
         moveDir = new Vector3(
-            Random.Range(-1.6f, 1.6f),
-            Random.Range(3.5f, 3.5f),
+            Random.Range(-2.6f, 2.6f),
+            3.5f,
             0);
 
         // 暴击
         if (isCrit)
         {
             textMesh.color = Color.red;
-
-            transform.localScale = Vector3.one * 2.0f;
+            textMesh.fontSize = 38;
+            transform.localScale = Vector3.one * 3.8f;
 
             targetScale = Vector3.one * 1.2f;
         }
@@ -66,7 +43,7 @@ public class DamageText : MonoBehaviour
         {
             textMesh.color = Color.yellow;
 
-            transform.localScale = Vector3.one;
+            transform.localScale = Vector3.one * 1.2f;
 
             targetScale = Vector3.one * 0.7f;
         }
@@ -83,7 +60,7 @@ public class DamageText : MonoBehaviour
         transform.localScale = Vector3.Lerp(
             transform.localScale,
             targetScale,
-            Time.deltaTime * 10f);
+            Time.deltaTime * 18f);
 
         // 渐隐
         Color color = textMesh.color;

@@ -42,6 +42,18 @@ public class GameManager : MonoBehaviour
     int currentWaveGroupCount = 1;
     // 游戏时间
     float gameTime = 0;
+    // =========================
+    // 动态难度系统
+    // =========================
+
+    // 玩家战力评分
+    public int playerPowerScore = 0;
+
+    // 难度刷新计时器
+    float difficultyUpdateTimer = 0;
+
+    // 多久重新计算一次难度
+    float difficultyUpdateInterval = 10f;
     // 当前难度
     float difficulty = 1;
     // 尸潮相关
@@ -417,6 +429,17 @@ public class GameManager : MonoBehaviour
 
         // 游戏时间累计
         gameTime += Time.deltaTime;
+
+        // 动态难度刷新
+        difficultyUpdateTimer += Time.deltaTime;
+
+        if (difficultyUpdateTimer >= difficultyUpdateInterval)
+        {
+            difficultyUpdateTimer = 0;
+
+            UpdateDynamicDifficulty();
+        }
+
         difficulty = Mathf.Clamp(2 + Mathf.FloorToInt(gameTime / 30f), 2, 8);
 
         // 特殊事件逻辑
@@ -501,6 +524,75 @@ public class GameManager : MonoBehaviour
         {
             player.GetComponent<Player>().IsInvincible = true;
         }
+        if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.F1))
+        {
+            Player p = player.GetComponent<Player>();
+            p.SetCurrentLevel(10);
+
+            p.playerData.power += 5;
+
+            p.AddKilledCount(500);
+        }
+    }
+
+
+    void UpdateDynamicDifficulty()
+    {
+        Player player =
+            GameManager.Instance.player.GetComponent<Player>();
+
+        // =========================
+        // 计算玩家战力
+        // =========================
+
+        int levelScore =
+            player.playerData.Level * 5;
+
+        int killScore =
+            player.KilledCount / 10;
+
+        int buildScore =
+            player.buildDict.Count * 8;
+
+        int powerScore =
+            Mathf.FloorToInt(
+                player.playerData.power * 10);
+
+        playerPowerScore =
+            levelScore +
+            killScore +
+            buildScore +
+            powerScore;
+
+        // =========================
+        // 根据战力修改刷怪
+        // =========================
+
+        // 波次间隔
+        spawnWaveInterval =
+            Mathf.Clamp(
+                5f - playerPowerScore * 0.02f,
+                1.5f,
+                5f);
+
+        // 每组敌人数量
+        enemyCountPerGroup =
+            Mathf.Clamp(
+                5 + playerPowerScore / 15,
+                5,
+                25);
+
+        // 最大同时敌群数量
+        currentWaveGroupCount =
+            Mathf.Clamp(
+                1 + playerPowerScore / 40,
+                1,
+                5);
+
+        Debug.Log(
+            "玩家评分:" + playerPowerScore +
+            " 敌群:" + currentWaveGroupCount +
+            " 每组:" + enemyCountPerGroup);
     }
 
     // 生成特殊敌人
@@ -593,9 +685,9 @@ public class GameManager : MonoBehaviour
         }
 
         // 难度成长
-        currentWaveGroupCount = Mathf.Clamp(1 + Mathf.FloorToInt(gameTime / 60f), 1, 5);
+        //currentWaveGroupCount = Mathf.Clamp(1 + Mathf.FloorToInt(gameTime / 60f), 1, 5);
 
-        enemyCountPerGroup = Mathf.Clamp(6 + Mathf.FloorToInt(gameTime / 30f), 6, 20);
+        //enemyCountPerGroup = Mathf.Clamp(6 + Mathf.FloorToInt(gameTime / 30f), 6, 20);
     }
 
     // 生成一整个波次
@@ -689,7 +781,13 @@ public class GameManager : MonoBehaviour
     {
         GameObject obj = Instantiate(Resources.Load<GameObject>("warning"));
 
-        obj.GetComponent<EnemyWarning>().target = target;
+        EnemyWarning warning = obj.GetComponent<EnemyWarning>();
+        warning.Init();
+        warning.mainCamera = mainCamera;
+        warning.target = target;
+
+        // 立刻刷新一次
+        warning.RefreshPosition();
 
         return obj;
     }
@@ -703,9 +801,9 @@ public class GameManager : MonoBehaviour
         pdata = new PlayerData
         {
             Level = 1,// 玩家等级
-            Hp = 100,// 玩家生命值
+            Hp = 500,// 玩家生命值
             power = 1.0f,// 当前游戏倍率
-            MoveSpeed = 6f,// 玩家移动速度
+            MoveSpeed = 5.6f,// 玩家移动速度
             CurrentWeaponIndex = 0// 玩家当前使用的武器id
         };
 

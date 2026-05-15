@@ -6,18 +6,40 @@ public class EnemyWarning : MonoBehaviour
 {
     public Transform target;
 
-    Camera mainCamera;
+    public Camera mainCamera { get; set; }
     GameObject view;
 
-    void Start()
+    public void Init()
     {
-        mainCamera = Camera.main;
-
         view = transform.Find("view").gameObject;
         view.SetActive(false);
         StartCoroutine(ShowFlashWarningTxt());
     }
+    public void RefreshPosition()
+    {
+        Vector3 screenPos = mainCamera.WorldToScreenPoint(target.position);
 
+        float padding = 80f;
+
+        screenPos.x =
+            Mathf.Clamp(
+                screenPos.x,
+                padding,
+                Screen.width - padding);
+
+        screenPos.y =
+            Mathf.Clamp(
+                screenPos.y,
+                padding,
+                Screen.height - padding);
+
+        Vector3 worldPos =
+            mainCamera.ScreenToWorldPoint(screenPos);
+
+        worldPos.z = 0;
+
+        transform.position = worldPos;
+    }
     IEnumerator ShowFlashWarningTxt()
     {
         view.SetActive(true);
@@ -46,26 +68,21 @@ public class EnemyWarning : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
-        Vector3 screenPos =
-            mainCamera.WorldToScreenPoint(target.position);
+        Vector3 screenPos = mainCamera.WorldToScreenPoint(target.position);
 
         float padding = 80f;
 
-        screenPos.x =
-            Mathf.Clamp(
+        screenPos.x = Mathf.Clamp(
                 screenPos.x,
                 padding,
                 Screen.width - padding);
 
-        screenPos.y =
-            Mathf.Clamp(
+        screenPos.y = Mathf.Clamp(
                 screenPos.y,
                 padding,
                 Screen.height - padding);
 
-        Vector3 worldPos =
-            mainCamera.ScreenToWorldPoint(screenPos);
+        Vector3 worldPos = mainCamera.ScreenToWorldPoint(screenPos);
 
         worldPos.z = 0;
 
