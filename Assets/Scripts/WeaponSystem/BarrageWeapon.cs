@@ -21,6 +21,15 @@ public class BarrageWeapon : Weapon
             return;
         }
 
+        Enemy enemy = entity as Enemy;
+        if (enemy != null) {
+           if(enemy.enemyType != EnemyType.Boss && enemy.enemyType != EnemyType.Elite)
+           {
+                base.AttackSector(fireDirection, firePos, currentBulletCount);
+                return;
+            }
+        }
+
         Vector3 mainDir = fireDirection.normalized;
         Vector3 sideDir = Vector3.Cross(mainDir, Vector3.forward).normalized;
 

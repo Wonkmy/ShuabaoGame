@@ -29,6 +29,15 @@ public class Player : Entity
     // 是否是无敌状态，测试用.
     public bool IsInvincible { get; set; }
 
+
+    // 冲刺相关
+    public bool IsDash { get; set; }
+    float dashTimer = 0;
+    float dashDuration = 0.12f;
+    float dashCooldown = 0;
+    float dashCooldownTime = 1.2f;
+    Vector3 dashDir;
+
     public void AddKilledCount()
     {
         KilledCount++;
@@ -123,6 +132,7 @@ public class Player : Entity
     {
         if(Dead) { return; }
 
+        UpdateDash();
         Move();
         Rotate();
     }
@@ -173,6 +183,9 @@ public class Player : Entity
 
         MoveDir = new Vector3(x, y, 0);
 
+        if (IsDash)
+            return;
+
         transform.position += MoveDir * moveSpeed * Time.deltaTime;
 
         Vector3 spos = GameManager.Instance.mainCamera.WorldToScreenPoint(transform.position);
@@ -199,6 +212,47 @@ public class Player : Entity
         wpos.z = transform.position.z;
 
         transform.position = wpos;
+    }
+
+    void UpdateDash()
+    {
+        // CD
+        if (dashCooldown > 0)
+        {
+            dashCooldown -= Time.deltaTime;
+        }
+
+        // Dash期间
+        if (IsDash)
+        {
+            dashTimer -= Time.deltaTime;
+
+            transform.position += dashDir * 18f * Time.deltaTime;
+
+            if (dashTimer <= 0)
+            {
+                dashTimer = 0;
+
+                IsDash = false;
+            }
+
+            return;
+        }
+
+        // 触发Dash
+        if (Input.GetKeyDown(KeyCode.Space) &&
+            dashCooldown <= 0)
+        {
+            
+
+            dashDir = MoveDir;
+
+            IsDash = true;
+
+            dashTimer = dashDuration;
+
+            dashCooldown = dashCooldownTime;
+        }
     }
 
     public override void TakeDamage(int damage,bool isCrit)

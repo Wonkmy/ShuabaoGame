@@ -10,8 +10,9 @@ public class Enemy : Entity
     public Transform target;
     public bool hasShield = false;
     public bool IsSpecialEnemy { get; set; }// 是否是特殊怪物（精英怪和Boss）
-
     public float Damage { get; set; }
+    public bool HasEnterScreen { get; set; }// 是否已经进入屏幕（用于怪物在视野内才能被攻击）
+    public bool IsBattleActive { get; set; }
     public void SetEnemy(EnemyData enemyData)
     {
         view = GetComponentInChildren<SpriteRenderer>();
@@ -45,7 +46,35 @@ public class Enemy : Entity
     public void EnemyUpdate()
     {
         if (Dead) { return; }
+        if (GameManager.Instance.IsTimeStop)
+            return;
+
         Rotate();
+
+        Vector3 viewPos = Camera.main.WorldToViewportPoint(transform.position);
+
+        if (!HasEnterScreen)
+        {
+            if (viewPos.x >= 0 &&
+                viewPos.x <= 1 &&
+                viewPos.y >= 0 &&
+                viewPos.y <= 1)
+            {
+                HasEnterScreen = true;
+                IsBattleActive = true;
+            }
+        }
+
+        if (GameManager.Instance.IsBlackHole)
+        {
+            transform.position =
+                Vector3.MoveTowards(
+                    transform.position,
+                    GameManager.Instance.BlackHolePos,
+                    8f * Time.deltaTime);
+
+            return;
+        }
         if (target != null && CanMove && Vector3.Distance(transform.position,target.position) > 5.5f)
         {
             transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);

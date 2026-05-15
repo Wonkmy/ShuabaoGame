@@ -101,12 +101,41 @@ public class Weapon
         }
     }
 
+    //public void WeaponUpdate()
+    //{
+    //    fireTime += Time.deltaTime;
+    //    if (entity.GetNearestTarget() != null)
+    //    {
+    //        GameObject ey = null;
+    //        if (lockedTarget == null)
+    //        {
+    //            ey = entity.GetNearestTarget().gameObject;
+    //        }
+    //        else
+    //        {
+    //            ey = lockedTarget;
+    //        }
+    //        entity.RotateToDetination(ey.transform.position);// 发现目标后立刻转向目标，防止出现未转向目标就攻击的情况
+    //        if (entity != null && ey != null)
+    //        {
+    //            if (fireTime >= fireInterval && Vector3.Distance(entity.transform.position, ey.transform.position) <= 10.0f)
+    //            {
+    //                fireFlashTimer = 0.0f;
+    //                lockedTarget = ey;
+    //                ProcessAttack();
+    //                fireTime = 0.0f;
+    //            }
+    //        }
+    //    }
+    //}
     public void WeaponUpdate()
     {
         fireTime += Time.deltaTime;
+
         if (entity.GetNearestTarget() != null)
         {
             GameObject ey = null;
+
             if (lockedTarget == null)
             {
                 ey = entity.GetNearestTarget().gameObject;
@@ -115,14 +144,36 @@ public class Weapon
             {
                 ey = lockedTarget;
             }
-            entity.RotateToDetination(ey.transform.position);// 发现目标后立刻转向目标，防止出现未转向目标就攻击的情况
+
+            // =========================
+            // 战场激活判断
+            // =========================
+            Enemy enemy = ey.GetComponent<Enemy>();
+
+            if (enemy != null)
+            {
+                // 敌人未真正进入战场
+                if (!enemy.IsBattleActive)
+                {
+                    lockedTarget = null;
+
+                    return;
+                }
+            }
+
+            entity.RotateToDetination(ey.transform.position);
+
             if (entity != null && ey != null)
             {
-                if (fireTime >= fireInterval && Vector3.Distance(entity.transform.position, ey.transform.position) <= 10.0f)
+                if (fireTime >= fireInterval &&
+                    Vector3.Distance(entity.transform.position, ey.transform.position) <= 10.0f)
                 {
                     fireFlashTimer = 0.0f;
+
                     lockedTarget = ey;
+
                     ProcessAttack();
+
                     fireTime = 0.0f;
                 }
             }

@@ -23,6 +23,30 @@ public class GameManager : MonoBehaviour
     public GameObject gameOverPanel;
 
     public bool GameOver { get; set; }
+
+    // =========================
+    // 数值配置区
+    // =========================
+    [Header("波次配置")]
+    public float spawnWaveIntervalBase = 4f;
+    public int normalGroupMin = 1;
+    public int normalGroupMax = 3;
+    public int normalEnemyMin = 3;
+    public int normalEnemyMax = 7;
+    public int waveEnemyMultiplier = 2;
+
+    [Header("尸潮配置")]
+    public float waveAppearInterval = 15f;
+    public float waveDuration = 5f;
+
+    [Header("特殊事件配置")]
+    public float specialEventInterval = 45f;
+
+    [Header("玩家配置")]
+    public float dashCooldownTime = 1.2f;
+    public float dashSpeed = 18f;
+    public float dashDuration = 0.12f;
+
     // 当前刷怪预算
     //float enemyBudget = 0;
     // =========================
@@ -33,7 +57,7 @@ public class GameManager : MonoBehaviour
     float spawnWaveTimer = 0;
 
     // 波次间隔
-    float spawnWaveInterval = 4f;
+    float spawnWaveInterval = 4f;// 当前动态波次间隔
 
     // 每组怪物数量
     int enemyCountPerGroup = 6;
@@ -79,9 +103,18 @@ public class GameManager : MonoBehaviour
 
     // 特殊事件相关
     private float specialEventTimer = 0;
-    private float specoalApperInterval = 45f;// 特殊事件出现间隔
+    // private float specoalApperInterval = 45f;// 已废弃，改为配置区
     public bool IsSpecialEvent { get; set; }// 是否正在进行特殊事件
     private EnemyType[] enemyTypes;// 特殊事件专用的敌人类型：精英、Boss
+
+    // 时间停止相关
+    public bool IsTimeStop = false;
+    float timeStopTimer = 0;// 剩余时间
+
+    // 黑洞技能相关
+    public bool IsBlackHole = false;
+    public Vector3 BlackHolePos;
+    float blackHoleTimer = 0;
     private void Start()
     {
         DataManager.Init();
@@ -154,15 +187,6 @@ public class GameManager : MonoBehaviour
         });
 
 
-        //DataManager.upgradeList.Add(new UpgradeData()
-        //{
-        //    name = "攻速提升",
-        //    tag = "attack_speed",
-        //    action = () =>
-        //    {
-        //        player.GetComponent<Player>().GetCurrentWeapon().ChangeFireInterval(0.05f);
-        //    }
-        //});
 
         DataManager.upgradeList.Add(new UpgradeData()
         {
@@ -203,28 +227,10 @@ public class GameManager : MonoBehaviour
             tag = "power",
             action = () =>
             {
-                // 子弹减少
-                player.GetComponent<Player>().CurrentBulletCount = Mathf.Max(1, player.GetComponent<Player>().CurrentBulletCount - 2);
-
                 // 高倍率
                 player.GetComponent<Player>().playerData.power += 1f;
             }
         });
-
-        // 狂暴机枪
-        //DataManager.upgradeList.Add(new UpgradeData()
-        //{
-        //    name = "狂暴机枪",
-        //    tag = "attack_speed",
-        //    action = () =>
-        //    {
-        //        // 超高攻速
-        //        player.GetComponent<Player>().GetCurrentWeapon().ChangeFireInterval(0.05f);
-
-        //        // 子弹伤害降低
-        //        player.GetComponent<Player>().playerData.power -= 0.15f;
-        //    }
-        //});
 
         // 游击模式
         DataManager.upgradeList.Add(new UpgradeData()
@@ -307,7 +313,8 @@ public class GameManager : MonoBehaviour
         gameOverPanel.GetComponent<GameOverPanel>().Init(gameTime, playerC.KilledCount, difficulty, playerC.GetCurrentLevel());
     }
 
-    void ResetAllGameDatas() {
+    void ResetAllGameDatas()
+    {
         try
         {
             // 清理所有敌人和子弹、数据、字典、玩家已有的构筑列表buildDict、HasCritExplosion、HasPierceExplosion、HasLowBulletHighDamage
@@ -329,7 +336,7 @@ public class GameManager : MonoBehaviour
             // 波次计时器
             spawnWaveTimer = 0;
             // 波次间隔
-            spawnWaveInterval = 4f;
+            spawnWaveInterval = spawnWaveIntervalBase;
             // 每组怪物数量
             enemyCountPerGroup = 6;
             // 当前波次组数量
@@ -338,7 +345,7 @@ public class GameManager : MonoBehaviour
             IsSpecialEvent = false;
             specialEventTimer = 0;
 
-
+            Destroy(warningObject);
             warningObject = null;
             GameManager.Instance.cameraEffect.intensity = 0;
             mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
@@ -350,16 +357,18 @@ public class GameManager : MonoBehaviour
             Debug.LogError("ShowGameOverPanel error: " + e.Message);
         }
     }
-    public void RestartGame() {
+    public void RestartGame()
+    {
         ResetAllGameDatas();
         Init();
     }
-    public void Revival() { 
-    
+    public void Revival()
+    {
+
     }
     private void Update()
     {
-        if(GameOver)
+        if (GameOver)
         {
             return;
         }
@@ -404,10 +413,11 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        for (int i = DataManager.allDamageText.Count - 1; i >=0 ; i--)
+        for (int i = DataManager.allDamageText.Count - 1; i >= 0; i--)
         {
             DamageText damageText = DataManager.allDamageText[i].GetComponent<DamageText>();
-            if (damageText.Dead) {
+            if (damageText.Dead)
+            {
                 Destroy(DataManager.allDamageText[i]);// 销毁对象
                 DataManager.allDamageText.RemoveAt(i);// 从列表中移除
             }
@@ -446,7 +456,7 @@ public class GameManager : MonoBehaviour
         specialEventTimer += Time.deltaTime;
 
         // 时间到了并且当前没有特殊事件
-        if (!IsSpecialEvent && specialEventTimer >= specoalApperInterval)
+        if (!IsSpecialEvent && specialEventTimer >= specialEventInterval)
         {
             specialEventTimer = 0;
 
@@ -468,6 +478,33 @@ public class GameManager : MonoBehaviour
 
             // 波次刷怪
             UpdateSpawnWave();
+        }
+
+        // 时间停止计时
+        if (IsTimeStop)
+        {
+            timeStopTimer -= Time.deltaTime;
+
+            if (timeStopTimer <= 0)
+            {
+                timeStopTimer = 0;
+
+                IsTimeStop = false;
+            }
+        }
+
+
+        // 黑洞停止计时
+        if (IsBlackHole)
+        {
+            blackHoleTimer -= Time.deltaTime;
+
+            if (blackHoleTimer <= 0)
+            {
+                blackHoleTimer = 0;
+
+                IsBlackHole = false;
+            }
         }
 
         // 绘制网格
@@ -533,9 +570,87 @@ public class GameManager : MonoBehaviour
 
             p.AddKilledCount(500);
         }
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            ExecuteTimeStop();
+        }
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            ExecuteBlackHole(player.transform.position);
+        }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            ExecuteNuke();
+        }
     }
 
+    /// <summary>
+    /// 黑洞启动
+    /// </summary>
+    /// <param name="pos"></param>
+    public void ExecuteBlackHole(Vector3 pos)
+    {
+        IsBlackHole = true;
 
+        BlackHolePos = pos;
+
+        blackHoleTimer = 4f;
+
+        Debug.Log("黑洞启动");
+    }
+
+    /// <summary>
+    /// 时间停止
+    /// </summary>
+    /// <param name="duration"></param>
+    public void ExecuteTimeStop(float duration = 3f)
+    {
+        IsTimeStop = true;
+
+        timeStopTimer = duration;
+
+        Debug.Log("时间停止");
+    }
+
+    /// <summary>
+    /// 核爆，清屏技能，直接秒杀所有非Boss/精英敌人，Boss/精英敌人伤害9999
+    /// </summary>
+    public void ExecuteNuke()
+    {
+        ShakeMainCamera(0.6f, 0.5f);
+
+        StartCoroutine(NukeEffect());
+
+        for (int i = DataManager.allEnemyDict.Count - 1; i >= 0; i--)
+        {
+            if (DataManager.allEnemyDict[i] == null)
+                continue;
+
+            Enemy enemy =
+                DataManager.allEnemyDict[i]
+                .GetComponent<Enemy>();
+
+            // Boss/精英
+            if (enemy.IsSpecialEnemy)
+            {
+                enemy.TakeDamage(600, false);
+            }
+            else
+            {
+                enemy.TakeDamage(999999, false);
+            }
+        }
+    }
+
+    IEnumerator NukeEffect()
+    {
+        mainCamera.backgroundColor = Color.white;
+        yield return new WaitForSeconds(0.08f);
+        mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
+        mainCamera.backgroundColor = Color.white;
+        yield return new WaitForSeconds(0.08f);
+        mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
+    }
     void UpdateDynamicDifficulty()
     {
         Player player =
@@ -598,19 +713,23 @@ public class GameManager : MonoBehaviour
     // 生成特殊敌人
     void SpawnSpecialEnemy(EnemyType enemyType)
     {
-        GameObject newEnemy = Instantiate(Resources.Load<GameObject>("enemy"));
+        // 如果enemyType是Elite，则生成两只。如果是Boss，则生成一只。
+        int count = enemyType == EnemyType.Elite ? 2 : 1;
 
-        Enemy enemy = newEnemy.GetComponent<Enemy>();
+        for (int i = 0; i < count; i++)
+        {
+            GameObject newEnemy = Instantiate(Resources.Load<GameObject>("enemy"));
+            Enemy enemy = newEnemy.GetComponent<Enemy>();
+            enemy.target = player.transform;
+            enemy.SetEnemy(DataManager.enemyDataDict[(int)enemyType]);
+            enemy.IsSpecialEnemy = true;
+            // 屏幕外随机位置
+            Vector3 centerPos = GetEnemyGroupCenter();
 
-        enemy.target = player.transform;
-        enemy.SetEnemy(DataManager.enemyDataDict[(int)enemyType]);
-        enemy.IsSpecialEnemy = true;
-        // 屏幕外随机位置
-        Vector3 centerPos = GetEnemyGroupCenter();
+            newEnemy.transform.position = centerPos;
 
-        newEnemy.transform.position = centerPos;
-
-        DataManager.allEnemyDict.Add(newEnemy);
+            DataManager.allEnemyDict.Add(newEnemy);
+        }
     }
 
     // 尸潮逻辑
@@ -619,7 +738,7 @@ public class GameManager : MonoBehaviour
         waveTimer += Time.deltaTime;
 
         // 每30秒触发一次尸潮
-        if (!isWave && waveTimer >= 15)
+        if (!isWave && waveTimer >= waveAppearInterval)
         {
             isWave = true;
             waveTimer = 0;
@@ -708,7 +827,7 @@ public class GameManager : MonoBehaviour
         // 普通波次
 
         // 随机生成1~3个敌群
-        int groupCount = Random.Range(1, 4);
+        int groupCount = Random.Range(normalGroupMin, normalGroupMax + 1);
 
         for (int i = 0; i < groupCount; i++)
         {
@@ -725,7 +844,7 @@ public class GameManager : MonoBehaviour
 
         if (isWave)
         {
-            count = enemyCountPerGroup * 2;
+            count = enemyCountPerGroup * waveEnemyMultiplier;
         }
         else
         {
@@ -791,7 +910,7 @@ public class GameManager : MonoBehaviour
 
         return obj;
     }
-    
+
     void GenPlayer()
     {
         player = Instantiate(Resources.Load<GameObject>("player"));

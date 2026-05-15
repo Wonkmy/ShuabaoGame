@@ -60,6 +60,11 @@ public class Bullet : MonoBehaviour
         if (!CanMove)
             return;
 
+        if (GameManager.Instance.IsTimeStop && BelongWho.EntityTag == "enemy")
+        {
+            return;
+        }
+
         Move();
 
         Rotate();
@@ -156,7 +161,10 @@ public class Bullet : MonoBehaviour
                 if (entity.EntityTag == "enemy")
                 {
                     Enemy enemy = (Enemy)entity;
-
+                    if (!enemy.HasEnterScreen)
+                    {
+                        continue;
+                    }
                     if (enemy.hasShield)
                     {
                         enemy.RemoveShild();
