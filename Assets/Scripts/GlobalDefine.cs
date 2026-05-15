@@ -69,11 +69,17 @@ public enum AttackType
     Cicle
 }
 /// <summary>
-/// 武器类型，当做标签来使用。例如：不同武器数据的武器，数据都是不同的，攻击方式也不同，但是他们却有可能都属于Normal类型
+/// 武器类型
+/// 这里并不是定义的武器类型，而是具体的武器实体类。例如：这是Normal的武器，还是敌人专属武器，还是玩家专属，还是特殊敌人的专属武器。而不是步枪、散弹枪、狙击枪等武器类型
+/// Normal类型代表所有角色都可使用
 /// </summary>
 public enum WeaponType
 {
-    Normal
+    Normal,
+    /// <summary>
+    /// 敌人专属武器，玩家无法获得
+    /// </summary>
+    Barrage
 }
 public struct WeaponData
 {
