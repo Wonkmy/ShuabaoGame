@@ -1,3 +1,4 @@
 id,FireInterval,FireAngle,CurrentUsedBulletIndex,Attack,type,Critical
 0,0.5,8,0,2,0,0.2
 1,1,8,3,1,1,0.25
+2,0.75,8,3,2,2,0.15

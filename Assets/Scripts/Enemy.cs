@@ -13,6 +13,8 @@ public class Enemy : Entity
     public float Damage { get; set; }
     public bool HasEnterScreen { get; set; }// 是否已经进入屏幕（用于怪物在视野内才能被攻击）
     public bool IsBattleActive { get; set; }
+
+    public Transform hp { get; set; }
     public void SetEnemy(EnemyData enemyData)
     {
         view = GetComponentInChildren<SpriteRenderer>();
@@ -22,8 +24,24 @@ public class Enemy : Entity
 
         totalHp = enemyData.hp;
         currentHp = enemyData.hp;
-        Damage = enemyData.damage;
 
+        hp = transform.Find("hp");
+        hp.Find("slider").localScale = new Vector3((float)currentHp / totalHp, 1, 1);
+        if (enemyType == EnemyType.Boss)
+        {
+            hp.gameObject.SetActive(true);
+        }else if(enemyType == EnemyType.Elite)
+        {
+            hp.gameObject.SetActive(true);
+        }
+        else
+        {
+            hp.gameObject.SetActive(false);
+        }
+
+
+
+        Damage = enemyData.damage;
 
         view.sprite = Resources.Load<Sprite>("sprites/" + enemyType.ToString().ToLower());
 
@@ -31,9 +49,11 @@ public class Enemy : Entity
         attackType = AttackType.Sector;
         CurrentBulletCount = 3;
         weapon = WeaponSystem.CreateWeapon(enemyData.CurrentWeaponIndex, this);
+        weapon.SetWeaponAttackRange(enemyData.attackRange);
 
-        if(enemyType == EnemyType.Boss)
+        if (enemyType == EnemyType.Boss)
         {
+            weapon.ChangeFireInterval(0.4f);
             weapon.ChangeBullet(2);
         }
 
@@ -83,12 +103,12 @@ public class Enemy : Entity
     public void AddShield()
     {
         hasShield = true;
-        GameObject newShield = Instantiate(Resources.Load<GameObject>("shield"), transform);
+        GameObject newShield = Instantiate(Resources.Load<GameObject>("shield"), transform.Find("view"));
         newShield.transform.localPosition = new Vector3(0, 1, 0);
     }
     public void RemoveShild()
     {
-        Transform shield = transform.Find("shield(Clone)");
+        Transform shield = transform.Find("view/shield(Clone)");
         if (shield != null)
         {
             Destroy(shield.gameObject);
@@ -105,7 +125,7 @@ public class Enemy : Entity
         FireDirection = target.position - transform.position;
         FireDirection = FireDirection.normalized;
         float angle = Mathf.Atan2(FireDirection.y, FireDirection.x) * Mathf.Rad2Deg;
-        transform.localEulerAngles = new Vector3(0, 0, angle - 90);
+        transform.Find("view").localEulerAngles = new Vector3(0, 0, angle - 90);
     }
 
     public override Entity GetNearestTarget()
@@ -116,7 +136,7 @@ public class Enemy : Entity
     public override void TakeDamage(int damage, bool isCrit)
     {
         currentHp -= damage;
-
+        hp.Find("slider").localScale = new Vector3((float)currentHp / (float)totalHp, 1, 1);
         GetComponentInChildren<SpriteRenderer>().color = Color.red;
         StartCoroutine(ResetColor());
 
@@ -204,6 +224,7 @@ public class Enemy : Entity
         if (IsSpecialEnemy)
         {
             GameManager.Instance.IsSpecialEvent = false;// 结束特殊事件
+            GameManager.Instance.player.GetComponent<Player>().ResetWeaponAttackRange();
         }
 
         // 如果是精英怪或血厚怪，生成一个加血道具

@@ -49,6 +49,7 @@ public struct EnemyData
     public float moveSpeed;// 移动速度
     public int hp;// 血量
     public float damage;// 伤害
+    public float attackRange;// 攻击范围
     public float scale;// 体型
     public EnemyType type;// 怪物类型
     public int CurrentWeaponIndex;// 持有的武器id
@@ -79,7 +80,11 @@ public enum WeaponType
     /// <summary>
     /// 敌人专属武器，玩家无法获得
     /// </summary>
-    Barrage
+    Barrage,
+    /// <summary>
+    /// 精英怪专属武器，玩家无法获得
+    /// </summary>
+    EliteGun
 }
 public struct WeaponData
 {
@@ -98,6 +103,7 @@ public class PlayerData
     public float power;// 玩家攻击倍率
     public float MoveSpeed;
     public int CurrentWeaponIndex;// 持有的武器id
+    public float AttackRange;// 攻击范围
 }
 
 /// <summary>

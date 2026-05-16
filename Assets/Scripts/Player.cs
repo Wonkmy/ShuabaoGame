@@ -33,10 +33,12 @@ public class Player : Entity
     // 冲刺相关
     public bool IsDash { get; set; }
     float dashTimer = 0;
-    float dashDuration = 0.12f;
+    float dashDuration = 0.18f;
     float dashCooldown = 0;
     float dashCooldownTime = 1.2f;
     Vector3 dashDir;
+    // Dash残影
+    float ghostTimer = 0;
 
     public void AddKilledCount()
     {
@@ -63,12 +65,22 @@ public class Player : Entity
 
         weapon = WeaponSystem.CreateWeapon(playerData.CurrentWeaponIndex, this);
         weapon.ChangeBullet(2);
+        weapon.SetWeaponAttackRange(playerData.AttackRange);
         attackType = AttackType.Sector;
         moveSpeed = playerData.MoveSpeed;
 
         EntityTag = "player";
     }
 
+    public void SetWeaponAttackRange(float v)
+    {
+        weapon.SetWeaponAttackRange(playerData.AttackRange + v);
+    }
+
+    public void ResetWeaponAttackRange()
+    {
+        weapon.SetWeaponAttackRange(playerData.AttackRange);
+    }
     /// <summary>
     /// 更换武器
     /// 游戏中呈现：玩家可以通过某些方式（比如按键、拾取武器等）来更换当前使用的武器。每种武器都会使用不同的子弹。但是每种武器都有最基础的三种攻击方式：线性攻击、扇形攻击和环形攻击
@@ -226,8 +238,17 @@ public class Player : Entity
         if (IsDash)
         {
             dashTimer -= Time.deltaTime;
+            transform.position += dashDir * 25f * Time.deltaTime;
 
-            transform.position += dashDir * 18f * Time.deltaTime;
+            // 残影生成
+            ghostTimer -= Time.deltaTime;
+
+            if (ghostTimer <= 0)
+            {
+                ghostTimer = 0.03f;
+
+                SpawnDashGhost();
+            }
 
             if (dashTimer <= 0)
             {
@@ -252,6 +273,58 @@ public class Player : Entity
             dashTimer = dashDuration;
 
             dashCooldown = dashCooldownTime;
+        }
+    }
+
+    void SpawnDashGhost()
+    {
+        GameObject ghost = new GameObject("DashGhost");
+
+        ghost.transform.position = transform.position;
+
+        ghost.transform.rotation = transform.rotation;
+
+        ghost.transform.localScale = transform.localScale;
+
+        SpriteRenderer ghostSr = ghost.AddComponent<SpriteRenderer>();
+
+        SpriteRenderer mySr = GetComponentInChildren<SpriteRenderer>();
+
+        ghostSr.sprite = mySr.sprite;
+
+        ghostSr.flipX = mySr.flipX;
+
+        ghostSr.sortingLayerID = mySr.sortingLayerID;
+
+        ghostSr.sortingOrder = mySr.sortingOrder - 1;
+
+        ghostSr.color = new Color(0.5f, 0.8f, 1f, 0.5f);
+
+        StartCoroutine(FadeGhost(ghostSr));
+    }
+    IEnumerator FadeGhost(SpriteRenderer sr)
+    {
+        if (sr == null) yield break;
+        float life = 0.2f;
+
+        while (life > 0)
+        {
+            life -= Time.deltaTime;
+
+            Color c = sr.color;
+
+            c.a = life / 0.2f;
+
+            sr.color = c;
+
+            sr.transform.localScale +=
+                Vector3.one * 1.5f * Time.deltaTime;
+
+            yield return null;
+        }
+        if (sr != null)
+        {
+            Destroy(sr.gameObject);
         }
     }
 

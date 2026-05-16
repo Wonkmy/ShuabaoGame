@@ -145,10 +145,11 @@ public class GameManager : MonoBehaviour
         cameraOriginPos = mainCamera.transform.localPosition;
         GenPlayer();
 
-
         warningObject = SpwanWorldTxt("尸潮来袭！");
         warningObject.transform.position = Vector3.zero;
         warningObject.SetActive(false);
+
+        AudioManager.instance.PlayBGM("main");
     }
 
     void LoadDefaultUpgradeConfig()
@@ -351,6 +352,7 @@ public class GameManager : MonoBehaviour
             mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
             Destroy(player);
             player = null;
+            AudioManager.instance.StopAllBGM();
         }
         catch (System.Exception e)
         {
@@ -370,6 +372,10 @@ public class GameManager : MonoBehaviour
     {
         if (GameOver)
         {
+            if (playerHpSlider != null)
+            {
+                playerHpSlider.Find("slider").localScale = new Vector3(player.GetComponent<Player>().GetHpProgress(), 1, 1);
+            } 
             return;
         }
         if (HitStopIntensity > 0)
@@ -464,8 +470,9 @@ public class GameManager : MonoBehaviour
 
             EnemyType enemyType = enemyTypes[Random.Range(0, enemyTypes.Length)];
 
-            SpawnSpecialEnemy(enemyType);
+            StartCoroutine(SpawnSpecialEnemy(enemyType));
 
+            player.GetComponent<Player>().SetWeaponAttackRange(3);
             Debug.Log("特殊事件开始");
         }
 
@@ -711,10 +718,20 @@ public class GameManager : MonoBehaviour
     }
 
     // 生成特殊敌人
-    void SpawnSpecialEnemy(EnemyType enemyType)
+    IEnumerator SpawnSpecialEnemy(EnemyType enemyType)
     {
         // 如果enemyType是Elite，则生成两只。如果是Boss，则生成一只。
         int count = enemyType == EnemyType.Elite ? 2 : 1;
+        // 生成警告物体提示boss或者精英怪即将出现
+        if(enemyType == EnemyType.Boss)
+        {
+            Vector3 centerPos = GetEnemyGroupCenter();
+            GameObject centerObj = new GameObject("SpeciaEnemyGroupCenter");
+            centerObj.transform.position = centerPos;
+            GameObject warning = ShowWarning(centerObj.transform, "warning_boss");
+            yield return new WaitForSeconds(0.8f);
+            Destroy(warning);
+        }
 
         for (int i = 0; i < count; i++)
         {
@@ -724,9 +741,9 @@ public class GameManager : MonoBehaviour
             enemy.SetEnemy(DataManager.enemyDataDict[(int)enemyType]);
             enemy.IsSpecialEnemy = true;
             // 屏幕外随机位置
-            Vector3 centerPos = GetEnemyGroupCenter();
+            Vector3 centerPos2 = GetEnemyGroupCenter();
 
-            newEnemy.transform.position = centerPos;
+            newEnemy.transform.position = centerPos2;
 
             DataManager.allEnemyDict.Add(newEnemy);
         }
@@ -896,9 +913,9 @@ public class GameManager : MonoBehaviour
         Destroy(centerObj);
     }
 
-    GameObject ShowWarning(Transform target)
+    GameObject ShowWarning(Transform target,string wpath = "warning")
     {
-        GameObject obj = Instantiate(Resources.Load<GameObject>("warning"));
+        GameObject obj = Instantiate(Resources.Load<GameObject>(wpath));
 
         EnemyWarning warning = obj.GetComponent<EnemyWarning>();
         warning.Init();

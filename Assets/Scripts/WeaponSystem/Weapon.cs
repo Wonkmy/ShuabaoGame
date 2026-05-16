@@ -19,6 +19,7 @@ public class Weapon
     float fireInterval = 0;// 武器的攻击频率。单独拿出来是后面需要动态修改达到成长与爽感
     float attack = 0;// 武器的攻击力。单独拿出来是后面需要动态修改达到成长与爽感
     int bulletPierce = 0;// 武器的子弹穿透力。单独拿出来是后面需要动态修改达到成长与爽感
+    float attackRange = 10.0f;// 武器的攻击范围，超过这个范围就不攻击了
 
     public GameObject lockedTarget;// 锁定的目标实体，敌人
 
@@ -54,6 +55,19 @@ public class Weapon
         {
             fireInterval = weaponData.FireInterval;
             bulletPierce = 2;
+        }
+    }
+
+    public void SetWeaponAttackRange(float v)
+    {
+        attackRange = v;
+        if (attackRange >= 15)
+        {
+            attackRange = 15;
+        }
+        else if(attackRange <= 10)
+        {
+            attackRange = 10;
         }
     }
     /// <summary>
@@ -94,48 +108,34 @@ public class Weapon
     /// <param name="v"></param>
     public void ChangeFireInterval(float v)
     {
-        fireInterval -= v;
+        fireInterval += v;
         if (fireInterval <= 0.1f)
         {
             fireInterval = 0.1f;
         }
     }
-
-    //public void WeaponUpdate()
-    //{
-    //    fireTime += Time.deltaTime;
-    //    if (entity.GetNearestTarget() != null)
-    //    {
-    //        GameObject ey = null;
-    //        if (lockedTarget == null)
-    //        {
-    //            ey = entity.GetNearestTarget().gameObject;
-    //        }
-    //        else
-    //        {
-    //            ey = lockedTarget;
-    //        }
-    //        entity.RotateToDetination(ey.transform.position);// 发现目标后立刻转向目标，防止出现未转向目标就攻击的情况
-    //        if (entity != null && ey != null)
-    //        {
-    //            if (fireTime >= fireInterval && Vector3.Distance(entity.transform.position, ey.transform.position) <= 10.0f)
-    //            {
-    //                fireFlashTimer = 0.0f;
-    //                lockedTarget = ey;
-    //                ProcessAttack();
-    //                fireTime = 0.0f;
-    //            }
-    //        }
-    //    }
-    //}
     public void WeaponUpdate()
     {
         fireTime += Time.deltaTime;
+        // 目标失效
+        if (lockedTarget != null)
+        {
+            Entity lockEntity = lockedTarget.GetComponent<Entity>();
 
+            if (lockEntity == null ||
+                lockEntity.Dead)
+            {
+                lockedTarget = null;
+            }
+        }
+        if (entity.GetNearestTarget() == null && lockedTarget == null)
+        {
+            return;
+        }
         if (entity.GetNearestTarget() != null)
         {
             GameObject ey = null;
-
+            
             if (lockedTarget == null)
             {
                 ey = entity.GetNearestTarget().gameObject;
@@ -165,8 +165,7 @@ public class Weapon
 
             if (entity != null && ey != null)
             {
-                if (fireTime >= fireInterval &&
-                    Vector3.Distance(entity.transform.position, ey.transform.position) <= 10.0f)
+                if (fireTime >= fireInterval && Vector3.Distance(entity.transform.position, ey.transform.position) <= attackRange)
                 {
                     fireFlashTimer = 0.0f;
 
@@ -195,18 +194,21 @@ public class Weapon
     }
     void ProcessAttack()
     {
-        // 枪口火花，一个黄色的小球来表示，0.2秒后销毁
+        AudioManager.instance.PlaySounds("shoot");
+        // 枪口火花
         GameObject newExpBall = GameManager.Instance.SpwanSingleCircle(attackData.firePos);
-        newExpBall.GetComponent<SpriteRenderer>().color = Color.yellow;
-        if (newExpBall)
+
+        if (newExpBall != null)
         {
-            while (fireFlashTimer < fireFlashDuration)
-            {
-                fireFlashTimer += Time.deltaTime;
-                // 这里可以添加枪口火花的动画效果，比如缩放和颜色变化
-                newExpBall.transform.localScale = Vector3.Lerp(Vector3.one * 0.8f, Vector3.one * 0.4f, fireFlashTimer / fireFlashDuration);
-            }
-            Object.Destroy(newExpBall);
+            SpriteRenderer sr = newExpBall.GetComponent<SpriteRenderer>();
+
+            sr.color = Color.yellow;
+
+            // 初始大小
+            newExpBall.transform.localScale = Vector3.one * 0.8f;
+
+            // 直接销毁
+            Object.Destroy(newExpBall, fireFlashDuration);
         }
 
         switch (weaponAttackType)
