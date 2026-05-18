@@ -317,8 +317,7 @@ public class Player : Entity
 
             sr.color = c;
 
-            sr.transform.localScale +=
-                Vector3.one * 1.5f * Time.deltaTime;
+            sr.transform.localScale += Vector3.one * 1.5f * Time.deltaTime;
 
             yield return null;
         }

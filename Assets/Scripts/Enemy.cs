@@ -13,8 +13,9 @@ public class Enemy : Entity
     public float Damage { get; set; }
     public bool HasEnterScreen { get; set; }// 是否已经进入屏幕（用于怪物在视野内才能被攻击）
     public bool IsBattleActive { get; set; }
-
     public Transform hp { get; set; }
+
+    float attackRange = 0f;// 攻击范围，也就是敌人停止移动开始攻击的距离
     public void SetEnemy(EnemyData enemyData)
     {
         view = GetComponentInChildren<SpriteRenderer>();
@@ -50,7 +51,7 @@ public class Enemy : Entity
         CurrentBulletCount = 3;
         weapon = WeaponSystem.CreateWeapon(enemyData.CurrentWeaponIndex, this);
         weapon.SetWeaponAttackRange(enemyData.attackRange);
-
+        attackRange = enemyData.attackRange;
         if (enemyType == EnemyType.Boss)
         {
             weapon.ChangeFireInterval(0.4f);
@@ -75,10 +76,7 @@ public class Enemy : Entity
 
         if (!HasEnterScreen)
         {
-            if (viewPos.x >= 0 &&
-                viewPos.x <= 1 &&
-                viewPos.y >= 0 &&
-                viewPos.y <= 1)
+            if (viewPos.x >= 0 &&viewPos.x <= 1 &&viewPos.y >= 0 && viewPos.y <= 1)
             {
                 HasEnterScreen = true;
                 IsBattleActive = true;
@@ -88,14 +86,11 @@ public class Enemy : Entity
         if (GameManager.Instance.IsBlackHole)
         {
             transform.position =
-                Vector3.MoveTowards(
-                    transform.position,
-                    GameManager.Instance.BlackHolePos,
-                    8f * Time.deltaTime);
+                Vector3.MoveTowards(transform.position, GameManager.Instance.BlackHolePos, 8f * Time.deltaTime);
 
             return;
         }
-        if (target != null && CanMove && Vector3.Distance(transform.position,target.position) > 5.5f)
+        if (target != null && CanMove && Vector3.Distance(transform.position,target.position) > attackRange)
         {
             transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
         }

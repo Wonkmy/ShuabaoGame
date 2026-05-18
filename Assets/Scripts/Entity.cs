@@ -10,8 +10,6 @@ public class Entity : MonoBehaviour
     public Transform FirePos { get; set; }
     public Vector3 FireDirection { get; set; }
     public int CurrentBulletCount { get; set; }
-
-
     public AttackType attackType { get; set; }
     public string EntityTag { get; set; }
 

@@ -15,16 +15,21 @@ public class Bullet : MonoBehaviour
 
     private Vector3 moveDir;
 
-    private float lifeTime = 0f;
-
     private bool isExecuteHitStop = false;
 
     private Entity BelongWho;
 
     private Player player;
+    private string bulletPrefabId;
 
+    public void SetBulletPrefabId(string id)
+    {
+        bulletPrefabId = id;
+    }
     public void SetBullet(BulletData bulletData, Vector3 _dir, Entity belongWho)
     {
+        ResetBullet();
+
         BelongWho = belongWho;
 
         player = GameManager.Instance.player.GetComponent<Player>();
@@ -51,12 +56,37 @@ public class Bullet : MonoBehaviour
 
             targetPosition = transform.position + moveDir * myBulletData.distance;
         }
+    }
 
-        lifeTime = 2.0f;
+    public void ResetBullet()
+    {
+        CanMove = true;
+
+        PierceLeft = 1;
+
+        canTriggerHitStop = true;
+
+        isExecuteHitStop = false;
+
+        targetPosition = Vector3.zero;
+
+        moveDir = Vector3.zero;
+
+        BelongWho = null;
+
+        player = null;
+
+        transform.position = Vector3.zero;
+
+        transform.rotation = Quaternion.identity;
+
+        gameObject.SetActive(true);
     }
 
     void Update()
     {
+        if (!gameObject.activeSelf)
+            return;
         if (!CanMove)
             return;
 
@@ -87,22 +117,35 @@ public class Bullet : MonoBehaviour
     void MoveEnemyBullet()
     {
         transform.position += moveDir * myBulletData.moveSpeed * Time.deltaTime;
+        // 如果飞出了当前视口范围，则销毁子弹
+        Vector3 viewPos = Camera.main.WorldToViewportPoint(transform.position);
 
-        lifeTime -= Time.deltaTime;
-
-        if (lifeTime <= 0)
+        if (viewPos.x >= 0 && viewPos.x <= 1 && viewPos.y >= 0 && viewPos.y <= 1)
         {
-            Destroy(gameObject);
+            // 在视口范围内，不销毁
+        }
+        else
+        {
+            // 超出视口范围，销毁子弹
+            //Destroy(gameObject);
+            BulletPool.Instance.Release(bulletPrefabId, gameObject);
         }
     }
 
     void MovePlayerBullet()
     {
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, myBulletData.moveSpeed * Time.deltaTime);
+        Vector3 viewPos = Camera.main.WorldToViewportPoint(transform.position);
 
-        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        if (viewPos.x >= 0 && viewPos.x <= 1 && viewPos.y >= 0 && viewPos.y <= 1)
         {
-            Destroy(gameObject);
+            // 在视口范围内，不销毁
+        }
+        else
+        {
+            // 超出视口范围，销毁子弹
+            //Destroy(gameObject);
+            BulletPool.Instance.Release(bulletPrefabId, gameObject);
         }
     }
 
@@ -136,7 +179,8 @@ public class Bullet : MonoBehaviour
             Enemy enemy = (Enemy)BelongWho;
             player.TakeDamage(Mathf.CeilToInt(myBulletData.damage + enemy.Damage),false);
 
-            Destroy(gameObject);
+            //Destroy(gameObject);
+            BulletPool.Instance.Release(bulletPrefabId, gameObject);
         }
     }
 
@@ -240,7 +284,8 @@ public class Bullet : MonoBehaviour
 
         if (PierceLeft <= 0)
         {
-            Destroy(gameObject);
+            //Destroy(gameObject);
+            BulletPool.Instance.Release(bulletPrefabId, gameObject);
         }
     }
 

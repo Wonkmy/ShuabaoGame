@@ -115,15 +115,27 @@ public class GameManager : MonoBehaviour
     public bool IsBlackHole = false;
     public Vector3 BlackHolePos;
     float blackHoleTimer = 0;
+
+    Coroutine gameStepCoroutine;
     private void Start()
     {
+        gameStepCoroutine = StartCoroutine(LoadGameStep());
+    }
+
+    IEnumerator LoadGameStep()
+    {
         DataManager.Init();
-        LoadDefaultUpgradeConfig();
-        SpwanExpAndHpBar();
+        yield return new WaitForSeconds(0.025f);
+        LoadDefaultUpgradeConfig();// 加载默认构筑配置
+        yield return new WaitForSeconds(0.025f);
+        SpwanExpAndHpBar();// 生成经验和血条
+        yield return new WaitForSeconds(0.025f);
+        // 特殊事件的敌人类型，目前是精英和Boss，可以根据需要增加
         enemyTypes = new EnemyType[2];
         enemyTypes[0] = EnemyType.Elite;
         enemyTypes[1] = EnemyType.Boss;
-        Init();
+        yield return new WaitForSeconds(0.025f);
+        Init();// 初始化游戏
     }
 
     void SpwanExpAndHpBar()
@@ -136,6 +148,7 @@ public class GameManager : MonoBehaviour
     }
     void Init()
     {
+        Debug.Log("开始初始化游戏了");
         GameOver = false;
         // 基础难度固定
         difficulty = 3;
@@ -1085,10 +1098,13 @@ public class GameManager : MonoBehaviour
 
     public GameObject SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, string CurrentUsedBulletPrefab, Entity belongWho)
     {
-        GameObject newBullet_Liner = Instantiate(Resources.Load<GameObject>("bullets/" + CurrentUsedBulletPrefab));
+        //GameObject newBullet_Liner = Instantiate(Resources.Load<GameObject>("bullets/" + CurrentUsedBulletPrefab));
+        GameObject newBullet_Liner = BulletPool.Instance.Get(CurrentUsedBulletPrefab);
         newBullet_Liner.transform.position = pos;
-        newBullet_Liner.GetComponent<Bullet>().SetBullet(bulletData, dir, belongWho);
-        newBullet_Liner.GetComponent<Bullet>().CanMove = true;
+        Bullet bullet = newBullet_Liner.GetComponent<Bullet>();
+        bullet.SetBulletPrefabId(CurrentUsedBulletPrefab);
+        bullet.SetBullet(bulletData, dir, belongWho);
+        bullet.CanMove = true;
         return newBullet_Liner;
     }
 

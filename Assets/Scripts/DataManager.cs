@@ -18,6 +18,10 @@ public class DataManager
         LoadBulletConfig();
         LoadEnemyConfig();
         LoadWeaponConfig();
+
+        // 预热BulletPoll，提前加载子弹预制体
+        BulletPool.Instance.Prewarm("0", 200);
+        BulletPool.Instance.Prewarm("1", 100);
     }
 
     static void LoadBulletConfig()
