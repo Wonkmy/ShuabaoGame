@@ -1136,15 +1136,31 @@ public class GameManager : MonoBehaviour
         newBullet_Liner.transform.position = pos;
         Bullet bullet = newBullet_Liner.GetComponent<Bullet>();
         bullet.SetBulletPrefabId(CurrentUsedBulletPrefab);
-        bullet.SetBullet(bulletData, dir, belongWho);
+        bullet.SetBullet(bulletData, pos, dir, belongWho);
         bullet.CanMove = true;
         return newBullet_Liner;
     }
 
-    public GameObject SpwanExpBall(Vector3 pos, int expValue)
+    public GameObject SpwanExpBall(Vector3 pos,EnemyType enemyType, int expValue)
     {
         GameObject newExpBall = SpwanSingleCircle(pos);
-        newExpBall.transform.localScale = Vector3.one * 0.2f;
+        float baseScale = 0.2f;
+        switch(enemyType)
+        {
+            case EnemyType.Normal:
+                baseScale = 0.2f;
+                break;
+            case EnemyType.Thick:
+                baseScale = 0.4f;
+                break;
+            case EnemyType.Elite:
+                baseScale = 0.3f;
+                break;
+            case EnemyType.Boss:
+                baseScale = 0.5f;
+                break;
+        }
+        newExpBall.transform.localScale = Vector3.one * baseScale;
         newExpBall.GetComponent<SpriteRenderer>().color = Color.cyan;
         newExpBall.AddComponent<ExpBall>().SetExpValue(expValue, player);
         DataManager.allExpBall.Add(newExpBall);

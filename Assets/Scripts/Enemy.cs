@@ -162,20 +162,63 @@ public class Enemy : Entity
         {
             Dead = true;
             CanMove = false;
-            float baseExp;
-            switch (enemyType)
-            {
-                case EnemyType.Normal: baseExp = 2; break;
-                case EnemyType.Fast: baseExp = 3; break;
-                case EnemyType.Elite: baseExp = 6; break;
-                case EnemyType.Thick: baseExp = 8; break;
-                case EnemyType.Boss: baseExp = 10; break;
-                default: baseExp = 0; break;
-            }
-            int finalExp = (int)(baseExp * (isCrit ? 1.25f : 1f));
-            GameManager.Instance.SpwanExpBall(transform.position, Mathf.FloorToInt(finalExp));
+
+            SpwanExpBall(isCrit);
+
             // 旋转缩小然后死亡
             StartCoroutine(DeathEffect());
+        }
+    }
+
+    private void SpwanExpBall(bool isCrit)
+    {
+        float baseExp;
+        switch (enemyType)
+        {
+            case EnemyType.Normal: baseExp = 2; break;
+            case EnemyType.Fast: baseExp = 3; break;
+            case EnemyType.Elite: baseExp = 3; break;
+            case EnemyType.Thick: baseExp = 2; break;
+            case EnemyType.Boss: baseExp = 6; break;
+            default: baseExp = 0; break;
+        }
+        int finalExp = (int)(baseExp * (isCrit ? 1.25f : 1f));
+        if (enemyType == EnemyType.Elite)
+        {
+            // 如果是精英怪，生成大量经验球。这里默认生成8个，分散在敌人周围
+            int eliteExpCount = 8;
+            for (int i = 0; i < eliteExpCount; i++)
+            {
+                float angle = i * (360f / eliteExpCount);
+                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 0.5f;
+                Vector3 randomOffset = new Vector3(Random.Range(-0.2f, 0.2f), Random.Range(-0.2f, 0.2f), 0);
+                GameManager.Instance.SpwanExpBall(transform.position + offset + randomOffset, enemyType, Mathf.FloorToInt(finalExp));
+            }
+        }
+        else if (enemyType == EnemyType.Thick) {
+            int thickExpCount = 10;
+            for (int i = 0; i < thickExpCount; i++)
+            {
+                float angle = i * (360f / thickExpCount);
+                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 0.6f;
+                Vector3 randomOffset = new Vector3(Random.Range(-0.25f, 0.25f), Random.Range(-0.25f, 0.25f), 0);
+                GameManager.Instance.SpwanExpBall(transform.position + offset + randomOffset, enemyType, Mathf.FloorToInt(finalExp));
+            }
+        }
+        else if (enemyType == EnemyType.Boss)
+        {
+            int bossExpCount = 15;
+            for (int i = 0; i < bossExpCount; i++)
+            {
+                float angle = i * (360f / bossExpCount);
+                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 0.7f;
+                Vector3 randomOffset = new Vector3(Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f), 0);
+                GameManager.Instance.SpwanExpBall(transform.position + offset + randomOffset, enemyType, Mathf.FloorToInt(finalExp));
+            }
+        }
+        else
+        {
+            GameManager.Instance.SpwanExpBall(transform.position, enemyType, Mathf.FloorToInt(finalExp));
         }
     }
 

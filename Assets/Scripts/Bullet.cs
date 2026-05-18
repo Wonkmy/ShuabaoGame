@@ -26,7 +26,7 @@ public class Bullet : MonoBehaviour
     {
         bulletPrefabId = id;
     }
-    public void SetBullet(BulletData bulletData, Vector3 _dir, Entity belongWho)
+    public void SetBullet(BulletData bulletData,Vector3 pos, Vector3 _dir, Entity belongWho)
     {
         ResetBullet();
 
@@ -48,13 +48,13 @@ public class Bullet : MonoBehaviour
 
             moveDir = Quaternion.Euler(0, 0, randomAngle) * _dir.normalized;
 
-            targetPosition = transform.position + moveDir * myBulletData.distance;
+            targetPosition = pos + moveDir * myBulletData.distance;
         }
         else
         {
             moveDir = _dir.normalized;
 
-            targetPosition = transform.position + moveDir * myBulletData.distance;
+            targetPosition = pos + moveDir * myBulletData.distance;
         }
     }
 
@@ -68,16 +68,12 @@ public class Bullet : MonoBehaviour
 
         isExecuteHitStop = false;
 
-        targetPosition = Vector3.zero;
-
         moveDir = Vector3.zero;
 
         BelongWho = null;
 
         player = null;
-
-        transform.position = Vector3.zero;
-
+        myBulletData = default;
         transform.rotation = Quaternion.identity;
 
         gameObject.SetActive(true);
@@ -134,7 +130,7 @@ public class Bullet : MonoBehaviour
 
     void MovePlayerBullet()
     {
-        transform.position = Vector3.MoveTowards(transform.position, targetPosition, myBulletData.moveSpeed * Time.deltaTime);
+        transform.position += moveDir * myBulletData.moveSpeed * Time.deltaTime;
         Vector3 viewPos = Camera.main.WorldToViewportPoint(transform.position);
 
         if (viewPos.x >= 0 && viewPos.x <= 1 && viewPos.y >= 0 && viewPos.y <= 1)
@@ -144,7 +140,6 @@ public class Bullet : MonoBehaviour
         else
         {
             // 超出视口范围，销毁子弹
-            //Destroy(gameObject);
             BulletPool.Instance.Release(bulletPrefabId, gameObject);
         }
     }

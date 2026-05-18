@@ -111,15 +111,34 @@ public class Player : Entity
     public void AddExp(int exp)
     {
         currentExp += exp;
-        if(currentExp >= needExp)
+        bool isLevelUp = false;
+
+        // 允许连续升级
+        while (currentExp >= needExp)
         {
+            currentExp -= needExp;
+
             level++;
-            currentExp = currentExp - needExp;
-            needExp = (int)(needExp * 1.25f);
-            // 升级时稍微增加一点移速
+
+            isLevelUp = true;
+
+            // 经验需求增长
+            needExp = Mathf.CeilToInt(needExp * 1.38f);
+
+            if (!GameManager.Instance.levelPanel.activeSelf)
+            {
+                GameManager.Instance.ShowLevelUpPanel(true);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        // 本次AddExp只增加一次移速
+        if (isLevelUp)
+        {
             moveSpeed += 0.05f;
-            // 升级啦!
-            GameManager.Instance.ShowLevelUpPanel(true);
         }
     }
     public int GetCurrentLevel()
