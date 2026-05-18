@@ -279,7 +279,7 @@ public class Bullet : MonoBehaviour
         // 穿透爆炸
         if (player.HasPierceExplosion)
         {
-            HandlePierceExplosion(finalDamage);
+            HandlePierceExplosion(entity, finalDamage);
         }
 
         if (PierceLeft <= 0)
@@ -309,39 +309,131 @@ public class Bullet : MonoBehaviour
         }
     }
 
+    //void HandleAOE(Entity entity, float finalDamage)
+    //{
+    //    List<GameObject> allEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(entity.transform.position, 2.0f);
+
+    //    foreach (var e in allEnemys)
+    //    {
+    //        if (e == entity.gameObject)
+    //            continue;
+
+    //        e.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(finalDamage * 0.5f),false);
+    //    }
+    //}
+
+    //void HandleCritExplosion(Entity entity, float finalDamage)
+    //{
+    //    List<GameObject> allEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(entity.transform.position, 3.0f);
+
+    //    foreach (var e in allEnemys)
+    //    {
+    //        if (e == entity.gameObject)
+    //            continue;
+
+    //        e.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(finalDamage * 0.8f),true);
+    //    }
+    //}
+
+    //void HandlePierceExplosion(float finalDamage)
+    //{
+    //    List<GameObject> allEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(transform.position, 1.5f);
+
+    //    foreach (var e in allEnemys)
+    //    {
+    //        e.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(finalDamage * 0.3f), false);
+    //    }
+    //}
     void HandleAOE(Entity entity, float finalDamage)
     {
-        List<GameObject> allEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(entity.transform.position, 2.0f);
+        List<GameObject> allEnemys =
+            GameManager.Instance.FindCicleAllEnemysByDistance(
+                entity.transform.position,
+                1.2f);
+
+        int hitCount = 0;
 
         foreach (var e in allEnemys)
         {
             if (e == entity.gameObject)
                 continue;
 
-            e.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(finalDamage * 0.5f),false);
+            Entity enemyEntity =
+                e.GetComponent<Entity>();
+
+            if (enemyEntity == null || enemyEntity.Dead)
+                continue;
+
+            enemyEntity.TakeDamage(
+                Mathf.FloorToInt(finalDamage * 0.35f),
+                false);
+
+            hitCount++;
+
+            // 最多影响3个敌人
+            if (hitCount >= 3)
+                break;
         }
     }
 
     void HandleCritExplosion(Entity entity, float finalDamage)
     {
-        List<GameObject> allEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(entity.transform.position, 3.0f);
+        List<GameObject> allEnemys =
+            GameManager.Instance.FindCicleAllEnemysByDistance(
+                entity.transform.position,
+                1.5f);
+
+        int hitCount = 0;
 
         foreach (var e in allEnemys)
         {
             if (e == entity.gameObject)
                 continue;
 
-            e.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(finalDamage * 0.8f),true);
+            Entity enemyEntity =
+                e.GetComponent<Entity>();
+
+            if (enemyEntity == null || enemyEntity.Dead)
+                continue;
+
+            enemyEntity.TakeDamage(
+                Mathf.FloorToInt(finalDamage * 0.6f),
+                true);
+
+            hitCount++;
+
+            // 暴击爆炸最多5个
+            if (hitCount >= 5)
+                break;
         }
     }
 
-    void HandlePierceExplosion(float finalDamage)
+    void HandlePierceExplosion(Entity entity, float finalDamage)
     {
-        List<GameObject> allEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(transform.position, 1.5f);
+        List<GameObject> allEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(entity.transform.position, 0.8f);
+
+        int hitCount = 0;
 
         foreach (var e in allEnemys)
         {
-            e.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(finalDamage * 0.3f), false);
+            if (e == entity.gameObject)
+                continue;
+
+            Entity enemyEntity =
+                e.GetComponent<Entity>();
+
+            if (enemyEntity == null || enemyEntity.Dead)
+                continue;
+
+            enemyEntity.TakeDamage(
+                Mathf.FloorToInt(finalDamage * 0.2f),
+                false);
+
+            hitCount++;
+
+            // 穿透爆炸限制更严格
+            if (hitCount >= 2)
+                break;
         }
     }
 }

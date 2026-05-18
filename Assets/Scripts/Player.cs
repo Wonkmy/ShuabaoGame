@@ -353,6 +353,7 @@ public class Player : Entity
             WeaponSystem.RemoveWeapon(weapon);
             
             GameManager.Instance.GameOver = true;
+            GameManager.Instance.IsGameStarted = false;
             // 显示游戏结束界面
             GameManager.Instance.ShowGameOverPanel(true);
         }

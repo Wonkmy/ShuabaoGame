@@ -4,9 +4,8 @@ using UnityEngine;
 public class BulletPool : MonoBehaviour
 {
     public static BulletPool Instance;
-
-    // key = 子弹预制体ID，例如 "0"、"1"
     private Dictionary<string, Queue<GameObject>> poolDict = new Dictionary<string, Queue<GameObject>>();
+    public Transform bulletRoot;
 
     private void Awake()
     {
@@ -16,18 +15,15 @@ public class BulletPool : MonoBehaviour
     {
         if (!poolDict.ContainsKey(bulletPrefabId))
         {
-            poolDict.Add(
-                bulletPrefabId,
-                new Queue<GameObject>());
+            poolDict.Add(bulletPrefabId,new Queue<GameObject>());
         }
 
-        Queue<GameObject> pool =
-            poolDict[bulletPrefabId];
+        Queue<GameObject> pool = poolDict[bulletPrefabId];
 
         for (int i = 0; i < count; i++)
         {
             GameObject obj =Instantiate(Resources.Load<GameObject>("bullets/" + bulletPrefabId));
-
+            obj.transform.SetParent(bulletRoot);
             obj.SetActive(false);
 
             pool.Enqueue(obj);
@@ -52,6 +48,7 @@ public class BulletPool : MonoBehaviour
         else
         {
             obj = Instantiate(Resources.Load<GameObject>("bullets/" + bulletPrefabId));
+            obj.transform.SetParent(bulletRoot);
         }
 
         return obj;

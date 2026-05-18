@@ -18,11 +18,16 @@ public class GameManager : MonoBehaviour
     public GameObject player { get; private set; }
     public Transform playerExpSlider { get; private set; }
     public Transform playerHpSlider { get; private set; }
+
+    public Transform gameLoadingSlider { get; set; }
+    int currentLoadStep = 0;
+    int totalLoadStep = 5;
     public PlayerData pdata { get; set; }
     public GameObject levelPanel;
     public GameObject gameOverPanel;
 
     public bool GameOver { get; set; }
+    public bool IsGameStarted { get; set; }
 
     // =========================
     // 数值配置区
@@ -124,20 +129,43 @@ public class GameManager : MonoBehaviour
 
     IEnumerator LoadGameStep()
     {
+        gameLoadingSlider = Instantiate(Resources.Load<GameObject>("gameLoadingSlider")).transform;
+        gameLoadingSlider.transform.position = new Vector3(-4, -9.25f, 0);
+        NextLoadStep();
+        yield return new WaitForSeconds(0.025f);
         DataManager.Init();
-        yield return new WaitForSeconds(0.025f);
+        NextLoadStep();
+        yield return new WaitForSeconds(0.2f);// 由于DataManager.Init()数据量大，所以停留了较长时间，之后每一步停留0.025秒
+
         LoadDefaultUpgradeConfig();// 加载默认构筑配置
+        NextLoadStep();
         yield return new WaitForSeconds(0.025f);
+
         SpwanExpAndHpBar();// 生成经验和血条
+        NextLoadStep();
         yield return new WaitForSeconds(0.025f);
+
         // 特殊事件的敌人类型，目前是精英和Boss，可以根据需要增加
         enemyTypes = new EnemyType[2];
         enemyTypes[0] = EnemyType.Elite;
         enemyTypes[1] = EnemyType.Boss;
+        NextLoadStep();
         yield return new WaitForSeconds(0.025f);
+        gameLoadingSlider.gameObject.SetActive(false);
         Init();// 初始化游戏
     }
+    void UpdateLoading(float progress)
+    {
+        gameLoadingSlider.Find("slider").localScale = new Vector3(progress, 1, 1);
+    }
+    void NextLoadStep()
+    {
+        currentLoadStep++;
 
+        float progress = (float)currentLoadStep / totalLoadStep;
+
+        UpdateLoading(progress);
+    }
     void SpwanExpAndHpBar()
     {
         GameObject expobj = Instantiate(Resources.Load<GameObject>("exp"));
@@ -150,6 +178,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("开始初始化游戏了");
         GameOver = false;
+        IsGameStarted = true;
         // 基础难度固定
         difficulty = 3;
 
@@ -389,6 +418,10 @@ public class GameManager : MonoBehaviour
             {
                 playerHpSlider.Find("slider").localScale = new Vector3(player.GetComponent<Player>().GetHpProgress(), 1, 1);
             } 
+            return;
+        }
+        if(IsGameStarted == false)
+        {
             return;
         }
         if (HitStopIntensity > 0)
