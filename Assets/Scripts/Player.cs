@@ -17,6 +17,7 @@ public class Player : Entity
 
     Vector3 MoveDir;
     float MoveAngle;
+    public float PlayerPower { get; set; }
 
     public Dictionary<string, int> buildDict = new Dictionary<string, int>();
 
@@ -59,7 +60,7 @@ public class Player : Entity
         playerData = data;// 拿到玩家数据
         totalHp = (int)playerData.Hp;
         currentHp = (int)playerData.Hp;
-
+        PlayerPower = playerData.Atk;
         currentExp = 0;
         level = (int)playerData.Level;
 

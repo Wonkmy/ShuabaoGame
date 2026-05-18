@@ -224,13 +224,13 @@ public class Bullet : MonoBehaviour
         bool isCrit = false;
 
         float critDamageMultiplier = 1.0f;
-
+        float totalCrit = GameManager.Instance.gameData.PermanentCrit;
         // 暴击
         if (critChance > 0 && Random.value < critChance)
         {
             isCrit = true;
 
-            critDamageMultiplier = 1.35f;
+            critDamageMultiplier = 1.35f + totalCrit;
 
             HandleCrit(entity);
         }
@@ -238,7 +238,7 @@ public class Bullet : MonoBehaviour
         // 基础伤害
         float attack = weapon.weaponData.Attack * (int)myBulletData.damage;
 
-        float powerAttack = attack * player.playerData.power;
+        float powerAttack = attack * player.playerData.Atk;// 武器攻击力 * 玩家攻击力(玩家攻击力为全局永久攻击力)
 
         Enemy enemy = (Enemy)entity;
         float penetrate = PierceLeft;

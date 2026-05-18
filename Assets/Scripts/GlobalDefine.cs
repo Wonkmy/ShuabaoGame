@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public struct BulletData
 {
@@ -100,10 +101,28 @@ public class PlayerData
 {
     public int Level;// 玩家等级
     public float Hp;// 玩家血量
-    public float power;// 玩家攻击倍率
+    public float Atk;// 玩家攻击力
     public float MoveSpeed;
     public int CurrentWeaponIndex;// 持有的武器id
     public float AttackRange;// 攻击范围
+}
+[System.Serializable]
+public class GameData { 
+    public int TotalCoinCount;// 总金币数
+    public int PermanentAtk;// 永久攻击力
+    public int PermanentHp;// 永久血量
+    public float PermanentMoveSpeed = 0;// 永久移动速度
+    public float PermanentCrit = 0;// 永久暴击
+    public void AddCoin(int count)
+    {
+        TotalCoinCount += count;
+    }
+
+    public override string ToString()
+    {
+        //return $"{TotalCoinCount},{PermanentAtk},{PermanentHp},{PermanentMoveSpeed},{PermanentCrit}";
+        return TotalCoinCount + "," + PermanentAtk + "," + PermanentHp + "," + PermanentMoveSpeed + "," + PermanentCrit;
+    }
 }
 
 /// <summary>

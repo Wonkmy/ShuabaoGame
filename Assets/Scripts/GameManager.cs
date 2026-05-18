@@ -23,8 +23,11 @@ public class GameManager : MonoBehaviour
     int currentLoadStep = 0;
     int totalLoadStep = 5;
     public PlayerData pdata { get; set; }
+    // 游戏数据相关，此数据全局有效。
+    public GameData gameData;
     public GameObject levelPanel;
     public GameObject gameOverPanel;
+    public GameObject cultivatePanel;
 
     public bool GameOver { get; set; }
     public bool IsGameStarted { get; set; }
@@ -44,9 +47,9 @@ public class GameManager : MonoBehaviour
     public float waveAppearInterval = 15f;
     public float waveDuration = 5f;
 
-    [Header("特殊事件配置")]
-    public float specialEventInterval = 45f;
-
+    // 当前这一轮特殊事件需要等待的时间
+    public float nextSpecialEventInterval { get; set; }
+    public int MaxEnemyCount = 30;// 场上最大敌人数量，超过后不再刷怪，直到数量降低
     [Header("玩家配置")]
     public float dashCooldownTime = 1.2f;
     public float dashSpeed = 18f;
@@ -104,8 +107,6 @@ public class GameManager : MonoBehaviour
     public float HitStopDuration { get; set; }
     public float HitStopIntensity { get; set; }
 
-    GameObject warningObject;
-
     // 特殊事件相关
     private float specialEventTimer = 0;
     // private float specoalApperInterval = 45f;// 已废弃，改为配置区
@@ -125,15 +126,18 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         gameStepCoroutine = StartCoroutine(LoadGameStep());
+        //PlayerPrefs.DeleteAll();
     }
 
     IEnumerator LoadGameStep()
     {
         gameLoadingSlider = Instantiate(Resources.Load<GameObject>("gameLoadingSlider")).transform;
         gameLoadingSlider.transform.position = new Vector3(-4, -9.25f, 0);
+        // 打开局外金币永久升级（暂时只实现攻击力、血量、移速和暴击）
         NextLoadStep();
         yield return new WaitForSeconds(0.025f);
         DataManager.Init();
+        gameData = DataManager.myGameData;
         NextLoadStep();
         yield return new WaitForSeconds(0.2f);// 由于DataManager.Init()数据量大，所以停留了较长时间，之后每一步停留0.025秒
 
@@ -152,7 +156,7 @@ public class GameManager : MonoBehaviour
         NextLoadStep();
         yield return new WaitForSeconds(0.025f);
         gameLoadingSlider.gameObject.SetActive(false);
-        Init();// 初始化游戏
+        StartCoroutine(Init()); // 初始化游戏
     }
     void UpdateLoading(float progress)
     {
@@ -174,22 +178,20 @@ public class GameManager : MonoBehaviour
         playerExpSlider = expobj.transform;
         playerHpSlider = hpobj.transform;
     }
-    void Init()
+    IEnumerator Init()
     {
-        Debug.Log("开始初始化游戏了");
+        ShowCultivatePanel(true);
+        yield return new WaitUntil(()=> CultivatePanelActive() == false);
         GameOver = false;
         IsGameStarted = true;
         // 基础难度固定
         difficulty = 3;
-
+        // 当前特殊事件等待时间
+        nextSpecialEventInterval = 45.0f;
         mainCamera = Camera.main;
         cameraEffect = mainCamera.GetComponent<CameraEffect>();
         cameraOriginPos = mainCamera.transform.localPosition;
         GenPlayer();
-
-        warningObject = SpwanWorldTxt("尸潮来袭！");
-        warningObject.transform.position = Vector3.zero;
-        warningObject.SetActive(false);
 
         AudioManager.instance.PlayBGM("main");
     }
@@ -237,7 +239,7 @@ public class GameManager : MonoBehaviour
             tag = "power",
             action = () =>
             {
-                player.GetComponent<Player>().playerData.power += 0.25f;
+                player.GetComponent<Player>().playerData.Atk += 1;
             }
         });
 
@@ -271,7 +273,7 @@ public class GameManager : MonoBehaviour
             action = () =>
             {
                 // 高倍率
-                player.GetComponent<Player>().playerData.power += 1f;
+                player.GetComponent<Player>().playerData.Atk += 1f;
             }
         });
 
@@ -285,7 +287,7 @@ public class GameManager : MonoBehaviour
                 player.GetComponent<Player>().moveSpeed += 3f;
 
                 // 移速高但伤害降低
-                player.GetComponent<Player>().playerData.power -= 0.2f;
+                player.GetComponent<Player>().playerData.Atk -= 0.2f;
             }
         });
 
@@ -296,7 +298,7 @@ public class GameManager : MonoBehaviour
             tag = "power",
             action = () =>
             {
-                player.GetComponent<Player>().playerData.power += 1.5f;
+                player.GetComponent<Player>().playerData.Atk += 1.5f;
 
                 // 降低移速
                 player.GetComponent<Player>().moveSpeed -= 1f;
@@ -341,6 +343,10 @@ public class GameManager : MonoBehaviour
         });
     }
 
+    public bool LevelUpPanelActive()
+    {
+        return levelPanel.activeSelf;
+    }
     public void ShowLevelUpPanel(bool show)
     {
         levelPanel.SetActive(show);
@@ -354,6 +360,15 @@ public class GameManager : MonoBehaviour
         Player playerC = player.GetComponent<Player>();
         // 将存活时长、击杀数、最高难度、玩家等级等数据传递给结算界面
         gameOverPanel.GetComponent<GameOverPanel>().Init(gameTime, playerC.KilledCount, difficulty, playerC.GetCurrentLevel());
+    }
+    public bool CultivatePanelActive()
+    {
+        return cultivatePanel.activeSelf || cultivatePanel == null;
+    }
+    public void ShowCultivatePanel(bool show)
+    {
+        cultivatePanel.SetActive(show);
+        cultivatePanel.GetComponent<CultivatePanel>().Init();
     }
 
     void ResetAllGameDatas()
@@ -388,8 +403,6 @@ public class GameManager : MonoBehaviour
             IsSpecialEvent = false;
             specialEventTimer = 0;
 
-            Destroy(warningObject);
-            warningObject = null;
             GameManager.Instance.cameraEffect.intensity = 0;
             mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
             Destroy(player);
@@ -404,7 +417,7 @@ public class GameManager : MonoBehaviour
     public void RestartGame()
     {
         ResetAllGameDatas();
-        Init();
+        StartCoroutine(Init());
     }
     public void Revival()
     {
@@ -494,12 +507,11 @@ public class GameManager : MonoBehaviour
 
         // 动态难度刷新
         difficultyUpdateTimer += Time.deltaTime;
-
+        int playerScore = 0;
         if (difficultyUpdateTimer >= difficultyUpdateInterval)
         {
             difficultyUpdateTimer = 0;
-
-            UpdateDynamicDifficulty();
+            UpdateDynamicDifficulty(out playerScore);
         }
 
         difficulty = Mathf.Clamp(2 + Mathf.FloorToInt(gameTime / 30f), 2, 8);
@@ -508,15 +520,19 @@ public class GameManager : MonoBehaviour
         specialEventTimer += Time.deltaTime;
 
         // 时间到了并且当前没有特殊事件
-        if (!IsSpecialEvent && specialEventTimer >= specialEventInterval)
+        if (!IsSpecialEvent && specialEventTimer >= nextSpecialEventInterval)
         {
             specialEventTimer = 0;
 
             IsSpecialEvent = true;
 
             EnemyType enemyType = enemyTypes[Random.Range(0, enemyTypes.Length)];
-
             StartCoroutine(SpawnSpecialEnemy(enemyType));
+
+            cameraEffect.darkIntensity = 0.45f;
+
+            var specialEventObj = SpwanWorldTxt($"{enemyType.ToString()}来袭！",1.0f);
+            StartCoroutine(ShowFlashWarningTxt(specialEventObj));
 
             player.GetComponent<Player>().SetWeaponAttackRange(3);
             Debug.Log("特殊事件开始");
@@ -619,7 +635,7 @@ public class GameManager : MonoBehaviour
             Player p = player.GetComponent<Player>();
             p.SetCurrentLevel(10);
 
-            p.playerData.power += 5;
+            p.playerData.Atk += 5;
 
             p.AddKilledCount(500);
         }
@@ -634,6 +650,11 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
         {
             ExecuteNuke();
+        }
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            // 直接进入特殊事件
+            specialEventTimer = nextSpecialEventInterval;
         }
     }
 
@@ -704,44 +725,73 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(0.08f);
         mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
     }
-    void UpdateDynamicDifficulty()
+    public float CalculateDynamicSpecialEventInterval()
     {
-        Player player =
-            GameManager.Instance.player.GetComponent<Player>();
+        Player playerC = player.GetComponent<Player>();
+
+        int pressureScore = 0;
+
+        // 当前敌人数量占上限的比例
+        float enemyPressure = (float)DataManager.allEnemyDict.Count / MaxEnemyCount;
+
+        pressureScore += Mathf.FloorToInt(enemyPressure * 50f);
+
+        // 血量越低，压力越高
+        pressureScore += Mathf.FloorToInt((1f - playerC.GetHpProgress()) * 40f);
+
+        if (isWave)
+        {
+            pressureScore += 30;
+        }
+
+        // Boss/精英事件期间不用算，但保险
+        if (IsSpecialEvent)
+        {
+            pressureScore += 30;
+        }
+
+        // 压力高，延后特殊事件
+        if (pressureScore >= 70)
+        {
+            return 75f;
+        }
+        else if (pressureScore >= 45)
+        {
+            return 60f;
+        }
+        else if (pressureScore >= 25)
+        {
+            return 45f;
+        }
+        else
+        {
+            return 35f;
+        }
+    }
+    void UpdateDynamicDifficulty(out int playerScore)
+    {
+        Player player = GameManager.Instance.player.GetComponent<Player>();
 
         // =========================
         // 计算玩家战力
         // =========================
 
-        int levelScore =
-            player.playerData.Level * 5;
+        int levelScore = player.playerData.Level * 5;
 
-        int killScore =
-            player.KilledCount / 10;
+        int killScore = player.KilledCount / 10;
 
-        int buildScore =
-            player.buildDict.Count * 8;
+        int buildScore = player.buildDict.Count * 8;
 
-        int powerScore =
-            Mathf.FloorToInt(
-                player.playerData.power * 10);
+        int powerScore = Mathf.FloorToInt(player.playerData.Atk * 10);
 
-        playerPowerScore =
-            levelScore +
-            killScore +
-            buildScore +
-            powerScore;
+        playerPowerScore = levelScore + killScore + buildScore + powerScore;
 
         // =========================
         // 根据战力修改刷怪
         // =========================
 
         // 波次间隔
-        spawnWaveInterval =
-            Mathf.Clamp(
-                5f - playerPowerScore * 0.02f,
-                1.5f,
-                5f);
+        spawnWaveInterval =Mathf.Clamp(5f - playerPowerScore * 0.02f,1.5f,5f);
 
         // 每组敌人数量
         enemyCountPerGroup =
@@ -757,10 +807,8 @@ public class GameManager : MonoBehaviour
                 1,
                 5);
 
-        Debug.Log(
-            "玩家评分:" + playerPowerScore +
-            " 敌群:" + currentWaveGroupCount +
-            " 每组:" + enemyCountPerGroup);
+        Debug.Log("玩家评分:" + playerPowerScore + " 敌群:" + currentWaveGroupCount + " 每组:" + enemyCountPerGroup);
+        playerScore = playerPowerScore;
     }
 
     // 生成特殊敌人
@@ -814,7 +862,10 @@ public class GameManager : MonoBehaviour
                 enemy.GetComponent<Enemy>().AddShield();
             }
             mainCamera.backgroundColor = new Color(0.2627f, 0f, 0f);
-            StartCoroutine(ShowFlashWarningTxt());
+
+
+            var shichao = SpwanWorldTxt("尸潮来袭！");
+            StartCoroutine(ShowFlashWarningTxt(shichao));
         }
 
         // 尸潮持续8秒
@@ -829,7 +880,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    IEnumerator ShowFlashWarningTxt()
+    IEnumerator ShowFlashWarningTxt(GameObject warningObject)
     {
         warningObject.SetActive(true);
         float timer = 0;
@@ -847,13 +898,13 @@ public class GameManager : MonoBehaviour
             }
             yield return null;
         }
-        warningObject.SetActive(false);
+        Destroy(warningObject);
     }
 
     // 波次刷怪更新
     void UpdateSpawnWave()
     {
-        if (DataManager.allEnemyDict.Count >= 15)
+        if (DataManager.allEnemyDict.Count >= MaxEnemyCount)
             return;
 
         spawnWaveTimer += Time.deltaTime;
@@ -983,9 +1034,9 @@ public class GameManager : MonoBehaviour
         pdata = new PlayerData
         {
             Level = 1,// 玩家等级
-            Hp = 500,// 玩家生命值
-            power = 1.0f,// 当前游戏倍率
-            MoveSpeed = 5.6f,// 玩家移动速度
+            Hp = 500 + gameData.PermanentHp,// 玩家生命值 = 500 + 永久增加的生命值
+            Atk = gameData.PermanentAtk,// 当前玩家攻击力
+            MoveSpeed = 5.6f + gameData.PermanentMoveSpeed,// 玩家移动速度
             CurrentWeaponIndex = 0// 玩家当前使用的武器id
         };
 
@@ -1140,7 +1191,21 @@ public class GameManager : MonoBehaviour
         bullet.CanMove = true;
         return newBullet_Liner;
     }
+    public GameObject SpwanChest(Vector3 pos)
+    {
+        GameObject newChest = SpwanSingleCircle(pos);
+        newChest.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("sprites/chest");
+        newChest.AddComponent<ChestBall>();
+        return newChest;
+    }
 
+    public GameObject SpwanCoin(Vector3 pos, int coinValue)
+    {
+        GameObject newCoin = SpwanSingleCircle(pos);
+        newCoin.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("sprites/coin");
+        newCoin.AddComponent<CoinBall>().SetCoinValue(coinValue, player);
+        return newCoin;
+    }
     public GameObject SpwanExpBall(Vector3 pos,EnemyType enemyType, int expValue)
     {
         GameObject newExpBall = SpwanSingleCircle(pos);
@@ -1173,11 +1238,18 @@ public class GameManager : MonoBehaviour
         return newExpBall;
     }
 
-    public GameObject SpwanWorldTxt(string txt)
+    public GameObject SpwanWorldTxt(string txt,float charactorSize = 0.6f)
     {
         GameObject newWarningTxt = Instantiate(Resources.Load<GameObject>("warning_txt"));
-        newWarningTxt.GetComponent<TextMesh>().color = Color.red;
-        newWarningTxt.GetComponent<TextMesh>().text = txt;
+        Vector2 screenPos = new Vector2(Screen.width / 2.0f - 0.5f, Screen.height - 100 - 0.5f);
+        Vector3 wPos = mainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0));
+        wPos.z = 0;
+        newWarningTxt.transform.position = wPos;
+
+        TextMesh textMesh = newWarningTxt.GetComponent<TextMesh>();
+        textMesh.characterSize = charactorSize;
+        textMesh.color = Color.red;
+        textMesh.text = txt;
         return newWarningTxt;
     }
 
@@ -1343,6 +1415,9 @@ public class GameManager : MonoBehaviour
     //}
     private void OnDisable()
     {
+        // 将GameData的值保存到持久化存储中，以便下次游戏启动时加载
+        PlayerPrefs.SetString("gamedata", JsonUtility.ToJson(gameData.ToString()));
+
         DataManager.Clear();
         WeaponSystem.Clear();
         lineObjs.Clear();
@@ -1354,6 +1429,9 @@ public class GameManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        // 将GameData的值保存到持久化存储中，以便下次游戏启动时加载
+        PlayerPrefs.SetString("gamedata", JsonUtility.ToJson(gameData.ToString()));
+
         DataManager.Clear();
         WeaponSystem.Clear();
         lineObjs.Clear();
@@ -1365,8 +1443,13 @@ public class GameManager : MonoBehaviour
 
     private void OnApplicationQuit()
     {
+        // 将GameData的值保存到持久化存储中，以便下次游戏启动时加载
+        PlayerPrefs.SetString("gamedata", JsonUtility.ToJson(gameData.ToString()));
+        PlayerPrefs.Save();
+
         DataManager.Clear();
         WeaponSystem.Clear();
+
         lineObjs.Clear();
         foreach (var l in lineObjs)
         {

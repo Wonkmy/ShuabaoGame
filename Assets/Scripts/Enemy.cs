@@ -80,13 +80,18 @@ public class Enemy : Entity
             {
                 HasEnterScreen = true;
                 IsBattleActive = true;
+                // 如果是boss进场，则时间放慢为0.25倍速，增加紧张感。0.2秒钟之后恢复正常速度
+                if (enemyType == EnemyType.Boss)
+                {
+                    Time.timeScale = 0.25f;
+                    GameManager.Instance.StartCoroutine(ResetTimeScale());
+                }
             }
         }
 
         if (GameManager.Instance.IsBlackHole)
         {
-            transform.position =
-                Vector3.MoveTowards(transform.position, GameManager.Instance.BlackHolePos, 8f * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, GameManager.Instance.BlackHolePos, 8f * Time.deltaTime);
 
             return;
         }
@@ -94,6 +99,12 @@ public class Enemy : Entity
         {
             transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
         }
+    }
+
+    IEnumerator ResetTimeScale()
+    {
+        yield return new WaitForSeconds(0.25f);
+        Time.timeScale = 1f;
     }
     public void AddShield()
     {
@@ -151,7 +162,7 @@ public class Enemy : Entity
         bool isInside = RectTransformUtility.ScreenPointToLocalPointInRectangle(
             canvasRect,   
             screenPoint,  
-            null,         
+            null,
             out localPoint
         );
 
@@ -164,12 +175,37 @@ public class Enemy : Entity
             CanMove = false;
 
             SpwanExpBall(isCrit);
-
+            // 生成金币或宝箱
+            SpwanCoinAndChest();
             // 旋转缩小然后死亡
             StartCoroutine(DeathEffect());
         }
     }
+    private void SpwanCoinAndChest() {
 
+        if (enemyType != EnemyType.Elite && enemyType != EnemyType.Boss) return;
+        int spwanType = Random.Range(0, 2);
+        if (spwanType == 0)
+        {
+            GameManager.Instance.SpwanChest(transform.position);
+        }
+        else if (spwanType == 1)
+        {
+            int baseCoinCount = enemyType == EnemyType.Elite ? 2 : 5;// 精英怪生成2个金币，Boss生成5个金币
+            int baseCoinValue = enemyType == EnemyType.Elite ? 1 : 2;// 精英怪生成的金币价值1，Boss生成的金币价值2
+            if (baseCoinCount > 0)
+            {
+                for (int i = 0; i < baseCoinCount; i++)
+                {
+                    float angle = i * (360f / baseCoinCount);
+                    Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 0.5f;
+                    Vector3 randomOffset = new Vector3(Random.Range(-0.2f, 0.2f), Random.Range(-0.2f, 0.2f), 0);
+                    GameManager.Instance.SpwanCoin(transform.position + offset + randomOffset, baseCoinValue);
+                }
+            }
+        }
+            
+    }
     private void SpwanExpBall(bool isCrit)
     {
         float baseExp;
@@ -262,7 +298,10 @@ public class Enemy : Entity
         if (IsSpecialEnemy)
         {
             GameManager.Instance.IsSpecialEvent = false;// 结束特殊事件
-            GameManager.Instance.player.GetComponent<Player>().ResetWeaponAttackRange();
+            // 特殊事件结束后，重新计算下一次特殊事件间隔
+            GameManager.Instance.nextSpecialEventInterval = GameManager.Instance.CalculateDynamicSpecialEventInterval();
+            GameManager.Instance.player.GetComponent<Player>().ResetWeaponAttackRange();// 重置玩家的武器攻击范围
+            GameManager.Instance.cameraEffect.darkIntensity = 0.0f;
         }
 
         // 如果是精英怪或血厚怪，生成一个加血道具
