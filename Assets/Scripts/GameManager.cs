@@ -484,7 +484,7 @@ public class GameManager : MonoBehaviour
             }
 
             // 在这里进行玩家技能的冷却时间计算与更新
-            if (skillCooldownTimer > 0)
+            if (skillCooldownTimer > 0 && canUseSkill == false)
             {
                 skillCooldownTimer -= Time.deltaTime;
                 coolDownLabel.text = skillCooldownTimer.ToString("F1") + "s";
@@ -492,6 +492,8 @@ public class GameManager : MonoBehaviour
                 {
                     skillCooldownTimer = 0;
                     canUseSkill = true;
+                    btn_ReleaseSkill.interactable = true;
+                    coolDownLabel.text = "";
                 }
             }
         }
@@ -699,6 +701,7 @@ public class GameManager : MonoBehaviour
             return;
         }
         canUseSkill = false;
+        btn_ReleaseSkill.interactable = false;
         skillCooldownTimer = totalSkillCooldownTime;
         switch (player.GetComponent<Player>().playerType)
         {

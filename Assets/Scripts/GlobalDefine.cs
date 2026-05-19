@@ -122,6 +122,7 @@ public class GameData {
     public int PermanentHp;// 永久血量
     public float PermanentMoveSpeed = 0;// 永久移动速度
     public float PermanentCrit = 0;// 永久暴击
+    public PlayerType playerType;// 玩家类型
 }
 
 /// <summary>

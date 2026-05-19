@@ -69,7 +69,9 @@ public class Player : Entity
         currentExp = 0;
         level = (int)playerData.Level;
 
-        playerType = PlayerType.Normal;// 这里后面需要在局外系统中设置成玩家选择的类型
+        playerType = DataManager.myGameData.playerType;// 这里后面需要在局外系统中设置成玩家选择的类型
+
+        transform.Find("Fire/view").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"sprites/PlayerTypeIcon/{(int)playerType}");
 
         weapon = WeaponSystem.CreateWeapon(playerData.CurrentWeaponIndex, this);
         weapon.ChangeBullet(2);

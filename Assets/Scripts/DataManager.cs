@@ -35,6 +35,7 @@ public class DataManager
             myGameData.PermanentHp = _myGameData.PermanentHp;
             myGameData.PermanentMoveSpeed = _myGameData.PermanentMoveSpeed;
             myGameData.PermanentCrit = _myGameData.PermanentCrit;
+            myGameData.playerType = _myGameData.playerType;
         }
         else
         {
@@ -43,6 +44,7 @@ public class DataManager
             myGameData.PermanentHp = 0;
             myGameData.PermanentMoveSpeed = 0;
             myGameData.PermanentCrit = 0;
+            myGameData.playerType = PlayerType.Normal;
         }
     }
 

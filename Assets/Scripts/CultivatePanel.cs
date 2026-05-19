@@ -7,15 +7,24 @@ using UnityEngine.UI;
 public class CultivatePanel : MonoBehaviour
 {
     public List<Button> upgradeButtonsList;
+    public List<Button> playerTypeChooses;
     public Button closeButton;
 
     Dictionary<string,Button> upgradeButtons = new Dictionary<string, Button>();
+    Dictionary<PlayerType,Button> playerTypeChooseButtons = new Dictionary<PlayerType, Button>();
 
     public void Init() {
         upgradeButtons.Add("Attack", upgradeButtonsList[0]);
         upgradeButtons.Add("HP", upgradeButtonsList[1]);
         upgradeButtons.Add("MoveSpeed", upgradeButtonsList[2]);
         upgradeButtons.Add("Crit", upgradeButtonsList[3]);
+
+        for (int i = 0; i < playerTypeChooses.Count; i++)
+        {
+            PlayerType type = (PlayerType)i;
+            playerTypeChooseButtons.Add(type, playerTypeChooses[i]);
+            playerTypeChooses[i].transform.Find("icon").GetComponent<Image>().sprite = Resources.Load<Sprite>($"sprites/PlayerTypeIcon/{i}");
+        }
 
         closeButton.onClick.AddListener(() =>
         {
@@ -65,6 +74,17 @@ public class CultivatePanel : MonoBehaviour
                 // 保存修改的培养数据
                 GameManager.Instance.SaveGame();
             });   
+        }
+
+        foreach (var item in playerTypeChooseButtons) { 
+            item.Value.interactable = true;
+            item.Value.onClick.AddListener(() =>
+            {
+                item.Value.interactable = false;
+                DataManager.myGameData.playerType = item.Key;
+                // 保存修改的玩家类型
+                GameManager.Instance.SaveGame();
+            });
         }
     }
 
