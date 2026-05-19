@@ -3,7 +3,9 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.U2D.Aseprite;
 using UnityEngine;
+using UnityEngine.UI;
 using static UnityEngine.GraphicsBuffer;
 
 public class GameManager : MonoBehaviour
@@ -23,8 +25,7 @@ public class GameManager : MonoBehaviour
     int currentLoadStep = 0;
     int totalLoadStep = 5;
     public PlayerData pdata { get; set; }
-    // 游戏数据相关，此数据全局有效。
-    public GameData gameData;
+
     public GameObject levelPanel;
     public GameObject gameOverPanel;
     public GameObject cultivatePanel;
@@ -32,6 +33,12 @@ public class GameManager : MonoBehaviour
     public bool GameOver { get; set; }
     public bool IsGameStarted { get; set; }
 
+    // 技能释放相关
+    public Button btn_ReleaseSkill;
+    public Text coolDownLabel;
+    float skillCooldownTimer = 0;// 技能冷却计时器
+    float totalSkillCooldownTime = 0;// 技能总冷却时间，根据玩家类型从DataManager.playerSkillTypeCDDict获取
+    bool canUseSkill = true;
     // =========================
     // 数值配置区
     // =========================
@@ -126,7 +133,6 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         gameStepCoroutine = StartCoroutine(LoadGameStep());
-        //PlayerPrefs.DeleteAll();
     }
 
     IEnumerator LoadGameStep()
@@ -137,7 +143,6 @@ public class GameManager : MonoBehaviour
         NextLoadStep();
         yield return new WaitForSeconds(0.025f);
         DataManager.Init();
-        gameData = DataManager.myGameData;
         NextLoadStep();
         yield return new WaitForSeconds(0.2f);// 由于DataManager.Init()数据量大，所以停留了较长时间，之后每一步停留0.025秒
 
@@ -192,7 +197,11 @@ public class GameManager : MonoBehaviour
         cameraEffect = mainCamera.GetComponent<CameraEffect>();
         cameraOriginPos = mainCamera.transform.localPosition;
         GenPlayer();
-
+        totalSkillCooldownTime = DataManager.playerSkillTypeCDDict[player.GetComponent<Player>().playerType];
+        skillCooldownTimer = totalSkillCooldownTime;
+        btn_ReleaseSkill.onClick.AddListener(() => {
+            UseSkill();
+        });
         AudioManager.instance.PlayBGM("main");
     }
 
@@ -350,7 +359,10 @@ public class GameManager : MonoBehaviour
     public void ShowLevelUpPanel(bool show)
     {
         levelPanel.SetActive(show);
-        levelPanel.GetComponent<ChooseOnePanel>().Init();
+        if(show == true)
+        {
+            levelPanel.GetComponent<ChooseOnePanel>().Init();
+        }
         Time.timeScale = show == true ? 0 : 1;
     }
 
@@ -368,7 +380,10 @@ public class GameManager : MonoBehaviour
     public void ShowCultivatePanel(bool show)
     {
         cultivatePanel.SetActive(show);
-        cultivatePanel.GetComponent<CultivatePanel>().Init();
+        if (show == true)
+        {
+            cultivatePanel.GetComponent<CultivatePanel>().Init();
+        }
     }
 
     void ResetAllGameDatas()
@@ -466,6 +481,18 @@ public class GameManager : MonoBehaviour
                 playerHpSlider.transform.position = wpos;
 
                 playerHpSlider.Find("slider").localScale = new Vector3(player.GetComponent<Player>().GetHpProgress(), 1, 1);
+            }
+
+            // 在这里进行玩家技能的冷却时间计算与更新
+            if (skillCooldownTimer > 0)
+            {
+                skillCooldownTimer -= Time.deltaTime;
+                coolDownLabel.text = skillCooldownTimer.ToString("F1") + "s";
+                if (skillCooldownTimer < 0)
+                {
+                    skillCooldownTimer = 0;
+                    canUseSkill = true;
+                }
             }
         }
 
@@ -639,18 +666,18 @@ public class GameManager : MonoBehaviour
 
             p.AddKilledCount(500);
         }
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            ExecuteTimeStop();
-        }
-        if (Input.GetKeyDown(KeyCode.V))
-        {
-            ExecuteBlackHole(player.transform.position);
-        }
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            ExecuteNuke();
-        }
+        //if (Input.GetKeyDown(KeyCode.C))
+        //{
+        //    ExecuteTimeStop();
+        //}
+        //if (Input.GetKeyDown(KeyCode.V))
+        //{
+        //    ExecuteBlackHole(player.transform.position);
+        //}
+        //if (Input.GetKeyDown(KeyCode.R))
+        //{
+        //    ExecuteNuke();
+        //}
         if (Input.GetKeyDown(KeyCode.P))
         {
             // 直接进入特殊事件
@@ -658,6 +685,50 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
+
+    void UseSkill()
+    {
+        if(player == null)
+        {
+            return;
+        }
+        if(canUseSkill == false)
+        {
+            Debug.Log("技能冷却中...");
+            return;
+        }
+        canUseSkill = false;
+        skillCooldownTimer = totalSkillCooldownTime;
+        switch (player.GetComponent<Player>().playerType)
+        {
+            case PlayerType.Normal:
+                ExecuteUnstoppable();
+                break;
+            case PlayerType.BlackHole:
+                ExecuteBlackHole(transform.position);
+                break;
+            case PlayerType.TimeStop:
+                ExecuteTimeStop();
+                break;
+            case PlayerType.Rage:
+                ExecuteNuke();
+                break;
+        }
+    }
+    /// <summary>
+    /// 无敌技能，持续5秒，期间玩家不会受到任何伤害
+    /// </summary>
+    public void ExecuteUnstoppable()
+    {
+        player.GetComponent<Player>().IsInvincible = true;
+        StartCoroutine(ResetUnstoppable());
+    }
+    IEnumerator ResetUnstoppable()
+    {
+        yield return new WaitForSeconds(5f);
+        player.GetComponent<Player>().IsInvincible = false;
+    }
     /// <summary>
     /// 黑洞启动
     /// </summary>
@@ -1034,9 +1105,9 @@ public class GameManager : MonoBehaviour
         pdata = new PlayerData
         {
             Level = 1,// 玩家等级
-            Hp = 500 + gameData.PermanentHp,// 玩家生命值 = 500 + 永久增加的生命值
-            Atk = gameData.PermanentAtk,// 当前玩家攻击力
-            MoveSpeed = 5.6f + gameData.PermanentMoveSpeed,// 玩家移动速度
+            Hp = 500 + DataManager.myGameData.PermanentHp,// 玩家生命值 = 500 + 永久增加的生命值
+            Atk = DataManager.myGameData.PermanentAtk,// 当前玩家攻击力
+            MoveSpeed = 5.6f + DataManager.myGameData.PermanentMoveSpeed,// 玩家移动速度
             CurrentWeaponIndex = 0// 玩家当前使用的武器id
         };
 
@@ -1384,40 +1455,14 @@ public class GameManager : MonoBehaviour
         shakeStrength = strength;
         shakeTime = duration;
     }
-
-    //private void OnGUI()
-    //{
-    //    GUIStyle style = new GUIStyle();
-
-    //    style.fontSize = 24;
-    //    style.normal.textColor = Color.white;
-
-    //    GUILayout.BeginArea(new Rect(20, 20, 500, 1000));
-
-    //    GUILayout.Label("===== DEBUG =====", style);
-
-    //    GUILayout.Label("Game Time : " + gameTime.ToString("F1"), style);
-
-    //    GUILayout.Label("Difficulty : " + difficulty, style);
-
-    //    //GUILayout.Label("Enemy Budget : " + enemyBudget.ToString("F1"), style);
-    //    GUILayout.Label("Wave Group Count : " + currentWaveGroupCount, style);
-
-    //    GUILayout.Label("Enemy Per Group : " + enemyCountPerGroup, style);
-
-    //    GUILayout.Label("Enemy Count : " + DataManager.allEnemyDict.Count, style);
-
-    //    GUILayout.Label("Player Level : " + pdata.Level, style);
-
-    //    GUILayout.Label("Is Wave : " + isWave, style);
-
-    //    GUILayout.EndArea();
-    //}
+    public void SaveGame()
+    {
+        string gameDataJson = JsonUtility.ToJson(DataManager.myGameData);
+        PlayerPrefs.SetString("gamedata", gameDataJson);
+        PlayerPrefs.Save();
+    }
     private void OnDisable()
     {
-        // 将GameData的值保存到持久化存储中，以便下次游戏启动时加载
-        PlayerPrefs.SetString("gamedata", JsonUtility.ToJson(gameData.ToString()));
-
         DataManager.Clear();
         WeaponSystem.Clear();
         lineObjs.Clear();
@@ -1429,9 +1474,6 @@ public class GameManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        // 将GameData的值保存到持久化存储中，以便下次游戏启动时加载
-        PlayerPrefs.SetString("gamedata", JsonUtility.ToJson(gameData.ToString()));
-
         DataManager.Clear();
         WeaponSystem.Clear();
         lineObjs.Clear();
@@ -1443,10 +1485,6 @@ public class GameManager : MonoBehaviour
 
     private void OnApplicationQuit()
     {
-        // 将GameData的值保存到持久化存储中，以便下次游戏启动时加载
-        PlayerPrefs.SetString("gamedata", JsonUtility.ToJson(gameData.ToString()));
-        PlayerPrefs.Save();
-
         DataManager.Clear();
         WeaponSystem.Clear();
 

@@ -224,7 +224,7 @@ public class Bullet : MonoBehaviour
         bool isCrit = false;
 
         float critDamageMultiplier = 1.0f;
-        float totalCrit = GameManager.Instance.gameData.PermanentCrit;
+        float totalCrit = DataManager.myGameData.PermanentCrit;
         // 暴击
         if (critChance > 0 && Random.value < critChance)
         {

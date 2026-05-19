@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEditor.MemoryProfiler;
+using UnityEditor.U2D.Aseprite;
 using UnityEngine;
 public class Player : Entity
 {
@@ -41,6 +42,10 @@ public class Player : Entity
     // Dash残影
     float ghostTimer = 0;
 
+    /// <summary>
+    /// 飞机类型，决定了飞机的技能
+    /// </summary>
+    public PlayerType playerType { get; set; }
     public void AddKilledCount()
     {
         KilledCount++;
@@ -63,6 +68,8 @@ public class Player : Entity
         PlayerPower = playerData.Atk;
         currentExp = 0;
         level = (int)playerData.Level;
+
+        playerType = PlayerType.Normal;// 这里后面需要在局外系统中设置成玩家选择的类型
 
         weapon = WeaponSystem.CreateWeapon(playerData.CurrentWeaponIndex, this);
         weapon.ChangeBullet(2);

@@ -12,7 +12,7 @@ public class DataManager
     public static List<GameObject> allEnemyDict = new List<GameObject>();// 敌人实体字典
     public static List<GameObject> allDamageText =  new List<GameObject>();// 伤害文本字典
     public static List<GameObject> allExpBall = new List<GameObject>();// 经验球字典
-    public static Dictionary<string, int> cultivateDict = new Dictionary<string, int>();
+    public static Dictionary<PlayerType, float> playerSkillTypeCDDict = new Dictionary<PlayerType, float>();// 玩家技能冷却时间字典
 
     public static GameData myGameData;
     public static void Init()
@@ -20,26 +20,21 @@ public class DataManager
         LoadBulletConfig();
         LoadEnemyConfig();
         LoadWeaponConfig();
-
+        ConfigSkillCD();
         // 预热BulletPoll，提前加载子弹预制体
         BulletPool.Instance.Prewarm("0", 200);
         BulletPool.Instance.Prewarm("1", 100);
 
         string dataStr = PlayerPrefs.GetString("gamedata");
-        Debug.Log(dataStr);
         myGameData = new GameData();
         if (dataStr != "" && dataStr != null)
         {
-            string[] dataArr = dataStr.Split(',');
-            cultivateDict["Attack"] = int.Parse(dataArr[1]);
-            cultivateDict["HP"] = int.Parse(dataArr[2]);
-            cultivateDict["MoveSpeed"] = int.Parse(dataArr[3]);
-            cultivateDict["Crit"] = int.Parse(dataArr[4]);
-            myGameData.TotalCoinCount = int.Parse(dataArr[0]);
-            myGameData.PermanentAtk = int.Parse(dataArr[1]);
-            myGameData.PermanentHp = int.Parse(dataArr[2]);
-            myGameData.PermanentMoveSpeed = float.Parse(dataArr[3]);
-            myGameData.PermanentCrit = float.Parse(dataArr[4]);
+            var _myGameData = JsonUtility.FromJson<GameData>(dataStr);
+            myGameData.TotalCoinCount = _myGameData.TotalCoinCount;
+            myGameData.PermanentAtk = _myGameData.PermanentAtk;
+            myGameData.PermanentHp = _myGameData.PermanentHp;
+            myGameData.PermanentMoveSpeed = _myGameData.PermanentMoveSpeed;
+            myGameData.PermanentCrit = _myGameData.PermanentCrit;
         }
         else
         {
@@ -51,6 +46,13 @@ public class DataManager
         }
     }
 
+    static void ConfigSkillCD()
+    {
+        playerSkillTypeCDDict[PlayerType.Normal] = 10f;
+        playerSkillTypeCDDict[PlayerType.BlackHole] = 30f;
+        playerSkillTypeCDDict[PlayerType.TimeStop] = 35f;
+        playerSkillTypeCDDict[PlayerType.Rage] = 60f;
+    }
     static void LoadBulletConfig()
     {
         TextAsset csv = Resources.Load<TextAsset>("configs/Bullet");
@@ -171,7 +173,8 @@ public class DataManager
         allEnemyDict.Clear();
         allDamageText.Clear();
         allExpBall.Clear();
-        cultivateDict.Clear();
+        myGameData = null;
+        playerSkillTypeCDDict.Clear();
     }
 
     public static Vector3[] GetFanDirections2D(Vector3 centerDir, int count)

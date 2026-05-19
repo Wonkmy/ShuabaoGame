@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class CultivatePanel : MonoBehaviour
 {
     public List<Button> upgradeButtonsList;
+    public Button closeButton;
 
     Dictionary<string,Button> upgradeButtons = new Dictionary<string, Button>();
 
@@ -16,27 +17,54 @@ public class CultivatePanel : MonoBehaviour
         upgradeButtons.Add("MoveSpeed", upgradeButtonsList[2]);
         upgradeButtons.Add("Crit", upgradeButtonsList[3]);
 
+        closeButton.onClick.AddListener(() =>
+        {
+            GameManager.Instance.ShowCultivatePanel(false);
+        });
         foreach (var item in upgradeButtons)
         {
-            item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.cultivateDict[item.Key]}";
+            // 先显示当前培养数据
+            switch (item.Key)
+            {
+                case "Attack":
+                    item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.myGameData.PermanentAtk.ToString()}";
+                    break;
+                case "HP":
+                    item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.myGameData.PermanentHp.ToString()}";
+                    break;
+                case "MoveSpeed":
+                    item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.myGameData.PermanentMoveSpeed.ToString("F1")}";
+                    break;
+                case "Crit":
+                    item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.myGameData.PermanentCrit.ToString("F1")}";
+                    break;
+            }
+
             item.Value.onClick.AddListener(() =>
             {
                 switch (item.Key)
                 {
                     case "Attack":
-                        DataManager.cultivateDict["Attack"]++;
+                        DataManager.myGameData.PermanentAtk += 1;
+                        item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.myGameData.PermanentAtk.ToString()}";
                         break;
                     case "HP":
-                        DataManager.cultivateDict["HP"]++;
+                        DataManager.myGameData.PermanentHp += 5;
+                        item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.myGameData.PermanentHp.ToString()}";
                         break;
                     case "MoveSpeed":
-                        DataManager.cultivateDict["MoveSpeed"]++;
+                        DataManager.myGameData.PermanentMoveSpeed += 0.1f;
+                        item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.myGameData.PermanentMoveSpeed.ToString("F1")}";
                         break;
                     case "Crit":
-                        DataManager.cultivateDict["Crit"]++;
+                        DataManager.myGameData.PermanentCrit += 0.1f;
+                        item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.myGameData.PermanentCrit.ToString("F1")}";
                         break;
                 }
-            });
+
+                // 保存修改的培养数据
+                GameManager.Instance.SaveGame();
+            });   
         }
     }
 
@@ -47,6 +75,7 @@ public class CultivatePanel : MonoBehaviour
             upgradeButtonsList[i].GetComponentInChildren<Text>().text = "";
             upgradeButtonsList[i].onClick.RemoveAllListeners();
         }
+        closeButton.onClick.RemoveAllListeners();
         upgradeButtons.Clear();
     }
 }

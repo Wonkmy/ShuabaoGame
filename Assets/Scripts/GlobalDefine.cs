@@ -106,6 +106,15 @@ public class PlayerData
     public int CurrentWeaponIndex;// 持有的武器id
     public float AttackRange;// 攻击范围
 }
+
+public enum PlayerType
+{
+    Normal,// 普通飞机
+    BlackHole,// 黑洞技能飞机
+    TimeStop,// 时间停止技能飞机
+    Rage// 核爆（清屏）技能飞机
+}
+
 [System.Serializable]
 public class GameData { 
     public int TotalCoinCount;// 总金币数
@@ -113,16 +122,6 @@ public class GameData {
     public int PermanentHp;// 永久血量
     public float PermanentMoveSpeed = 0;// 永久移动速度
     public float PermanentCrit = 0;// 永久暴击
-    public void AddCoin(int count)
-    {
-        TotalCoinCount += count;
-    }
-
-    public override string ToString()
-    {
-        //return $"{TotalCoinCount},{PermanentAtk},{PermanentHp},{PermanentMoveSpeed},{PermanentCrit}";
-        return TotalCoinCount + "," + PermanentAtk + "," + PermanentHp + "," + PermanentMoveSpeed + "," + PermanentCrit;
-    }
 }
 
 /// <summary>
