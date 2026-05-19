@@ -9,6 +9,7 @@ public class CultivatePanel : MonoBehaviour
     public List<Button> upgradeButtonsList;
     public List<Button> playerTypeChooses;
     public Button closeButton;
+    public Text goldNumLabel;
 
     Dictionary<string,Button> upgradeButtons = new Dictionary<string, Button>();
     Dictionary<PlayerType,Button> playerTypeChooseButtons = new Dictionary<PlayerType, Button>();
@@ -18,6 +19,8 @@ public class CultivatePanel : MonoBehaviour
         upgradeButtons.Add("HP", upgradeButtonsList[1]);
         upgradeButtons.Add("MoveSpeed", upgradeButtonsList[2]);
         upgradeButtons.Add("Crit", upgradeButtonsList[3]);
+
+        goldNumLabel.text = "X " + DataManager.myGameData.TotalCoinCount.ToString();
 
         for (int i = 0; i < playerTypeChooses.Count; i++)
         {

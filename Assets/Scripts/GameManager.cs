@@ -180,6 +180,9 @@ public class GameManager : MonoBehaviour
         GameObject expobj = Instantiate(Resources.Load<GameObject>("exp"));
         GameObject hpobj = Instantiate(Resources.Load<GameObject>("hp"));
 
+        expobj.SetActive(false);
+        hpobj.SetActive(false);
+
         playerExpSlider = expobj.transform;
         playerHpSlider = hpobj.transform;
     }
@@ -187,6 +190,7 @@ public class GameManager : MonoBehaviour
     {
         ShowCultivatePanel(true);
         yield return new WaitUntil(()=> CultivatePanelActive() == false);
+        btn_ReleaseSkill.gameObject.SetActive(true);
         GameOver = false;
         IsGameStarted = true;
         // 基础难度固定
@@ -196,12 +200,30 @@ public class GameManager : MonoBehaviour
         mainCamera = Camera.main;
         cameraEffect = mainCamera.GetComponent<CameraEffect>();
         cameraOriginPos = mainCamera.transform.localPosition;
+        yield return new WaitForSeconds(0.1f);
+        // 生成玩家
         GenPlayer();
-        totalSkillCooldownTime = DataManager.playerSkillTypeCDDict[player.GetComponent<Player>().playerType];
-        skillCooldownTimer = totalSkillCooldownTime;
+        yield return new WaitForSeconds(0.1f);
+        // 显示经验和血条
+        playerExpSlider.gameObject.SetActive(true);
+        playerHpSlider.gameObject.SetActive(true);
+
+        // 根据玩家类型配置技能冷却时间
+        try
+        {
+            totalSkillCooldownTime = DataManager.playerSkillTypeCDDict[player.GetComponent<Player>().playerType];
+            skillCooldownTimer = totalSkillCooldownTime;
+        }
+        catch (System.Exception)
+        {
+        }
+
+        // 技能按钮监听
         btn_ReleaseSkill.onClick.AddListener(() => {
             UseSkill();
         });
+        yield return new WaitForSeconds(0.1f);
+        // 播放BGM
         AudioManager.instance.PlayBGM("main");
     }
 
@@ -418,11 +440,20 @@ public class GameManager : MonoBehaviour
             IsSpecialEvent = false;
             specialEventTimer = 0;
 
+            // 隐藏经验和血条
+            playerExpSlider.gameObject.SetActive(false);
+            playerHpSlider.gameObject.SetActive(false);
+
             GameManager.Instance.cameraEffect.intensity = 0;
             mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
             Destroy(player);
             player = null;
             AudioManager.instance.StopAllBGM();
+
+            foreach (var l in lineObjs)
+            {
+                Destroy(l);
+            }
         }
         catch (System.Exception e)
         {
@@ -1464,37 +1495,30 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetString("gamedata", gameDataJson);
         PlayerPrefs.Save();
     }
-    private void OnDisable()
+
+    private void Dispose()
     {
         DataManager.Clear();
         WeaponSystem.Clear();
         lineObjs.Clear();
+        gameStepCoroutine = null;
         foreach (var l in lineObjs)
         {
             Destroy(l);
         }
+    }
+    private void OnDisable()
+    {
+        Dispose();
     }
 
     private void OnDestroy()
     {
-        DataManager.Clear();
-        WeaponSystem.Clear();
-        lineObjs.Clear();
-        foreach (var l in lineObjs)
-        {
-            Destroy(l);
-        }
+        Dispose();
     }
 
     private void OnApplicationQuit()
     {
-        DataManager.Clear();
-        WeaponSystem.Clear();
-
-        lineObjs.Clear();
-        foreach (var l in lineObjs)
-        {
-            Destroy(l);
-        }
+        Dispose();
     }
 }
