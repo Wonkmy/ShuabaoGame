@@ -236,7 +236,7 @@ public class Bullet : MonoBehaviour
         }
 
         // 基础伤害
-        float attack = weapon.weaponData.Attack * (int)myBulletData.damage;
+        float attack = (weapon.weaponData.Attack + weapon.GetAttack()) * (int)myBulletData.damage;// （武器原始攻击力 + 武器升级增加的攻击力） * 子弹伤害
 
         float powerAttack = attack * player.playerData.Atk;// 武器攻击力 * 玩家攻击力(玩家攻击力为全局永久攻击力)
 
@@ -256,7 +256,10 @@ public class Bullet : MonoBehaviour
 
             finalDamage *= bonus;
         }
-
+        if (player.HasNuclearBuild)
+        {
+            finalDamage *= 1.5f;
+        }
         // 主目标伤害
         entity.TakeDamage(Mathf.FloorToInt(finalDamage), isCrit);
 
