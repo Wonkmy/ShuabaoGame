@@ -20,6 +20,7 @@ public class DataManager
         LoadBulletConfig();
         LoadEnemyConfig();
         LoadWeaponConfig();
+        LoadUpgradeCsv();
         ConfigSkillCD();
         // 预热BulletPoll，提前加载子弹预制体
         BulletPool.Instance.Prewarm("0", 200);
@@ -115,7 +116,38 @@ public class DataManager
             enemyDataDict[data.id] = data;
         }
     }
+    static void LoadUpgradeCsv()
+    {
+        TextAsset text = Resources.Load<TextAsset>("configs/upgrade");
 
+        string[] lines = text.text.Split('\n');
+
+        for (int i = 1; i < lines.Length; i++)
+        {
+            if (string.IsNullOrWhiteSpace(lines[i]))
+                continue;
+
+            string[] row = lines[i].Split(',');
+
+            UpgradeData data = new UpgradeData();
+
+            data.id = int.Parse(row[0]);
+
+            data.name = row[1];
+
+            data.tag = row[2];
+
+            data.rarity = row[3];
+
+            data.desc = row[4];
+
+            data.value = float.Parse(row[5]);
+
+            data.type = (UpgradeType)int.Parse(row[6]);
+
+            DataManager.upgradeList.Add(data);
+        }
+    }
     static void LoadWeaponConfig()
     {
         TextAsset csv = Resources.Load<TextAsset>("configs/Weapon");

@@ -141,5 +141,52 @@ public class UpgradeData
     public string name;
     // 流派tag
     public string tag;
+    public int id;
+
+    public string desc;
+
+    // normal rare epic legendary
+    public string rarity;
+
+    // attack bullet_count crit_explosion ...
+    public UpgradeType type;
+
+    public float value;
     public System.Action action;
+}
+
+public enum UpgradeType
+{
+    // 子弹数量增加
+    BulletCount = 0,
+
+    // 武器攻击力增加
+    Attack = 1,
+
+    // 子弹穿透数量增加
+    Pierce = 2,
+
+    // 玩家最终攻击倍率增加
+    AtkRatio = 3,
+
+    // 大幅增加移速，但降低部分攻击
+    MoveFast = 4,
+
+    // 高伤害、低移速、高攻速模式
+    HeavyMode = 5,
+
+    // 暴击时触发范围爆炸
+    CritExplosion = 6,
+
+    // 穿透后触发范围爆炸
+    PierceExplosion = 7,
+
+    // 子弹数量减少，但单发伤害极高
+    LowBulletHighDamage = 8,
+
+    // 子弹命中后再次分裂
+    LegendSplit = 9,
+
+    // 大幅提升攻速
+    LegendFire = 10,
 }

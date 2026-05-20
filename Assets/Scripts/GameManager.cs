@@ -3,10 +3,8 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.U2D.Aseprite;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEngine.GraphicsBuffer;
 
 public class GameManager : MonoBehaviour
 {
@@ -62,8 +60,6 @@ public class GameManager : MonoBehaviour
     public float dashSpeed = 18f;
     public float dashDuration = 0.12f;
 
-    // 当前刷怪预算
-    //float enemyBudget = 0;
     // =========================
     // 波次刷怪系统
     // =========================
@@ -116,7 +112,6 @@ public class GameManager : MonoBehaviour
 
     // 特殊事件相关
     private float specialEventTimer = 0;
-    // private float specoalApperInterval = 45f;// 已废弃，改为配置区
     public bool IsSpecialEvent { get; set; }// 是否正在进行特殊事件
     private EnemyType[] enemyTypes;// 特殊事件专用的敌人类型：精英、Boss
 
@@ -146,7 +141,7 @@ public class GameManager : MonoBehaviour
         NextLoadStep();
         yield return new WaitForSeconds(0.2f);// 由于DataManager.Init()数据量大，所以停留了较长时间，之后每一步停留0.025秒
 
-        LoadDefaultUpgradeConfig();// 加载默认构筑配置
+        //LoadDefaultUpgradeConfig();// 加载默认构筑配置
         NextLoadStep();
         yield return new WaitForSeconds(0.025f);
 
@@ -227,6 +222,7 @@ public class GameManager : MonoBehaviour
         AudioManager.instance.PlayBGM("main");
     }
 
+    // TODO
     void LoadDefaultUpgradeConfig()
     {
         // =========================
@@ -1140,7 +1136,7 @@ public class GameManager : MonoBehaviour
         {
             Level = 1,// 玩家等级
             Hp = 500 + DataManager.myGameData.PermanentHp,// 玩家生命值 = 500 + 永久增加的生命值
-            Atk = DataManager.myGameData.PermanentAtk,// 当前玩家攻击力
+            Atk = 5 + DataManager.myGameData.PermanentAtk,// 当前玩家攻击力
             MoveSpeed = 5.6f + DataManager.myGameData.PermanentMoveSpeed,// 玩家移动速度
             CurrentWeaponIndex = 0// 玩家当前使用的武器id
         };
@@ -1148,61 +1144,101 @@ public class GameManager : MonoBehaviour
         player.GetComponent<Player>().Init(pdata);
     }
 
-    void GenEnemy()
+    public void ExecuteUpgrade(UpgradeData data)
     {
-        GameObject newEnemy = Instantiate(Resources.Load<GameObject>("enemy"));
-        newEnemy.GetComponent<Enemy>().target = player.transform;
-        int enemyId = 0;
-        if (isWave)
+        Player p = player.GetComponent<Player>();
+
+        switch (data.type)
         {
-            enemyId = Random.Range(0, 3);
+            // 子弹数量
+            case UpgradeType.BulletCount:
+
+                p.CurrentBulletCount += (int)data.value;
+
+                // 最大限制
+                p.CurrentBulletCount = Mathf.Clamp(p.CurrentBulletCount, 1, 10);
+
+                break;
+
+            // 攻击力
+            case UpgradeType.Attack:
+
+                p.GetCurrentWeapon().ChangeAttack((int)data.value);
+
+                break;
+
+            // 穿透
+            case UpgradeType.Pierce:
+
+                p.GetCurrentWeapon().ChangeBulletPierce((int)data.value);
+
+                break;
+
+            // 攻击倍率
+            case UpgradeType.AtkRatio:
+
+                p.playerData.Atk += data.value;
+
+                break;
+
+            // 游击模式
+            case UpgradeType.MoveFast:
+
+                p.moveSpeed += data.value;
+
+                // 高移速低伤害
+                p.playerData.Atk -= 0.2f;
+
+                break;
+
+            // 重装炮台
+            case UpgradeType.HeavyMode:
+
+                p.playerData.Atk += 1.5f;
+
+                p.moveSpeed -= 1f;
+
+                // 提升攻速
+                p.GetCurrentWeapon().ChangeFireInterval(-0.05f);
+
+                break;
+
+            // 暴击爆炸
+            case UpgradeType.CritExplosion:
+
+                p.HasCritExplosion = true;
+
+                break;
+
+            // 穿透爆炸
+            case UpgradeType.PierceExplosion:
+
+                p.HasPierceExplosion = true;
+
+                break;
+
+            // 精准重炮
+            case UpgradeType.LowBulletHighDamage:
+
+                p.HasLowBulletHighDamage = true;
+
+                break;
+
+            // 传奇裂变
+            case UpgradeType.LegendSplit:
+                p.HasLegendSplit = true;
+                break;
+
+            // 无限火力
+            case UpgradeType.LegendFire:
+
+                p.GetCurrentWeapon().ChangeFireInterval(-0.15f);
+
+                break;
+
+            default:
+                break;
         }
-        newEnemy.GetComponent<Enemy>().SetEnemy(DataManager.enemyDataDict[enemyId]);// 使用序号为enemyId的敌人数据
-        float x = 0;
-        float y = 0;
-
-        // 0 左 1 右 2 下 3 上
-        int side = Random.Range(0, 4);
-        if (isWave)
-        {
-            // 安全方向不生成敌人
-            while (side == safeSide)
-            {
-                side = Random.Range(0, 4);
-            }
-        }
-
-        switch (side)
-        {
-            case 0:
-                x = -offset;
-                y = Random.Range(0, Screen.height);
-                break;
-
-            case 1:
-                x = Screen.width + offset;
-                y = Random.Range(0, Screen.height);
-                break;
-
-            case 2:
-                x = Random.Range(0, Screen.width);
-                y = -offset;
-                break;
-
-            case 3:
-                x = Random.Range(0, Screen.width);
-                y = Screen.height + offset;
-                break;
-        }
-
-        Vector3 wpos = GetWorldPosByScreenPos(new Vector3(x, y, 0));
-
-        // 保持敌人在2D世界层级
-        wpos.z = 0;
-
-        newEnemy.transform.position = wpos;
-
-        DataManager.allEnemyDict.Add(newEnemy);
     }
 
     void GenEnemy(Vector3 spawnPos)
@@ -1477,6 +1513,111 @@ public class GameManager : MonoBehaviour
 
             index++;
         }
+    }
+
+    public List<UpgradeData> GetUpgradeOptions(int count)
+    {
+        Player player = this.player.GetComponent<Player>();
+
+        // 临时升级池
+        List<UpgradeData> tempList = new List<UpgradeData>();
+
+        tempList.AddRange(DataManager.upgradeList);
+
+        // =========================
+        // 传奇词条条件过滤
+        // =========================
+
+        for (int i = tempList.Count - 1; i >= 0; i--)
+        {
+            UpgradeData data = tempList[i];
+
+            // 暴击爆炸
+            if (data.type == UpgradeType.CritExplosion)
+            {
+                if (!player.buildDict.ContainsKey("crit") || player.buildDict["crit"] < 5)
+                {
+                    tempList.RemoveAt(i);
+
+                    continue;
+                }
+            }
+
+            // 穿透爆炸
+            if (data.type == UpgradeType.PierceExplosion)
+            {
+                if (!player.buildDict.ContainsKey("pierce") || player.buildDict["pierce"] < 5)
+                {
+                    tempList.RemoveAt(i);
+
+                    continue;
+                }
+            }
+
+            // 传奇裂变
+            if (data.type == UpgradeType.LegendSplit)
+            {
+                if (!player.HasCritExplosion)
+                {
+                    tempList.RemoveAt(i);
+
+                    continue;
+                }
+            }
+
+            // 无限火力
+            if (data.type == UpgradeType.LegendFire)
+            {
+                if (!player.buildDict.ContainsKey("bullet") || player.buildDict["bullet"] < 8)
+                {
+                    tempList.RemoveAt(i);
+
+                    continue;
+                }
+            }
+        }
+
+        // =========================
+        // 根据流派增加权重
+        // =========================
+
+        for (int i = 0; i < DataManager.upgradeList.Count; i++)
+        {
+            UpgradeData data = DataManager.upgradeList[i];
+
+            if (player.buildDict.ContainsKey(data.tag))
+            {
+                int weight = player.buildDict[data.tag];
+
+                for (int j = 0; j < weight; j++)
+                {
+                    tempList.Add(data);
+                }
+            }
+        }
+
+        // =========================
+        // 最终结果
+        // =========================
+
+        List<UpgradeData> result = new List<UpgradeData>();
+
+        for (int i = 0; i < count; i++)
+        {
+            if (tempList.Count <= 0)
+                break;
+
+            int id = Random.Range(0, tempList.Count);
+
+            UpgradeData data = tempList[id];
+
+            result.Add(data);
+
+            // 防止重复
+            tempList.Remove(data);
+        }
+
+        return result;
     }
 
     /// <summary>

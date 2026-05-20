@@ -54,22 +54,51 @@ public class CultivatePanel : MonoBehaviour
 
             item.Value.onClick.AddListener(() =>
             {
+                if(DataManager.myGameData.TotalCoinCount <= 0)
+                {
+                    Debug.Log("金币不足");
+                    return;
+                }
                 switch (item.Key)
                 {
                     case "Attack":
+                        if(DataManager.myGameData.TotalCoinCount < 10)
+                        {
+                            Debug.Log("金币不足");
+                            return;
+                        }
                         DataManager.myGameData.PermanentAtk += 1;
+                        DataManager.myGameData.TotalCoinCount -= 10;
                         item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.myGameData.PermanentAtk.ToString()}";
                         break;
                     case "HP":
+                        if(DataManager.myGameData.TotalCoinCount < 20)
+                        {
+                                Debug.Log("金币不足");
+                                return;
+                        }
                         DataManager.myGameData.PermanentHp += 5;
+                        DataManager.myGameData.TotalCoinCount -= 20;
                         item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.myGameData.PermanentHp.ToString()}";
                         break;
                     case "MoveSpeed":
+                        if(DataManager.myGameData.TotalCoinCount < 15)
+                        {
+                            Debug.Log("金币不足");
+                            return;
+                        }
                         DataManager.myGameData.PermanentMoveSpeed += 0.1f;
+                        DataManager.myGameData.TotalCoinCount -= 15;
                         item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.myGameData.PermanentMoveSpeed.ToString("F1")}";
                         break;
                     case "Crit":
+                        if(DataManager.myGameData.TotalCoinCount < 25)
+                        {
+                            Debug.Log("金币不足");
+                            return;
+                        }
                         DataManager.myGameData.PermanentCrit += 0.1f;
+                        DataManager.myGameData.TotalCoinCount -= 25;
                         item.Value.GetComponentInChildren<Text>().text = $"{item.Key.ToUpper()} .{DataManager.myGameData.PermanentCrit.ToString("F1")}";
                         break;
                 }
@@ -79,15 +108,26 @@ public class CultivatePanel : MonoBehaviour
             });   
         }
 
-        foreach (var item in playerTypeChooseButtons) { 
-            item.Value.interactable = true;
+        foreach (var item in playerTypeChooseButtons)
+        {
+            item.Value.interactable = !(item.Key == DataManager.myGameData.playerType);
             item.Value.onClick.AddListener(() =>
             {
                 item.Value.interactable = false;
                 DataManager.myGameData.playerType = item.Key;
+
+                ResetOtherplayerTypeChooseButtons();
                 // 保存修改的玩家类型
                 GameManager.Instance.SaveGame();
             });
+        }
+    }
+    void ResetOtherplayerTypeChooseButtons() {
+        foreach (var item in playerTypeChooseButtons) { 
+            if(item.Key != DataManager.myGameData.playerType)
+            {
+                item.Value.interactable = true;
+            }
         }
     }
 

@@ -21,9 +21,20 @@ public class Player : Entity
     public float PlayerPower { get; set; }
 
     public Dictionary<string, int> buildDict = new Dictionary<string, int>();
+    // =========================
+    // 流派系统 逻辑在407行左右
+    // =========================
+    // 是否形成核爆流
+    public bool HasNuclearBuild;
+
+    // 是否形成裂变流
+    public bool HasSplitBuild;
+
+    // 是否形成无限火力流
+    public bool HasFireBuild;
 
     public int KilledCount { get;private set; }
-
+    public bool HasLegendSplit { get; set; }
     public bool HasCritExplosion { get; set; }
     public bool HasPierceExplosion { get; set; }
     public bool HasLowBulletHighDamage { get; set; }
@@ -391,5 +402,38 @@ public class Player : Entity
     {
         yield return new WaitForSeconds(0.1f);
         GetComponentInChildren<SpriteRenderer>().color = Color.white;
+    }
+
+    public void CheckBuildCombo()
+    {
+        // =========================
+        // 核爆流
+        // 暴击爆炸 + 穿透爆炸
+        // =========================
+
+        if (HasCritExplosion && HasPierceExplosion)
+        {
+            HasNuclearBuild = true;
+        }
+
+        // =========================
+        // 裂变流
+        // 裂变 + 多子弹
+        // =========================
+
+        if (HasLegendSplit && CurrentBulletCount >= 6)
+        {
+            HasSplitBuild = true;
+        }
+
+        // =========================
+        // 无限火力流
+        // 高攻速 + 高子弹数
+        // =========================
+
+        if (CurrentBulletCount >= 8 && GetCurrentWeapon().GetFireInterval() <= 0.12f)
+        {
+            HasFireBuild = true;
+        }
     }
 }

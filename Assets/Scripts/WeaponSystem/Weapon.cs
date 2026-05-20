@@ -102,6 +102,11 @@ public class Weapon
     {
         attack += v;
     }
+
+    public float GetAttack()
+    {
+        return attack;
+    }
     /// <summary>
     /// 修改武器的攻击频率。Note：数值越小，频率越高
     /// </summary>
@@ -113,6 +118,11 @@ public class Weapon
         {
             fireInterval = 0.1f;
         }
+    }
+
+    public float GetFireInterval()
+    {
+        return fireInterval;
     }
     public void WeaponUpdate()
     {

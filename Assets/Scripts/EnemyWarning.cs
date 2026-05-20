@@ -72,15 +72,9 @@ public class EnemyWarning : MonoBehaviour
 
         float padding = 80f;
 
-        screenPos.x = Mathf.Clamp(
-                screenPos.x,
-                padding,
-                Screen.width - padding);
+        screenPos.x = Mathf.Clamp(screenPos.x, padding, Screen.width - padding);
 
-        screenPos.y = Mathf.Clamp(
-                screenPos.y,
-                padding,
-                Screen.height - padding);
+        screenPos.y = Mathf.Clamp(screenPos.y, padding, Screen.height - padding);
 
         Vector3 worldPos = mainCamera.ScreenToWorldPoint(screenPos);
 
