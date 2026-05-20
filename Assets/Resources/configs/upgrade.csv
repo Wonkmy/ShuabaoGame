@@ -3,7 +3,7 @@ id,name,tag,rarity,desc,value,type
 2,+5攻击,attack,normal,攻击力增加5,5,1
 3,+1穿透,bullet,rare,子弹穿透+1,1,2
 4,超级散射,bullet,epic,额外增加3发子弹,3,0
-5,精准射击,power,rare,攻击倍率提升,1,3
+5,精准射击,attack,rare,攻击倍率提升,1,3
 6,游击模式,move_speed,epic,移速大幅提升,3,4
 7,重装炮台,power,epic,高伤害低移速,1,5
 8,暴击爆炸,crit,epic,暴击触发爆炸,1,6

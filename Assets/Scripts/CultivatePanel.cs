@@ -15,17 +15,21 @@ public class CultivatePanel : MonoBehaviour
     Dictionary<PlayerType,Button> playerTypeChooseButtons = new Dictionary<PlayerType, Button>();
 
     public void Init() {
-        upgradeButtons.Add("Attack", upgradeButtonsList[0]);
-        upgradeButtons.Add("HP", upgradeButtonsList[1]);
-        upgradeButtons.Add("MoveSpeed", upgradeButtonsList[2]);
-        upgradeButtons.Add("Crit", upgradeButtonsList[3]);
+        //upgradeButtons.Add("Attack", upgradeButtonsList[0]);
+        //upgradeButtons.Add("HP", upgradeButtonsList[1]);
+        //upgradeButtons.Add("MoveSpeed", upgradeButtonsList[2]);
+        //upgradeButtons.Add("Crit", upgradeButtonsList[3]);
+        upgradeButtons["Attack"] = upgradeButtonsList[0];
+        upgradeButtons["HP"] = upgradeButtonsList[1];
+        upgradeButtons["MoveSpeed"] = upgradeButtonsList[2];
+        upgradeButtons["Crit"] = upgradeButtonsList[3];
 
         goldNumLabel.text = "X " + DataManager.myGameData.TotalCoinCount.ToString();
 
         for (int i = 0; i < playerTypeChooses.Count; i++)
         {
             PlayerType type = (PlayerType)i;
-            playerTypeChooseButtons.Add(type, playerTypeChooses[i]);
+            playerTypeChooseButtons[type] = playerTypeChooses[i];
             playerTypeChooses[i].transform.Find("icon").GetComponent<Image>().sprite = Resources.Load<Sprite>($"sprites/PlayerTypeIcon/{i}");
         }
 
@@ -140,5 +144,6 @@ public class CultivatePanel : MonoBehaviour
         }
         closeButton.onClick.RemoveAllListeners();
         upgradeButtons.Clear();
+        playerTypeChooseButtons.Clear();
     }
 }

@@ -1,5 +1,6 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [System.Serializable]
@@ -43,10 +44,11 @@ public class AudioManager : MonoBehaviour
 
     public void StopAllBGM()
     {
-        for (int i = 0; i < GameObject.Find("bgm").transform.childCount; i++)
-        {
-            StopBGM(GameObject.Find("bgm").transform.GetChild(i).name);
-        }
+        //for (int i = 0; i < GameObject.Find("bgm").transform.childCount; i++)
+        //{
+        //    StopBGM(GameObject.Find("bgm").transform.GetChild(i).name);
+        //}
+        FindObjectsOfType<AudioSource>().ToList().ForEach(a => a.Stop());
     }
     public void PlaySounds(string name,Vector2 pos)
     {

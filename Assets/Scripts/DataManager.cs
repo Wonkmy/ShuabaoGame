@@ -207,8 +207,6 @@ public class DataManager
         allEnemyDict.Clear();
         allDamageText.Clear();
         allExpBall.Clear();
-        myGameData = null;
-        playerSkillTypeCDDict.Clear();
     }
 
     public static Vector3[] GetFanDirections2D(Vector3 centerDir, int count)

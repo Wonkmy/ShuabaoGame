@@ -20,6 +20,14 @@ public class ChooseOnePanel : MonoBehaviour
 
             UpgradeData data = options[i];
 
+            optionButtons[i].GetComponent<Image>().color = data.rarity switch
+            {
+                "normal" => Color.white,
+                "rare" => Color.green,
+                "epic" => Color.blue,
+                "legendary" => new Color(1.0f, 0.0f, 1.0f),// 紫色
+                _ => Color.white
+            };
             optionButtons[i].GetComponentInChildren<Text>().text = data.name;
 
             optionButtons[i].onClick.AddListener(() =>

@@ -32,13 +32,17 @@ public class GameOverPanel : MonoBehaviour
         restartGameBtn.onClick.AddListener(() =>
         {
             GameManager.Instance.RestartGame();
-            GameManager.Instance.ShowGameOverPanel(false);
         });
 
         revivalBtn.onClick.AddListener(() =>
         {
             GameManager.Instance.Revival();
-            GameManager.Instance.ShowGameOverPanel(false);
         });
+    }
+
+    private void OnDisable()
+    {
+        restartGameBtn.onClick.RemoveAllListeners();
+        revivalBtn.onClick.RemoveAllListeners();
     }
 }

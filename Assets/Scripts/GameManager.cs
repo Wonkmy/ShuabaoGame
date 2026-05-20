@@ -183,6 +183,7 @@ public class GameManager : MonoBehaviour
     }
     IEnumerator Init()
     {
+        yield return new WaitForSeconds(0.2f);
         ShowCultivatePanel(true);
         yield return new WaitUntil(()=> CultivatePanelActive() == false);
         btn_ReleaseSkill.gameObject.SetActive(true);
@@ -387,9 +388,12 @@ public class GameManager : MonoBehaviour
     public void ShowGameOverPanel(bool show)
     {
         gameOverPanel.SetActive(show);
-        Player playerC = player.GetComponent<Player>();
-        // 将存活时长、击杀数、最高难度、玩家等级等数据传递给结算界面
-        gameOverPanel.GetComponent<GameOverPanel>().Init(gameTime, playerC.KilledCount, difficulty, playerC.GetCurrentLevel());
+        if(show == true)
+        {
+            Player playerC = player.GetComponent<Player>();
+            // 将存活时长、击杀数、最高难度、玩家等级等数据传递给结算界面
+            gameOverPanel.GetComponent<GameOverPanel>().Init(gameTime, playerC.KilledCount, difficulty, playerC.GetCurrentLevel());
+        }
     }
     public bool CultivatePanelActive()
     {
@@ -403,7 +407,40 @@ public class GameManager : MonoBehaviour
             cultivatePanel.GetComponent<CultivatePanel>().Init();
         }
     }
+    void RevivalGame()
+    {
+        // 玩家满血复活，重置尸潮、难度、预算、游戏时间等所有数据，但不清理敌人和子弹，玩家已有的构筑列表buildDict、HasCritExplosion、HasPierceExplosion、HasLowBulletHighDamage等保持不变
+        Player playerConponent = player.GetComponent<Player>();
+        playerConponent.FilledTotalHp();
+        playerConponent.HasCritExplosion = false;
+        playerConponent.HasPierceExplosion = false;
+        playerConponent.HasLowBulletHighDamage = false;
+        playerConponent.buildDict.Clear();
+        // 重置尸潮、难度、预算、游戏时间等所有数据
+        isWave = false;
+        difficulty = 3;
+        gameTime = 0;
+        HitStopDuration = 0;
+        HitStopIntensity = 0;
+        safeSide = 0;
+        waveTimer = 0;
+        // 波次计时器
+        spawnWaveTimer = 0;
+        // 波次间隔
+        spawnWaveInterval = spawnWaveIntervalBase;
+        // 每组怪物数量
+        enemyCountPerGroup = 6;
+        // 当前波次组数量
+        currentWaveGroupCount = 1;
+        // 特殊事件相关
+        IsSpecialEvent = false;
+        specialEventTimer = 0;
 
+        cameraEffect.intensity = 0;
+        mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
+        GameOver = false;
+        IsGameStarted = true;
+    }
     void ResetAllGameDatas()
     {
         try
@@ -440,36 +477,33 @@ public class GameManager : MonoBehaviour
             playerExpSlider.gameObject.SetActive(false);
             playerHpSlider.gameObject.SetActive(false);
 
-            GameManager.Instance.cameraEffect.intensity = 0;
+            cameraEffect.intensity = 0;
             mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
             Destroy(player);
             player = null;
             AudioManager.instance.StopAllBGM();
-
-            foreach (var l in lineObjs)
-            {
-                Destroy(l);
-            }
         }
         catch (System.Exception e)
         {
-            Debug.LogError("ShowGameOverPanel error: " + e.Message);
+            Debug.LogError("ResetAllGameDatas error: " + e.Message);
         }
     }
     public void RestartGame()
     {
+        ShowGameOverPanel(false);
         ResetAllGameDatas();
-        StartCoroutine(Init());
+        StartCoroutine(Init()); 
     }
     public void Revival()
     {
-
+        ShowGameOverPanel(false);
+        RevivalGame();
     }
     private void Update()
     {
         if (GameOver)
         {
-            if (playerHpSlider != null)
+            if (player && playerHpSlider != null)
             {
                 playerHpSlider.Find("slider").localScale = new Vector3(player.GetComponent<Player>().GetHpProgress(), 1, 1);
             } 
@@ -695,10 +729,10 @@ public class GameManager : MonoBehaviour
 
             p.AddKilledCount(500);
         }
-        //if (Input.GetKeyDown(KeyCode.C))
-        //{
-        //    ExecuteTimeStop();
-        //}
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            player.GetComponent<Player>().TakeDamage(9999, false);   
+        }
         //if (Input.GetKeyDown(KeyCode.V))
         //{
         //    ExecuteBlackHole(player.transform.position);
