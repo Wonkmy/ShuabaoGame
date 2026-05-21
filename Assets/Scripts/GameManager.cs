@@ -34,6 +34,7 @@ public class GameManager : MonoBehaviour
     // 技能释放相关
     public Button btn_ReleaseSkill;
     public Text coolDownLabel;
+    public Image coolDownMask;// 技能冷却遮罩，随着冷却时间减少逐渐显示
     float skillCooldownTimer = 0;// 技能冷却计时器
     float totalSkillCooldownTime = 0;// 技能总冷却时间，根据玩家类型从DataManager.playerSkillTypeCDDict获取
     bool canUseSkill = true;
@@ -187,6 +188,7 @@ public class GameManager : MonoBehaviour
         ShowCultivatePanel(true);
         yield return new WaitUntil(()=> CultivatePanelActive() == false);
         btn_ReleaseSkill.gameObject.SetActive(true);
+        coolDownMask.fillAmount = 0;
         GameOver = false;
         IsGameStarted = true;
         // 基础难度固定
@@ -548,6 +550,7 @@ public class GameManager : MonoBehaviour
             if (skillCooldownTimer > 0 && canUseSkill == false)
             {
                 skillCooldownTimer -= Time.deltaTime;
+                coolDownMask.fillAmount = skillCooldownTimer / totalSkillCooldownTime;
                 coolDownLabel.text = skillCooldownTimer.ToString("F1") + "s";
                 if (skillCooldownTimer < 0)
                 {
@@ -733,10 +736,10 @@ public class GameManager : MonoBehaviour
         {
             player.GetComponent<Player>().TakeDamage(9999, false);   
         }
-        //if (Input.GetKeyDown(KeyCode.V))
-        //{
-        //    ExecuteBlackHole(player.transform.position);
-        //}
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            ShowLevelUpPanel(true);
+        }
         //if (Input.GetKeyDown(KeyCode.R))
         //{
         //    ExecuteNuke();
@@ -764,6 +767,8 @@ public class GameManager : MonoBehaviour
         canUseSkill = false;
         btn_ReleaseSkill.interactable = false;
         skillCooldownTimer = totalSkillCooldownTime;
+        coolDownMask.fillAmount = 1;
+        coolDownLabel.text = skillCooldownTimer.ToString("F1") + "s";
         switch (player.GetComponent<Player>().playerType)
         {
             case PlayerType.Normal:

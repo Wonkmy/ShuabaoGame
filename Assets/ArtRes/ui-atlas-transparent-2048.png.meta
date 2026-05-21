@@ -1,0 +1,2734 @@
+fileFormatVersion: 2
+guid: 31e5b006ecc4d10408d83cc524722022
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_0
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 1863
+        width: 125
+        height: 132
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4601f53e34d0b9648be39ba6881a63bf
+      internalID: -1651498177
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_1
+      rect:
+        serializedVersion: 2
+        x: 173
+        y: 1879
+        width: 469
+        height: 88
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6b550bec08dd05c4b9f174f4eb84ba6f
+      internalID: -1560029913
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_2
+      rect:
+        serializedVersion: 2
+        x: 635
+        y: 1892
+        width: 185
+        height: 63
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e5479b611b293a94d9586aca6d2354d9
+      internalID: 483922632
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_3
+      rect:
+        serializedVersion: 2
+        x: 842
+        y: 1827
+        width: 734
+        height: 166
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 44a4c6c4238466e45b4c9a3b1ac38278
+      internalID: -1418159394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_4
+      rect:
+        serializedVersion: 2
+        x: 1356
+        y: 1499
+        width: 675
+        height: 478
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: baa4f2692942ebb48b01e43dbd69a92a
+      internalID: -1772460170
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_5
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 1723
+        width: 123
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2b1363778c77e92408928f60d5376ed5
+      internalID: -1011052081
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_6
+      rect:
+        serializedVersion: 2
+        x: 173
+        y: 1739
+        width: 471
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3e4b5085bf5803d4fb06aaa505a276b6
+      internalID: -1264966905
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_7
+      rect:
+        serializedVersion: 2
+        x: 641
+        y: 1749
+        width: 160
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0590fbb91646ecc4088d973deb026fa6
+      internalID: -1919681113
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_8
+      rect:
+        serializedVersion: 2
+        x: 829
+        y: 1569
+        width: 264
+        height: 216
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 13bf7bb673349c64b968ccf2b9d4212f
+      internalID: 1410192670
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_9
+      rect:
+        serializedVersion: 2
+        x: 1120
+        y: 1657
+        width: 118
+        height: 120
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6d942c1503ec6a041ba8278749c5c105
+      internalID: -1982146705
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_10
+      rect:
+        serializedVersion: 2
+        x: 1256
+        y: 1508
+        width: 255
+        height: 266
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 418e5119c1928e642aa8ad04ac1ae95a
+      internalID: 1911745048
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_11
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 1582
+        width: 600
+        height: 127
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2666902d014e5ff4d9507d8f14bdd320
+      internalID: -1263929934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_12
+      rect:
+        serializedVersion: 2
+        x: 645
+        y: 1610
+        width: 151
+        height: 69
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a678919f74f57f345a3d537be355fc1a
+      internalID: 606627018
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_13
+      rect:
+        serializedVersion: 2
+        x: 1121
+        y: 1536
+        width: 116
+        height: 114
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 733be3b2d3d36dc44a6243986afba1e6
+      internalID: -88358092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_14
+      rect:
+        serializedVersion: 2
+        x: 1220
+        y: 1640
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a6f893bf347fe2e4e80e8282d7abeb7c
+      internalID: 1256470970
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_15
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 1412
+        width: 140
+        height: 138
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 066afc6bb2bc1cb4889ca6788ccf186a
+      internalID: 1632149715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_18
+      rect:
+        serializedVersion: 2
+        x: 307
+        y: 1525
+        width: 11
+        height: 4
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 44179a3a5d151ef49b154795b3537c5e
+      internalID: 1968424255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_20
+      rect:
+        serializedVersion: 2
+        x: 588
+        y: 1473
+        width: 98
+        height: 77
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c706d00b7fff1634ea6d26a978811744
+      internalID: -271732966
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_28
+      rect:
+        serializedVersion: 2
+        x: 653
+        y: 1470
+        width: 25
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 275982168b921a34e994bcd6f7d0493c
+      internalID: 164196923
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_29
+      rect:
+        serializedVersion: 2
+        x: 675
+        y: 1473
+        width: 67
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 06c5730664c41324ba7793fd1a9d1465
+      internalID: 2099956256
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_30
+      rect:
+        serializedVersion: 2
+        x: 339
+        y: 1468
+        width: 16
+        height: 4
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 10189bf3715e50b43a38d2405dea144a
+      internalID: -502178840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_31
+      rect:
+        serializedVersion: 2
+        x: 594
+        y: 1412
+        width: 142
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a65eab4f94b1c8546a5558649c96e092
+      internalID: 1346416444
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_32
+      rect:
+        serializedVersion: 2
+        x: 1453
+        y: 1357
+        width: 115
+        height: 113
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 67d36dd0c8fab0148816ec29b4b769c2
+      internalID: 350607377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_33
+      rect:
+        serializedVersion: 2
+        x: 1592
+        y: 1358
+        width: 113
+        height: 112
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cbb2b7e4d797b284187a04f8802e89a8
+      internalID: -46078460
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_34
+      rect:
+        serializedVersion: 2
+        x: 1737
+        y: 1358
+        width: 112
+        height: 112
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2339dd5af277577479a9def1f118f903
+      internalID: -1068149791
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_35
+      rect:
+        serializedVersion: 2
+        x: 1879
+        y: 1360
+        width: 112
+        height: 109
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0dd4e3960f7e0a74ca4ca23eeee725a4
+      internalID: -1710758094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_37
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 1280
+        width: 104
+        height: 104
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d83ea82d0ed948d41bd985079898cb0c
+      internalID: 273474877
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_38
+      rect:
+        serializedVersion: 2
+        x: 165
+        y: 1280
+        width: 102
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7c9017973a9484749a73021b3da3854f
+      internalID: 823068398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_39
+      rect:
+        serializedVersion: 2
+        x: 284
+        y: 1280
+        width: 104
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 40adb0e0eba87f24d91963349576c628
+      internalID: 662467786
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_40
+      rect:
+        serializedVersion: 2
+        x: 404
+        y: 1280
+        width: 104
+        height: 104
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b98a04d799fc6304bafabbcd2a19dff4
+      internalID: 156962115
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_41
+      rect:
+        serializedVersion: 2
+        x: 524
+        y: 1280
+        width: 104
+        height: 104
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fd5c12d118cb3a74f80ec1fc82e94de4
+      internalID: -341641527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_42
+      rect:
+        serializedVersion: 2
+        x: 645
+        y: 1280
+        width: 101
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f0e3b0c88016de643881da5e1d6070f2
+      internalID: 1443566221
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_43
+      rect:
+        serializedVersion: 2
+        x: 746
+        y: 1303
+        width: 4
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8e06a06a6b11bf94c9286b29eedd9b29
+      internalID: 1405392732
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_44
+      rect:
+        serializedVersion: 2
+        x: 912
+        y: 1213
+        width: 85
+        height: 104
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1df7259c2d4f4a84f95d1fe56e1b814a
+      internalID: 54819594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_45
+      rect:
+        serializedVersion: 2
+        x: 1037
+        y: 1212
+        width: 80
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ad03ed273a23a3846acbf79e5740c7da
+      internalID: 995507690
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_46
+      rect:
+        serializedVersion: 2
+        x: 1153
+        y: 1205
+        width: 95
+        height: 123
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e5fc1f5291600b6418dab0938e014d03
+      internalID: 1501627842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_47
+      rect:
+        serializedVersion: 2
+        x: 1371
+        y: 1198
+        width: 142
+        height: 132
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8e374ef28c91f9b48ade322f1afcd67a
+      internalID: -54137559
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_48
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 1205
+        width: 143
+        height: 123
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5c5d485e000e3554f812498d77cee1de
+      internalID: 1212038381
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_49
+      rect:
+        serializedVersion: 2
+        x: 1698
+        y: 1203
+        width: 146
+        height: 138
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 71cb7cd2bcbd27a409d46041ae8ae961
+      internalID: -2047969702
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_50
+      rect:
+        serializedVersion: 2
+        x: 1868
+        y: 1213
+        width: 136
+        height: 109
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 859080603c10d4047be9aa02ab8e7099
+      internalID: 995929618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_51
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 1166
+        width: 76
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 98b52bf76d04a3144a2bc3a75c14bb48
+      internalID: 33654594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_52
+      rect:
+        serializedVersion: 2
+        x: 155
+        y: 1167
+        width: 71
+        height: 81
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4de11a461f4fa1944abc13329fea69fe
+      internalID: -780860184
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_53
+      rect:
+        serializedVersion: 2
+        x: 258
+        y: 1167
+        width: 69
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a2db889dcbc97eb4bbec3351ca398408
+      internalID: -1578590795
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_54
+      rect:
+        serializedVersion: 2
+        x: 356
+        y: 1167
+        width: 79
+        height: 81
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f64ab1c097ed8464d9fa9b122d8d206b
+      internalID: -1790663279
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_55
+      rect:
+        serializedVersion: 2
+        x: 467
+        y: 1166
+        width: 82
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d7ee0afa7544980498330d5ca78f8f35
+      internalID: 2067820617
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_56
+      rect:
+        serializedVersion: 2
+        x: 586
+        y: 1164
+        width: 89
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 97a6699d03ec0a045a6a0ea448e243b7
+      internalID: 313868704
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_57
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 909
+        width: 197
+        height: 218
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 50cb9d18a9db8e14c8227e87bbdc5046
+      internalID: 671743308
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_58
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 909
+        width: 195
+        height: 218
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b68c5f55d932036499861f73f226ac04
+      internalID: -1570949992
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_59
+      rect:
+        serializedVersion: 2
+        x: 467
+        y: 908
+        width: 192
+        height: 219
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bce955b4c58123045a2d6f633c3a0088
+      internalID: 1391482857
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_60
+      rect:
+        serializedVersion: 2
+        x: 680
+        y: 908
+        width: 193
+        height: 219
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3ad54bf53d95fe8439d10198d47ffbb7
+      internalID: 953831270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_61
+      rect:
+        serializedVersion: 2
+        x: 886
+        y: 908
+        width: 194
+        height: 219
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d1782f5332375a64989f2934466cf57f
+      internalID: 156087611
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_62
+      rect:
+        serializedVersion: 2
+        x: 1097
+        y: 927
+        width: 164
+        height: 194
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e7d386bc4a25899498d1e5ca79187150
+      internalID: 1218540064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_63
+      rect:
+        serializedVersion: 2
+        x: 1287
+        y: 945
+        width: 157
+        height: 213
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa65dfb27acfbee4ca869c7f760f209f
+      internalID: -323842706
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_64
+      rect:
+        serializedVersion: 2
+        x: 1463
+        y: 945
+        width: 156
+        height: 213
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 61b436a0a14d19148863ed761496fb96
+      internalID: 1355229645
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_65
+      rect:
+        serializedVersion: 2
+        x: 1636
+        y: 945
+        width: 158
+        height: 213
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1f2148450b4174644823ebf5c3e39ccd
+      internalID: -1611425931
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_66
+      rect:
+        serializedVersion: 2
+        x: 1814
+        y: 945
+        width: 156
+        height: 213
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: baf4d89f49e081a48a5ee62619155aaf
+      internalID: 206511482
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_67
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 444
+        width: 222
+        height: 427
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d15c95e0a3ba11d4096913541c68d09c
+      internalID: 1486743498
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_68
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 444
+        width: 225
+        height: 429
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ac1510805c26e09448b1c9612fe5d3c8
+      internalID: -472174303
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_69
+      rect:
+        serializedVersion: 2
+        x: 524
+        y: 444
+        width: 218
+        height: 427
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 066609a4e5f18524cbf4eb38092332c5
+      internalID: -1397929278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_70
+      rect:
+        serializedVersion: 2
+        x: 772
+        y: 444
+        width: 218
+        height: 427
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d70d5f08b7ac9f245841bbedaaa6ed2e
+      internalID: 456750233
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_71
+      rect:
+        serializedVersion: 2
+        x: 1017
+        y: 448
+        width: 218
+        height: 423
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d304cbfac50e5c44bbef0def28781ecf
+      internalID: -1988056720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_72
+      rect:
+        serializedVersion: 2
+        x: 1295
+        y: 765
+        width: 135
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a0aae3b779eef06469574478807926c1
+      internalID: -1113796653
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_73
+      rect:
+        serializedVersion: 2
+        x: 1438
+        y: 777
+        width: 132
+        height: 148
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aeb64a614093e7948abca21ddbaed831
+      internalID: 1824204531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_74
+      rect:
+        serializedVersion: 2
+        x: 1574
+        y: 777
+        width: 128
+        height: 146
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 34ce343af0d8b5a418a9910c72a969e7
+      internalID: -1124780526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_75
+      rect:
+        serializedVersion: 2
+        x: 1708
+        y: 777
+        width: 130
+        height: 146
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e95ab36f2b2ec76409ac99a95abd61d1
+      internalID: -469004415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_76
+      rect:
+        serializedVersion: 2
+        x: 1842
+        y: 777
+        width: 130
+        height: 146
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dfc0c834d3882374bb0beebaa17a82c7
+      internalID: -601952903
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_77
+      rect:
+        serializedVersion: 2
+        x: 1293
+        y: 632
+        width: 117
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 26c49e82c44bcaf4382c71198e7c961d
+      internalID: -2137163791
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_78
+      rect:
+        serializedVersion: 2
+        x: 1432
+        y: 632
+        width: 120
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e17bb045c1b3d44489c69f819a3a7ab4
+      internalID: -822319765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_79
+      rect:
+        serializedVersion: 2
+        x: 1576
+        y: 630
+        width: 118
+        height: 117
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dbdedc163cefcc44398608e71ad74593
+      internalID: 194131884
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_80
+      rect:
+        serializedVersion: 2
+        x: 1718
+        y: 632
+        width: 117
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5c16d7626299f394d9d14887e43021f7
+      internalID: 884890976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_81
+      rect:
+        serializedVersion: 2
+        x: 1856
+        y: 632
+        width: 117
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4d97b9a7b4209fa4088cf627a0f4c414
+      internalID: 424034541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_82
+      rect:
+        serializedVersion: 2
+        x: 1306
+        y: 553
+        width: 295
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 707d1253c7824844c828e5c0ab54501c
+      internalID: -21899215
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_83
+      rect:
+        serializedVersion: 2
+        x: 1610
+        y: 555
+        width: 22
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca20060bcdc345444867c56b2170b86e
+      internalID: -874706426
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_84
+      rect:
+        serializedVersion: 2
+        x: 1669
+        y: 527
+        width: 86
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a3aff2f24d58d834e9d9eb26e920e60a
+      internalID: 673068078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_85
+      rect:
+        serializedVersion: 2
+        x: 1794
+        y: 532
+        width: 75
+        height: 68
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6c9f425634e125446827ba4e7ed665cf
+      internalID: 1286377540
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_86
+      rect:
+        serializedVersion: 2
+        x: 1917
+        y: 533
+        width: 81
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b4320217458283443874fbf912c53412
+      internalID: 652350861
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_87
+      rect:
+        serializedVersion: 2
+        x: 500
+        y: 462
+        width: 5
+        height: 72
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2cb58b090db871b488da9fd16dc25187
+      internalID: -1380047532
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_88
+      rect:
+        serializedVersion: 2
+        x: 1306
+        y: 498
+        width: 287
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b576c70897422cb478cbe6e03727cfec
+      internalID: -1766979994
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_89
+      rect:
+        serializedVersion: 2
+        x: 1669
+        y: 423
+        width: 86
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 72498837a715a5243b42cde68a4f1656
+      internalID: -493951346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_90
+      rect:
+        serializedVersion: 2
+        x: 1794
+        y: 423
+        width: 75
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b4a2d0f4d279bf642b7e2b362dfd6b83
+      internalID: -2004809350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_91
+      rect:
+        serializedVersion: 2
+        x: 1820
+        y: 500
+        width: 44
+        height: 5
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c432d3db2d1d64e47a787f26a433101c
+      internalID: 591621143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_92
+      rect:
+        serializedVersion: 2
+        x: 1917
+        y: 424
+        width: 84
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 96c069f06ba95ff4d8f166032941306a
+      internalID: -1334293232
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_93
+      rect:
+        serializedVersion: 2
+        x: 1033
+        y: 444
+        width: 184
+        height: 4
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9dbefeb08f1c0374e94fb799d1cd93b0
+      internalID: 1868790022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_94
+      rect:
+        serializedVersion: 2
+        x: 1306
+        y: 444
+        width: 288
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ac1ca4815e3ae804a90a23f81d8e76b3
+      internalID: -179235396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_95
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 253
+        width: 574
+        height: 157
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 581400ae95964b04fa07366aacd3a0a7
+      internalID: 2117189857
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_96
+      rect:
+        serializedVersion: 2
+        x: 1306
+        y: 388
+        width: 288
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d9a60f2d18f3ca54cbedce61ed1a9cfa
+      internalID: 1157816842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_97
+      rect:
+        serializedVersion: 2
+        x: 1669
+        y: 326
+        width: 84
+        height: 76
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a45b70c6fa08b0145baa4a2511e77433
+      internalID: 1095781277
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_98
+      rect:
+        serializedVersion: 2
+        x: 1793
+        y: 328
+        width: 76
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8452745a089241a449f8f1fe11e9c2d3
+      internalID: -1492421635
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_99
+      rect:
+        serializedVersion: 2
+        x: 1917
+        y: 328
+        width: 81
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a1784330236992848bd38ac5da9bc255
+      internalID: 65698261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_100
+      rect:
+        serializedVersion: 2
+        x: 627
+        y: 285
+        width: 77
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ed314d120ac62ce4381a5df868a7cac6
+      internalID: -142000817
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_101
+      rect:
+        serializedVersion: 2
+        x: 710
+        y: 277
+        width: 82
+        height: 104
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b68fa4d85bfd02544a863bd7f90987fa
+      internalID: 134401057
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_102
+      rect:
+        serializedVersion: 2
+        x: 823
+        y: 367
+        width: 14
+        height: 4
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1e240c557e3af2c49904959d1aa04d50
+      internalID: -22248578
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_103
+      rect:
+        serializedVersion: 2
+        x: 899
+        y: 367
+        width: 14
+        height: 4
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 770f1da4c0bbe5c4ca6c5a81df288548
+      internalID: -1610614794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_104
+      rect:
+        serializedVersion: 2
+        x: 947
+        y: 285
+        width: 74
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 71ccf4a99b9972042b34443651283ae4
+      internalID: -1259534227
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_105
+      rect:
+        serializedVersion: 2
+        x: 1041
+        y: 295
+        width: 292
+        height: 84
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1d0923f93c6e62e4da778bb0aca8e4fc
+      internalID: 822982565
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_106
+      rect:
+        serializedVersion: 2
+        x: 707
+        y: 303
+        width: 5
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c049cdc0985cc4d4c97cd9700db77aa4
+      internalID: 1632346105
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_107
+      rect:
+        serializedVersion: 2
+        x: 793
+        y: 285
+        width: 153
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 12a7cc0f09c473442b1322ae551b11ed
+      internalID: 200092026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_108
+      rect:
+        serializedVersion: 2
+        x: 1334
+        y: 334
+        width: 265
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 54b7b9d0384a5c1408d6c40beb8a9257
+      internalID: -939246868
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_109
+      rect:
+        serializedVersion: 2
+        x: 1042
+        y: 216
+        width: 294
+        height: 78
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c75190486c00ada4f9da225fd6dd2a20
+      internalID: -1672223724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_110
+      rect:
+        serializedVersion: 2
+        x: 1112
+        y: 292
+        width: 219
+        height: 4
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ba2cc12db291aeb4c86eb8a1763da77b
+      internalID: -1957351361
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_111
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 181
+        width: 360
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f99d22c9eee943042916b97724e0834d
+      internalID: 692884749
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_112
+      rect:
+        serializedVersion: 2
+        x: 450
+        y: 187
+        width: 452
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0cad919f2d9ca51488d922713543301f
+      internalID: -1889854551
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_113
+      rect:
+        serializedVersion: 2
+        x: 906
+        y: 187
+        width: 52
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5c75ed83233a4454fa0c2b2f9d3f1c29
+      internalID: -220607231
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_114
+      rect:
+        serializedVersion: 2
+        x: 1043
+        y: 140
+        width: 293
+        height: 76
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 065f7de4a989b614ab9002ec2c504ea6
+      internalID: -1927675862
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_115
+      rect:
+        serializedVersion: 2
+        x: 1363
+        y: 52
+        width: 238
+        height: 238
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d76da575ff18e9e49a6f968e5244764f
+      internalID: 1598580798
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_116
+      rect:
+        serializedVersion: 2
+        x: 1646
+        y: 55
+        width: 355
+        height: 233
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9b96cd0b495c46d4499a092ebb1489ad
+      internalID: -817906770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_117
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 99
+        width: 45
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4537f619c764ab847a9d7db24889539a
+      internalID: -168514441
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_118
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 99
+        width: 40
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c30bdc252cce1404b8a196bd4d06e615
+      internalID: -861837683
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_119
+      rect:
+        serializedVersion: 2
+        x: 140
+        y: 99
+        width: 44
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e136a976994d4ef49b74c3e3e14869f8
+      internalID: 1700961724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_120
+      rect:
+        serializedVersion: 2
+        x: 186
+        y: 99
+        width: 42
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fdca67195c33902418b4e49870e722ea
+      internalID: 392719252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_121
+      rect:
+        serializedVersion: 2
+        x: 229
+        y: 99
+        width: 39
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 55a79c7724f9ba849ab18f9d4526a10a
+      internalID: 267941266
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_122
+      rect:
+        serializedVersion: 2
+        x: 269
+        y: 99
+        width: 43
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9eee7eecfd7e4d44fa4cbf4725954484
+      internalID: 1569822491
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_123
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 99
+        width: 40
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5a45f571243105846a2aa661cd7d3331
+      internalID: 1057536945
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_124
+      rect:
+        serializedVersion: 2
+        x: 354
+        y: 99
+        width: 45
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 44ca5540d9631f94f9d9187d86cf94cf
+      internalID: 330886698
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_125
+      rect:
+        serializedVersion: 2
+        x: 447
+        y: 84
+        width: 520
+        height: 65
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c89848388aa17624da787de40caeb697
+      internalID: 505932469
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_126
+      rect:
+        serializedVersion: 2
+        x: 1042
+        y: 60
+        width: 293
+        height: 77
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 37831275ec72f574aaf775b54e399e0d
+      internalID: 1331180615
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_127
+      rect:
+        serializedVersion: 2
+        x: 1047
+        y: 136
+        width: 284
+        height: 4
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1bedd668e6c8d0b4ea65a601761ece03
+      internalID: -163120414
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-atlas-transparent-2048_128
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 109
+        width: 5
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b0e84b659f4a4dc49850708edd354f85
+      internalID: -1585979434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      ui-atlas-transparent-2048_0: -1651498177
+      ui-atlas-transparent-2048_1: -1560029913
+      ui-atlas-transparent-2048_10: 1911745048
+      ui-atlas-transparent-2048_100: -142000817
+      ui-atlas-transparent-2048_101: 134401057
+      ui-atlas-transparent-2048_102: -22248578
+      ui-atlas-transparent-2048_103: -1610614794
+      ui-atlas-transparent-2048_104: -1259534227
+      ui-atlas-transparent-2048_105: 822982565
+      ui-atlas-transparent-2048_106: 1632346105
+      ui-atlas-transparent-2048_107: 200092026
+      ui-atlas-transparent-2048_108: -939246868
+      ui-atlas-transparent-2048_109: -1672223724
+      ui-atlas-transparent-2048_11: -1263929934
+      ui-atlas-transparent-2048_110: -1957351361
+      ui-atlas-transparent-2048_111: 692884749
+      ui-atlas-transparent-2048_112: -1889854551
+      ui-atlas-transparent-2048_113: -220607231
+      ui-atlas-transparent-2048_114: -1927675862
+      ui-atlas-transparent-2048_115: 1598580798
+      ui-atlas-transparent-2048_116: -817906770
+      ui-atlas-transparent-2048_117: -168514441
+      ui-atlas-transparent-2048_118: -861837683
+      ui-atlas-transparent-2048_119: 1700961724
+      ui-atlas-transparent-2048_12: 606627018
+      ui-atlas-transparent-2048_120: 392719252
+      ui-atlas-transparent-2048_121: 267941266
+      ui-atlas-transparent-2048_122: 1569822491
+      ui-atlas-transparent-2048_123: 1057536945
+      ui-atlas-transparent-2048_124: 330886698
+      ui-atlas-transparent-2048_125: 505932469
+      ui-atlas-transparent-2048_126: 1331180615
+      ui-atlas-transparent-2048_127: -163120414
+      ui-atlas-transparent-2048_128: -1585979434
+      ui-atlas-transparent-2048_13: -88358092
+      ui-atlas-transparent-2048_14: 1256470970
+      ui-atlas-transparent-2048_15: 1632149715
+      ui-atlas-transparent-2048_16: -612372456
+      ui-atlas-transparent-2048_17: -1537604406
+      ui-atlas-transparent-2048_18: 1968424255
+      ui-atlas-transparent-2048_19: 1548161273
+      ui-atlas-transparent-2048_2: 483922632
+      ui-atlas-transparent-2048_20: -271732966
+      ui-atlas-transparent-2048_21: -1124327609
+      ui-atlas-transparent-2048_22: -1194220217
+      ui-atlas-transparent-2048_23: -1300101393
+      ui-atlas-transparent-2048_24: -1165196901
+      ui-atlas-transparent-2048_25: 101817336
+      ui-atlas-transparent-2048_26: 1585087691
+      ui-atlas-transparent-2048_27: -1464836081
+      ui-atlas-transparent-2048_28: 164196923
+      ui-atlas-transparent-2048_29: 2099956256
+      ui-atlas-transparent-2048_3: -1418159394
+      ui-atlas-transparent-2048_30: -502178840
+      ui-atlas-transparent-2048_31: 1346416444
+      ui-atlas-transparent-2048_32: 350607377
+      ui-atlas-transparent-2048_33: -46078460
+      ui-atlas-transparent-2048_34: -1068149791
+      ui-atlas-transparent-2048_35: -1710758094
+      ui-atlas-transparent-2048_36: -1465141096
+      ui-atlas-transparent-2048_37: 273474877
+      ui-atlas-transparent-2048_38: 823068398
+      ui-atlas-transparent-2048_39: 662467786
+      ui-atlas-transparent-2048_4: -1772460170
+      ui-atlas-transparent-2048_40: 156962115
+      ui-atlas-transparent-2048_41: -341641527
+      ui-atlas-transparent-2048_42: 1443566221
+      ui-atlas-transparent-2048_43: 1405392732
+      ui-atlas-transparent-2048_44: 54819594
+      ui-atlas-transparent-2048_45: 995507690
+      ui-atlas-transparent-2048_46: 1501627842
+      ui-atlas-transparent-2048_47: -54137559
+      ui-atlas-transparent-2048_48: 1212038381
+      ui-atlas-transparent-2048_49: -2047969702
+      ui-atlas-transparent-2048_5: -1011052081
+      ui-atlas-transparent-2048_50: 995929618
+      ui-atlas-transparent-2048_51: 33654594
+      ui-atlas-transparent-2048_52: -780860184
+      ui-atlas-transparent-2048_53: -1578590795
+      ui-atlas-transparent-2048_54: -1790663279
+      ui-atlas-transparent-2048_55: 2067820617
+      ui-atlas-transparent-2048_56: 313868704
+      ui-atlas-transparent-2048_57: 671743308
+      ui-atlas-transparent-2048_58: -1570949992
+      ui-atlas-transparent-2048_59: 1391482857
+      ui-atlas-transparent-2048_6: -1264966905
+      ui-atlas-transparent-2048_60: 953831270
+      ui-atlas-transparent-2048_61: 156087611
+      ui-atlas-transparent-2048_62: 1218540064
+      ui-atlas-transparent-2048_63: -323842706
+      ui-atlas-transparent-2048_64: 1355229645
+      ui-atlas-transparent-2048_65: -1611425931
+      ui-atlas-transparent-2048_66: 206511482
+      ui-atlas-transparent-2048_67: 1486743498
+      ui-atlas-transparent-2048_68: -472174303
+      ui-atlas-transparent-2048_69: -1397929278
+      ui-atlas-transparent-2048_7: -1919681113
+      ui-atlas-transparent-2048_70: 456750233
+      ui-atlas-transparent-2048_71: -1988056720
+      ui-atlas-transparent-2048_72: -1113796653
+      ui-atlas-transparent-2048_73: 1824204531
+      ui-atlas-transparent-2048_74: -1124780526
+      ui-atlas-transparent-2048_75: -469004415
+      ui-atlas-transparent-2048_76: -601952903
+      ui-atlas-transparent-2048_77: -2137163791
+      ui-atlas-transparent-2048_78: -822319765
+      ui-atlas-transparent-2048_79: 194131884
+      ui-atlas-transparent-2048_8: 1410192670
+      ui-atlas-transparent-2048_80: 884890976
+      ui-atlas-transparent-2048_81: 424034541
+      ui-atlas-transparent-2048_82: -21899215
+      ui-atlas-transparent-2048_83: -874706426
+      ui-atlas-transparent-2048_84: 673068078
+      ui-atlas-transparent-2048_85: 1286377540
+      ui-atlas-transparent-2048_86: 652350861
+      ui-atlas-transparent-2048_87: -1380047532
+      ui-atlas-transparent-2048_88: -1766979994
+      ui-atlas-transparent-2048_89: -493951346
+      ui-atlas-transparent-2048_9: -1982146705
+      ui-atlas-transparent-2048_90: -2004809350
+      ui-atlas-transparent-2048_91: 591621143
+      ui-atlas-transparent-2048_92: -1334293232
+      ui-atlas-transparent-2048_93: 1868790022
+      ui-atlas-transparent-2048_94: -179235396
+      ui-atlas-transparent-2048_95: 2117189857
+      ui-atlas-transparent-2048_96: 1157816842
+      ui-atlas-transparent-2048_97: 1095781277
+      ui-atlas-transparent-2048_98: -1492421635
+      ui-atlas-transparent-2048_99: 65698261
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -7,6 +7,10 @@ public class ChooseOnePanel : MonoBehaviour
 {
     // 选项按钮列表
     public List<Button> optionButtons;
+    public Sprite white;
+    public Sprite green;
+    public Sprite blue;
+    public Sprite purple;
     public void Init()
     {
         Player player =
@@ -20,13 +24,13 @@ public class ChooseOnePanel : MonoBehaviour
 
             UpgradeData data = options[i];
 
-            optionButtons[i].GetComponent<Image>().color = data.rarity switch
+            optionButtons[i].GetComponent<Image>().sprite = data.rarity switch
             {
-                "normal" => Color.white,
-                "rare" => Color.green,
-                "epic" => Color.blue,
-                "legendary" => new Color(1.0f, 0.0f, 1.0f),// 紫色
-                _ => Color.white
+                "normal" => white,
+                "rare" => green,
+                "epic" => blue,
+                "legendary" => purple,
+                _ => white
             };
             optionButtons[i].GetComponentInChildren<Text>().text = data.name;
 

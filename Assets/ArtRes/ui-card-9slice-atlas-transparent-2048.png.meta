@@ -1,0 +1,853 @@
+fileFormatVersion: 2
+guid: 714be383c0f0c524db7eb2f8da612cb3
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_0
+      rect:
+        serializedVersion: 2
+        x: 31
+        y: 1353
+        width: 395
+        height: 640
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1a35de41ef0e16646b9a235417f0de51
+      internalID: -290428420
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_1
+      rect:
+        serializedVersion: 2
+        x: 445
+        y: 1342
+        width: 432
+        height: 663
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b349ae88800227946895ea78dd3e0263
+      internalID: 1703362036
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_2
+      rect:
+        serializedVersion: 2
+        x: 894
+        y: 1350
+        width: 443
+        height: 639
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c73eb2f562fe21c4bad065013f16442c
+      internalID: 19105094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_3
+      rect:
+        serializedVersion: 2
+        x: 1352
+        y: 1339
+        width: 451
+        height: 665
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b74eabbf417e6874a9e8ff02cd74793b
+      internalID: 1900739437
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_4
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 830
+        width: 360
+        height: 462
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 977218d93c9eddc4a857295ba2837f9f
+      internalID: 692390526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_5
+      rect:
+        serializedVersion: 2
+        x: 435
+        y: 827
+        width: 357
+        height: 468
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 82bbaae96732d68408f0654840918eec
+      internalID: 583003050
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_6
+      rect:
+        serializedVersion: 2
+        x: 823
+        y: 826
+        width: 335
+        height: 461
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5615e7a1b23eddb46a656b9361230093
+      internalID: -910911934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_7
+      rect:
+        serializedVersion: 2
+        x: 1181
+        y: 823
+        width: 349
+        height: 472
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e10c68ef4d51bb9449157a2a4ab1debe
+      internalID: 929878530
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_8
+      rect:
+        serializedVersion: 2
+        x: 1561
+        y: 1198
+        width: 421
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1d997ace388fc094f853f98d8634e0d5
+      internalID: 1125116957
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_9
+      rect:
+        serializedVersion: 2
+        x: 1564
+        y: 1130
+        width: 414
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 68b3faf6cad5757498a55d3b3affdc4e
+      internalID: -632026636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_10
+      rect:
+        serializedVersion: 2
+        x: 1582
+        y: 994
+        width: 389
+        height: 106
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 661f515e02845f541b5bb901305fa0ec
+      internalID: 372153048
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_11
+      rect:
+        serializedVersion: 2
+        x: 1582
+        y: 875
+        width: 389
+        height: 106
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 556fff22ff2f5c648a4be95949fb0a3c
+      internalID: -1534028686
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_12
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 311
+        width: 273
+        height: 447
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ae83fbb2eeebecf419fca230cb53b82e
+      internalID: 1709720725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_13
+      rect:
+        serializedVersion: 2
+        x: 333
+        y: 310
+        width: 274
+        height: 448
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1c5d503e83c8a2242bc170cd0de43151
+      internalID: 87498167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_14
+      rect:
+        serializedVersion: 2
+        x: 632
+        y: 310
+        width: 271
+        height: 448
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9a9f5680ccf84944086255bbc8048124
+      internalID: -215752371
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_15
+      rect:
+        serializedVersion: 2
+        x: 920
+        y: 310
+        width: 271
+        height: 448
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a108c989745a757438cd6aafe7ed32a6
+      internalID: 1761473172
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_16
+      rect:
+        serializedVersion: 2
+        x: 1581
+        y: 756
+        width: 390
+        height: 107
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7f0feca17434656478d83d56437298bd
+      internalID: -1656586709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_17
+      rect:
+        serializedVersion: 2
+        x: 1231
+        y: 652
+        width: 87
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9e2c619820875c74aa909b34ec04a132
+      internalID: 373374979
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_18
+      rect:
+        serializedVersion: 2
+        x: 1345
+        y: 652
+        width: 88
+        height: 100
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 75ad36e2617082949a2dd32a58638485
+      internalID: -1586946123
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_19
+      rect:
+        serializedVersion: 2
+        x: 1456
+        y: 653
+        width: 89
+        height: 99
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1130a0a6a14406541a7b76561af8631d
+      internalID: 1999886291
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_20
+      rect:
+        serializedVersion: 2
+        x: 1556
+        y: 615
+        width: 87
+        height: 99
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a314d2a2e6e94c644894cb3a1ce8aa37
+      internalID: -484036727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_21
+      rect:
+        serializedVersion: 2
+        x: 1674
+        y: 523
+        width: 334
+        height: 193
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d6979b974f6357342b172a9e3d8d6978
+      internalID: 1198019004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_22
+      rect:
+        serializedVersion: 2
+        x: 1220
+        y: 547
+        width: 312
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9d52b6d0e1488834996ce4064ac5c41c
+      internalID: -1190055254
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_23
+      rect:
+        serializedVersion: 2
+        x: 1220
+        y: 463
+        width: 311
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 753c41fa5137a574a83621b785fa7028
+      internalID: 1286409252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_24
+      rect:
+        serializedVersion: 2
+        x: 1668
+        y: 312
+        width: 345
+        height: 203
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b889bc5643867f346aab2591cc24e419
+      internalID: 59538121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_25
+      rect:
+        serializedVersion: 2
+        x: 1220
+        y: 379
+        width: 311
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0c92ea2ec1d829445a14413af448bdaa
+      internalID: -1311958726
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_26
+      rect:
+        serializedVersion: 2
+        x: 1220
+        y: 295
+        width: 312
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9781d185d12227f429732a0f526b5ff7
+      internalID: -1268132761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_27
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 50
+        width: 343
+        height: 217
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cc87230228168c44b89140049b93fb40
+      internalID: -1983400880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_28
+      rect:
+        serializedVersion: 2
+        x: 431
+        y: 50
+        width: 339
+        height: 217
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 31a8add5529c29c4596ad13b640c8c97
+      internalID: 80062325
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_29
+      rect:
+        serializedVersion: 2
+        x: 832
+        y: 50
+        width: 338
+        height: 217
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 103699a6acaf89e41a7804bcbcf21cd3
+      internalID: -19039047
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_30
+      rect:
+        serializedVersion: 2
+        x: 1233
+        y: 50
+        width: 342
+        height: 217
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b92e6660c0a5fb14891b1895b1d27c68
+      internalID: 317798648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_31
+      rect:
+        serializedVersion: 2
+        x: 1662
+        y: 163
+        width: 342
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5876c13b6497c184daa4e65a32b84408
+      internalID: 1570041309
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ui-card-9slice-atlas-transparent-2048_32
+      rect:
+        serializedVersion: 2
+        x: 1662
+        y: 27
+        width: 343
+        height: 124
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b619ecd5569597b43aba7d9aa149c220
+      internalID: -2145473609
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      ui-card-9slice-atlas-transparent-2048_0: -290428420
+      ui-card-9slice-atlas-transparent-2048_1: 1703362036
+      ui-card-9slice-atlas-transparent-2048_10: 372153048
+      ui-card-9slice-atlas-transparent-2048_11: -1534028686
+      ui-card-9slice-atlas-transparent-2048_12: 1709720725
+      ui-card-9slice-atlas-transparent-2048_13: 87498167
+      ui-card-9slice-atlas-transparent-2048_14: -215752371
+      ui-card-9slice-atlas-transparent-2048_15: 1761473172
+      ui-card-9slice-atlas-transparent-2048_16: -1656586709
+      ui-card-9slice-atlas-transparent-2048_17: 373374979
+      ui-card-9slice-atlas-transparent-2048_18: -1586946123
+      ui-card-9slice-atlas-transparent-2048_19: 1999886291
+      ui-card-9slice-atlas-transparent-2048_2: 19105094
+      ui-card-9slice-atlas-transparent-2048_20: -484036727
+      ui-card-9slice-atlas-transparent-2048_21: 1198019004
+      ui-card-9slice-atlas-transparent-2048_22: -1190055254
+      ui-card-9slice-atlas-transparent-2048_23: 1286409252
+      ui-card-9slice-atlas-transparent-2048_24: 59538121
+      ui-card-9slice-atlas-transparent-2048_25: -1311958726
+      ui-card-9slice-atlas-transparent-2048_26: -1268132761
+      ui-card-9slice-atlas-transparent-2048_27: -1983400880
+      ui-card-9slice-atlas-transparent-2048_28: 80062325
+      ui-card-9slice-atlas-transparent-2048_29: -19039047
+      ui-card-9slice-atlas-transparent-2048_3: 1900739437
+      ui-card-9slice-atlas-transparent-2048_30: 317798648
+      ui-card-9slice-atlas-transparent-2048_31: 1570041309
+      ui-card-9slice-atlas-transparent-2048_32: -2145473609
+      ui-card-9slice-atlas-transparent-2048_4: 692390526
+      ui-card-9slice-atlas-transparent-2048_5: 583003050
+      ui-card-9slice-atlas-transparent-2048_6: -910911934
+      ui-card-9slice-atlas-transparent-2048_7: 929878530
+      ui-card-9slice-atlas-transparent-2048_8: 1125116957
+      ui-card-9slice-atlas-transparent-2048_9: -632026636
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
