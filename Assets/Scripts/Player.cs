@@ -42,7 +42,8 @@ public class Player : Entity
     // 是否是无敌状态，测试用.
     public bool IsInvincible { get; set; }
 
-
+    public bool ChainedLightningActive { get; set; }
+    List<Transform> chainedTargets = new List<Transform>();
     // 冲刺相关
     public bool IsDash { get; set; }
     float dashTimer = 0;
@@ -187,8 +188,59 @@ public class Player : Entity
         UpdateDash();
         Move();
         Rotate();
-    }
 
+        if(weapon != null && weapon.lockedTarget != null)
+        {
+            if (ChainedLightningActive)
+            {
+                var points = new List<Vector3>();
+                for (int i = 0; i < chainedTargets.Count; i++)
+                {
+                    points.Add(chainedTargets[i].position);
+                }
+                LightningManager.Instance.UpdateChainPosition(points);
+            }
+            else
+            {
+                LightningManager.Instance.UpdateSinglePosition(transform.position, weapon.lockedTarget.transform.position);
+            }
+        }
+        else
+        {
+            if(ChainedLightningActive)
+            {
+                LightningManager.Instance.ClearChain();
+            }
+            else
+            {
+                LightningManager.Instance.ClearSingle();
+            }
+        }
+    }
+    public void UpdateChaineLaser(List<Transform> transforms)
+    {
+        chainedTargets = transforms;
+    }
+    public void ChangeWhenInWave(bool state)
+    {
+        if(weapon.weaponData.type == WeaponType.Laser)
+        {
+            if(state == false)
+            {
+                // 直接将激光武器改成chain模式
+                LightningManager.Instance.ClearChain();
+            }
+            else
+            {
+                ChainedLightningActive = state;
+            }
+            LightningManager.Instance.ClearSingle();
+        }
+        else
+        {
+            CurrentBulletCount = CurrentBulletCount + (state == true ? 10 : -10);
+        }
+    }
     public override void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount = 3)
     {
         this.attackType = attackType;

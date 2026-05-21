@@ -24,6 +24,8 @@ public class GameManager : MonoBehaviour
     int totalLoadStep = 5;
     public PlayerData pdata { get; set; }
 
+    public bool RunningGame;
+
     public GameObject levelPanel;
     public GameObject gameOverPanel;
     public GameObject cultivatePanel;
@@ -126,9 +128,16 @@ public class GameManager : MonoBehaviour
     float blackHoleTimer = 0;
 
     Coroutine gameStepCoroutine;
+
+    public Transform startPos;
+    public Transform middlePos;
+    public Transform endPos;
     private void Start()
     {
-        gameStepCoroutine = StartCoroutine(LoadGameStep());
+        if (RunningGame)
+        {
+            gameStepCoroutine = StartCoroutine(LoadGameStep());
+        }
     }
 
     IEnumerator LoadGameStep()
@@ -993,7 +1002,7 @@ public class GameManager : MonoBehaviour
         {
             isWave = true;
             waveTimer = 0;
-            player.GetComponent<Player>().CurrentBulletCount += 10;
+            player.GetComponent<Player>().ChangeWhenInWave(true);
             Debug.Log("尸潮开始");
             safeSide = Random.Range(0, 4);
             Debug.Log("本轮尸潮安全区是：" + (safeSide == 0 ? "左" : safeSide == 1 ? "右" : safeSide == 2 ? "下" : "上"));
@@ -1013,7 +1022,7 @@ public class GameManager : MonoBehaviour
         {
             isWave = false;
             waveTimer = 0;
-            player.GetComponent<Player>().CurrentBulletCount -= 10;
+            player.GetComponent<Player>().ChangeWhenInWave(false);
             Debug.Log("尸潮结束");
             mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
             difficulty = Mathf.Max(1, difficulty * 0.5f); // 尸潮结束后暂时降低难度，给玩家喘息的机会
@@ -1177,7 +1186,7 @@ public class GameManager : MonoBehaviour
             Hp = 500 + DataManager.myGameData.PermanentHp,// 玩家生命值 = 500 + 永久增加的生命值
             Atk = 5 + DataManager.myGameData.PermanentAtk,// 当前玩家攻击力
             MoveSpeed = 5.6f + DataManager.myGameData.PermanentMoveSpeed,// 玩家移动速度
-            CurrentWeaponIndex = 0// 玩家当前使用的武器id
+            CurrentWeaponIndex = 3// 玩家当前使用的武器id
         };
 
         player.GetComponent<Player>().Init(pdata);

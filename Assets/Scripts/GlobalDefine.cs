@@ -85,7 +85,11 @@ public enum WeaponType
     /// <summary>
     /// 精英怪专属武器，玩家无法获得
     /// </summary>
-    EliteGun
+    EliteGun,
+    /// <summary>
+    /// 激光武器，玩家专属武器，具有特殊攻击方式和效果
+    /// </summary>
+    Laser,
 }
 public struct WeaponData
 {

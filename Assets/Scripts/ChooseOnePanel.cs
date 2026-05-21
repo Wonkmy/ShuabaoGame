@@ -13,8 +13,7 @@ public class ChooseOnePanel : MonoBehaviour
     public Sprite purple;
     public void Init()
     {
-        Player player =
-        GameManager.Instance.player.GetComponent<Player>();
+        Player player = GameManager.Instance.player.GetComponent<Player>();
 
         List<UpgradeData> options = GameManager.Instance.GetUpgradeOptions(3);
 

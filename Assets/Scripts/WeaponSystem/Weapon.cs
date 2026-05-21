@@ -132,8 +132,7 @@ public class Weapon
         {
             Entity lockEntity = lockedTarget.GetComponent<Entity>();
 
-            if (lockEntity == null ||
-                lockEntity.Dead)
+            if (lockEntity == null || lockEntity.Dead)
             {
                 lockedTarget = null;
             }
@@ -175,15 +174,22 @@ public class Weapon
 
             if (entity != null && ey != null)
             {
-                if (fireTime >= fireInterval && Vector3.Distance(entity.transform.position, ey.transform.position) <= attackRange)
+                if (fireTime >= fireInterval)
                 {
-                    fireFlashTimer = 0.0f;
+                    if(Vector3.Distance(entity.transform.position, ey.transform.position) <= attackRange)
+                    {
+                        fireFlashTimer = 0.0f;
 
-                    lockedTarget = ey;
+                        lockedTarget = ey;
 
-                    ProcessAttack();
+                        ProcessAttack();
 
-                    fireTime = 0.0f;
+                        fireTime = 0.0f;
+                    }
+                    else
+                    {
+                        lockedTarget = null;
+                    }
                 }
             }
         }
