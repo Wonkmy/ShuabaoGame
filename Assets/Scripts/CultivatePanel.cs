@@ -15,10 +15,6 @@ public class CultivatePanel : MonoBehaviour
     Dictionary<PlayerType,Button> playerTypeChooseButtons = new Dictionary<PlayerType, Button>();
 
     public void Init() {
-        //upgradeButtons.Add("Attack", upgradeButtonsList[0]);
-        //upgradeButtons.Add("HP", upgradeButtonsList[1]);
-        //upgradeButtons.Add("MoveSpeed", upgradeButtonsList[2]);
-        //upgradeButtons.Add("Crit", upgradeButtonsList[3]);
         upgradeButtons["Attack"] = upgradeButtonsList[0];
         upgradeButtons["HP"] = upgradeButtonsList[1];
         upgradeButtons["MoveSpeed"] = upgradeButtonsList[2];
@@ -115,9 +111,11 @@ public class CultivatePanel : MonoBehaviour
         foreach (var item in playerTypeChooseButtons)
         {
             item.Value.interactable = !(item.Key == DataManager.myGameData.playerType);
+            item.Value.transform.Find("check").gameObject.SetActive(item.Key == DataManager.myGameData.playerType);
             item.Value.onClick.AddListener(() =>
             {
                 item.Value.interactable = false;
+                item.Value.transform.Find("check").gameObject.SetActive(true);
                 DataManager.myGameData.playerType = item.Key;
 
                 ResetOtherplayerTypeChooseButtons();
@@ -131,6 +129,7 @@ public class CultivatePanel : MonoBehaviour
             if(item.Key != DataManager.myGameData.playerType)
             {
                 item.Value.interactable = true;
+                item.Value.transform.Find("check").gameObject.SetActive(!item.Value.interactable);
             }
         }
     }

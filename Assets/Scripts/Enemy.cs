@@ -315,6 +315,10 @@ public class Enemy : Entity
         Instantiate(Resources.Load<GameObject>("deadFX"), transform.position, Quaternion.identity);
 
         DataManager.allEnemyDict.Remove(gameObject);// 从敌人字典中移除
+        if (GameManager.Instance.player.GetComponent<Player>().chainedTargets.Contains(gameObject))
+        {
+            GameManager.Instance.player.GetComponent<Player>().chainedTargets.Remove(gameObject);// 从玩家的连锁目标列表中移除
+        }
         Destroy(gameObject);
     }
 }

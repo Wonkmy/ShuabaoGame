@@ -27,12 +27,22 @@ public class LaserWeapon : Weapon
         float powerAttack = attack * Mathf.Max(1, entityAttack);
         if (player.ChainedLightningActive)// 如果玩家的链式闪电技能处于激活状态
         {
+            player.chainedTargets.Clear();
             // 只取前3个目标
-            Transform start = player.transform;
-            Transform middle = lockedTarget.transform;
-            Transform end = GameManager.Instance.FindCicleAllEnemysByDistance(lockedTarget.transform.position, 5f).FirstOrDefault()?.transform;
-            player.UpdateChaineLaser(new List<Transform> { start, middle, end });
-            LightningManager.Instance.PlayChain(new List<Vector3> { start.position, middle.position, end != null ? end.position : middle.position });
+            GameObject start = player.gameObject;
+            GameObject middle = lockedTarget;
+            // 找到距离为5以内的所有敌人中的随机一个作为链式闪电的下一个目标
+            GameObject end = GameManager.Instance.FindCicleAllEnemysByDistance(lockedTarget.transform.position, 5).Where(e => e != lockedTarget).OrderBy(e => Random.value).FirstOrDefault();
+            if (end != null)
+            {
+                player.chainedTargets = new List<GameObject> { start, middle, end };
+                LightningManager.Instance.PlayChain(new List<Vector3> { start.transform.position, middle.transform.position, end != null ? end.transform.position : middle.transform.position });
+            }
+            else
+            {
+                player.chainedTargets = new List<GameObject> { start, middle };
+                LightningManager.Instance.PlayChain(new List<Vector3> { start.transform.position, middle.transform.position });
+            }
             end.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(powerAttack), false);
         }
         else

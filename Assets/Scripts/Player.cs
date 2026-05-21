@@ -43,7 +43,7 @@ public class Player : Entity
     public bool IsInvincible { get; set; }
 
     public bool ChainedLightningActive { get; set; }
-    List<Transform> chainedTargets = new List<Transform>();
+    public List<GameObject> chainedTargets = new List<GameObject>();
     // 冲刺相关
     public bool IsDash { get; set; }
     float dashTimer = 0;
@@ -192,7 +192,7 @@ public class Player : Entity
                 var points = new List<Vector3>();
                 for (int i = 0; i < chainedTargets.Count; i++)
                 {
-                    points.Add(chainedTargets[i].position);
+                    points.Add(chainedTargets[i].transform.position);
                 }
                 LightningManager.Instance.UpdateChainPosition(points);
             }
@@ -206,6 +206,7 @@ public class Player : Entity
             if(ChainedLightningActive)
             {
                 LightningManager.Instance.ClearChain();
+                chainedTargets.Clear();
             }
             else
             {
@@ -213,23 +214,17 @@ public class Player : Entity
             }
         }
     }
-    public void UpdateChaineLaser(List<Transform> transforms)
-    {
-        chainedTargets = transforms;
-    }
+    
     public void ChangeWhenInWave(bool state)
     {
         if(weapon.weaponData.type == WeaponType.Laser)
         {
             if(state == false)
             {
-                // 直接将激光武器改成chain模式
                 LightningManager.Instance.ClearChain();
+                chainedTargets.Clear();
             }
-            else
-            {
-                ChainedLightningActive = state;
-            }
+            ChainedLightningActive = state;
             LightningManager.Instance.ClearSingle();
         }
         else
