@@ -80,28 +80,24 @@ public class Player : Entity
         PlayerPower = playerData.Atk;
         currentExp = 0;
         level = (int)playerData.Level;
-
         playerType = DataManager.myGameData.playerType;// 这里后面需要在局外系统中设置成玩家选择的类型
 
         transform.Find("Fire/view").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"sprites/PlayerTypeIcon/{(int)playerType}");
-
+        EntityTag = "player";
         weapon = WeaponSystem.CreateWeapon(playerData.CurrentWeaponIndex, this);
         weapon.ChangeBullet(2);
-        weapon.SetWeaponAttackRange(playerData.AttackRange);
         attackType = AttackType.Sector;
         moveSpeed = playerData.MoveSpeed;
-
-        EntityTag = "player";
     }
 
     public void SetWeaponAttackRange(float v)
     {
-        weapon.SetWeaponAttackRange(playerData.AttackRange + v);
+        weapon.SetWeaponAttackRange(v);
     }
 
     public void ResetWeaponAttackRange()
     {
-        weapon.SetWeaponAttackRange(playerData.AttackRange);
+        weapon.SetWeaponAttackRange(weapon.weaponData.AttackRange);
     }
     /// <summary>
     /// 更换武器

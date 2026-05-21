@@ -636,7 +636,7 @@ public class GameManager : MonoBehaviour
             var specialEventObj = SpwanWorldTxt($"{enemyType.ToString()}来袭！",1.0f);
             StartCoroutine(ShowFlashWarningTxt(specialEventObj));
 
-            player.GetComponent<Player>().SetWeaponAttackRange(3);
+            //player.GetComponent<Player>().SetWeaponAttackRange(3);
             Debug.Log("特殊事件开始");
         }
 
@@ -1186,7 +1186,7 @@ public class GameManager : MonoBehaviour
             Hp = 500 + DataManager.myGameData.PermanentHp,// 玩家生命值 = 500 + 永久增加的生命值
             Atk = 5 + DataManager.myGameData.PermanentAtk,// 当前玩家攻击力
             MoveSpeed = 5.6f + DataManager.myGameData.PermanentMoveSpeed,// 玩家移动速度
-            CurrentWeaponIndex = 3// 玩家当前使用的武器id
+            CurrentWeaponIndex = 3,// 玩家当前使用的武器id
         };
 
         player.GetComponent<Player>().Init(pdata);

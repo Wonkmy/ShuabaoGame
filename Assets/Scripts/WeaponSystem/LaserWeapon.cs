@@ -23,6 +23,8 @@ public class LaserWeapon : Weapon
             player = entity as Player;
             entityAttack = player.playerData.Atk;
         }
+        float attack = weaponData.Attack + GetAttack();
+        float powerAttack = attack * Mathf.Max(1, entityAttack);
         if (player.ChainedLightningActive)// 如果玩家的链式闪电技能处于激活状态
         {
             // 只取前3个目标
@@ -31,15 +33,13 @@ public class LaserWeapon : Weapon
             Transform end = GameManager.Instance.FindCicleAllEnemysByDistance(lockedTarget.transform.position, 5f).FirstOrDefault()?.transform;
             player.UpdateChaineLaser(new List<Transform> { start, middle, end });
             LightningManager.Instance.PlayChain(new List<Vector3> { start.position, middle.position, end != null ? end.position : middle.position });
+            end.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(powerAttack), false);
         }
         else
         {
             LightningManager.Instance.Play(entity.transform.position, lockedTarget.transform.position);
-            float attack = weaponData.Attack + GetAttack();
-
-            float powerAttack = attack * Mathf.Max(1, entityAttack);
-            lockedTarget.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(powerAttack), false);
-        }  
+        }
+        lockedTarget.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(powerAttack), false);
     }
 
     public override void AttackCicle(Vector3 fireDirection, Vector3 firePos, int currentBulletCount)

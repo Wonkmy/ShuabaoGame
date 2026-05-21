@@ -19,7 +19,7 @@ public class Weapon
     float fireInterval = 0;// 武器的攻击频率。单独拿出来是后面需要动态修改达到成长与爽感
     float attack = 0;// 武器的攻击力。单独拿出来是后面需要动态修改达到成长与爽感
     int bulletPierce = 0;// 武器的子弹穿透力。单独拿出来是后面需要动态修改达到成长与爽感
-    float attackRange = 10.0f;// 武器的攻击范围，超过这个范围就不攻击了
+    public float attackRange { get; set; }// 武器的攻击范围，超过这个范围就不攻击了
 
     public GameObject lockedTarget;// 锁定的目标实体，敌人
 
@@ -34,6 +34,7 @@ public class Weapon
              Attack = DataManager.weaponDataDict[weaponID].Attack,
              type = DataManager.weaponDataDict[weaponID].type,
              Critical = DataManager.weaponDataDict[weaponID].Critical,
+             AttackRange = DataManager.weaponDataDict[weaponID].AttackRange
         };
         bulletData = new BulletData
         {
@@ -46,21 +47,24 @@ public class Weapon
         spawnedBullets = new List<GameObject>();
         lockedTarget = null;
         attack = weaponData.Attack;
+        attackRange = weaponData.AttackRange;
         if (this.entity.EntityTag == "enemy")
         {
             fireInterval = weaponData.FireInterval + Random.Range(-0.1f, 0.1f);
             bulletPierce = 1;
+            Debug.Log("敌人武器攻击范围：" + attackRange);
         }
         else
         {
             fireInterval = weaponData.FireInterval;
             bulletPierce = 2;
+            Debug.Log("玩家武器攻击范围：" + attackRange);
         }
     }
 
     public void SetWeaponAttackRange(float v)
     {
-        attackRange = v;
+        attackRange += v;
         if (attackRange >= 15)
         {
             attackRange = 15;

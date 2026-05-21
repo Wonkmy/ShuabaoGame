@@ -108,10 +108,9 @@ public class DataManager
             data.moveSpeed = float.Parse(row[1]);
             data.hp = int.Parse(row[2]);
             data.damage = float.Parse(row[3]);
-            data.attackRange = float.Parse(row[4]);
-            data.scale = float.Parse(row[5]);
-            data.type = (EnemyType)int.Parse(row[6]);
-            data.CurrentWeaponIndex = int.Parse(row[7]);
+            data.scale = float.Parse(row[4]);
+            data.type = (EnemyType)int.Parse(row[5]);
+            data.CurrentWeaponIndex = int.Parse(row[6]);
 
             enemyDataDict[data.id] = data;
         }
@@ -174,6 +173,7 @@ public class DataManager
             data.Attack = int.Parse(row[4]);
             data.type = (WeaponType)int.Parse(row[5]);
             data.Critical = float.Parse(row[6]);
+            data.AttackRange = float.Parse(row[7]);
             weaponDataDict[data.id] = data;
         }
     }

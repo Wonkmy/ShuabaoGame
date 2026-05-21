@@ -50,7 +50,6 @@ public struct EnemyData
     public float moveSpeed;// 移动速度
     public int hp;// 血量
     public float damage;// 伤害
-    public float attackRange;// 攻击范围
     public float scale;// 体型
     public EnemyType type;// 怪物类型
     public int CurrentWeaponIndex;// 持有的武器id
@@ -100,6 +99,7 @@ public struct WeaponData
     public int Attack;// 武器攻击力
     public WeaponType type;
     public float Critical;// 暴击倍率
+    public float AttackRange;// 武器攻击范围
 }
 public class PlayerData
 {
@@ -108,7 +108,6 @@ public class PlayerData
     public float Atk;// 玩家攻击力
     public float MoveSpeed;
     public int CurrentWeaponIndex;// 持有的武器id
-    public float AttackRange;// 攻击范围
 }
 
 public enum PlayerType

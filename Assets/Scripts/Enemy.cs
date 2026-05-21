@@ -40,8 +40,6 @@ public class Enemy : Entity
             hp.gameObject.SetActive(false);
         }
 
-
-
         Damage = enemyData.damage;
 
         view.sprite = Resources.Load<Sprite>("sprites/" + enemyType.ToString().ToLower());
@@ -49,16 +47,15 @@ public class Enemy : Entity
         FirePos = transform;
         attackType = AttackType.Sector;
         CurrentBulletCount = 3;
+        EntityTag = "enemy";
         weapon = WeaponSystem.CreateWeapon(enemyData.CurrentWeaponIndex, this);
-        weapon.SetWeaponAttackRange(enemyData.attackRange);
-        attackRange = enemyData.attackRange;
+        attackRange = weapon.attackRange;
         if (enemyType == EnemyType.Boss)
         {
             weapon.ChangeFireInterval(0.4f);
             weapon.ChangeBullet(2);
         }
 
-        EntityTag = "enemy";
 
         CanMove = true;
         Dead = false;
@@ -300,7 +297,7 @@ public class Enemy : Entity
             GameManager.Instance.IsSpecialEvent = false;// 结束特殊事件
             // 特殊事件结束后，重新计算下一次特殊事件间隔
             GameManager.Instance.nextSpecialEventInterval = GameManager.Instance.CalculateDynamicSpecialEventInterval();
-            GameManager.Instance.player.GetComponent<Player>().ResetWeaponAttackRange();// 重置玩家的武器攻击范围
+            //GameManager.Instance.player.GetComponent<Player>().ResetWeaponAttackRange();// 重置玩家的武器攻击范围
             GameManager.Instance.cameraEffect.darkIntensity = 0.0f;
         }
 
