@@ -38,7 +38,8 @@ public class Bullet : MonoBehaviour
         {
             damage = bulletData.damage,
             distance = bulletData.distance,
-            moveSpeed = bulletData.moveSpeed
+            moveSpeed = bulletData.moveSpeed,
+            prefabString = bulletData.prefabString
         };
 
         // 敌人子弹增加随机角度

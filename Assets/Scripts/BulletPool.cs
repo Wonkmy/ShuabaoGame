@@ -23,6 +23,7 @@ public class BulletPool : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             GameObject obj =Instantiate(Resources.Load<GameObject>("bullets/" + bulletPrefabId));
+            obj.name = bulletPrefabId;
             obj.transform.SetParent(bulletRoot);
             obj.SetActive(false);
 
@@ -31,6 +32,7 @@ public class BulletPool : MonoBehaviour
     }
     public GameObject Get(string bulletPrefabId)
     {
+        Debug.Log(bulletPrefabId);
         if (!poolDict.ContainsKey(bulletPrefabId))
         {
             poolDict.Add(bulletPrefabId, new Queue<GameObject>());

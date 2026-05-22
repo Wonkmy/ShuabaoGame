@@ -80,7 +80,7 @@ public class Player : Entity
         transform.Find("Fire/view").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"sprites/PlayerTypeIcon/{(int)playerType}");
         EntityTag = "player";
         weapon = WeaponSystem.CreateWeapon((int)playerType, this);
-        weapon.ChangeBullet(2);
+        //weapon.ChangeBullet(2);
         attackType = AttackType.Sector;
         moveSpeed = playerData.MoveSpeed;
     }

@@ -26,7 +26,7 @@ public class DataManager
         // 预热BulletPoll，提前加载子弹预制体
         foreach (var b in bulletsDataDict)
         {
-            BulletPool.Instance.Prewarm(b.Value.prefabString, 100);
+            BulletPool.Instance.Prewarm(b.Value.prefabString, 50);
         }
 
         string dataStr = PlayerPrefs.GetString("gamedata");
@@ -107,6 +107,7 @@ public class DataManager
             data.moveSpeed = float.Parse(row[1]);
             data.distance = float.Parse(row[2]);
             data.damage = int.Parse(row[3]);
+            data.prefabString = row[4];
 
             bulletsDataDict[data.id] = data;
         }

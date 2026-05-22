@@ -41,7 +41,8 @@ public class Weapon
             id = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].id,
             moveSpeed = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].moveSpeed,
             distance = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].distance,
-            damage = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].damage
+            damage = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].damage,
+            prefabString = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].prefabString
         };
         entity = _entity;
         spawnedBullets = new List<GameObject>();
@@ -87,7 +88,8 @@ public class Weapon
             id = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].id,
             moveSpeed = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].moveSpeed,
             distance = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].distance,
-            damage = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].damage
+            damage = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].damage,
+            prefabString = DataManager.bulletsDataDict[weaponData.CurrentUsedBulletIndex].prefabString
         };
     }
     /// <summary>

@@ -54,18 +54,12 @@
                 float edge = smoothstep(0.35, 0.75, dist);
 
                 // 呼吸效果
-                float pulse =
-                    sin(_Time.y * 5) * 0.5 + 0.5;
+                float pulse = sin(_Time.y * 5) * 0.5 + 0.5;
 
-                float redStrength =
-                    edge * pulse * _Intensity;
+                float redStrength = edge * pulse * _Intensity;
 
                 // 红边叠加
-                col.rgb =
-                    lerp(
-                        col.rgb,
-                        col.rgb + float3(0.8, 0, 0),
-                        redStrength);
+                col.rgb = lerp(col.rgb,col.rgb + float3(0.8, 0, 0),redStrength);
 
                 return col;
             }
