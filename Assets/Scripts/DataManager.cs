@@ -12,7 +12,7 @@ public class DataManager
     public static List<GameObject> allEnemyDict = new List<GameObject>();// 敌人实体字典
     public static List<GameObject> allDamageText =  new List<GameObject>();// 伤害文本字典
     public static List<GameObject> allExpBall = new List<GameObject>();// 经验球字典
-    public static Dictionary<PlayerType, float> playerSkillTypeCDDict = new Dictionary<PlayerType, float>();// 玩家技能冷却时间字典
+    public static Dictionary<AirplaneType, AirplaneInfo> playerSkillTypeCDDict = new Dictionary<AirplaneType, AirplaneInfo>();// 玩家技能冷却时间字典
 
     public static GameData myGameData;
     public static void Init()
@@ -22,9 +22,12 @@ public class DataManager
         LoadWeaponConfig();
         LoadUpgradeCsv();
         ConfigSkillCD();
+
         // 预热BulletPoll，提前加载子弹预制体
-        BulletPool.Instance.Prewarm("0", 200);
-        BulletPool.Instance.Prewarm("1", 100);
+        foreach (var b in bulletsDataDict)
+        {
+            BulletPool.Instance.Prewarm(b.Value.prefabString, 100);
+        }
 
         string dataStr = PlayerPrefs.GetString("gamedata");
         myGameData = new GameData();
@@ -45,16 +48,40 @@ public class DataManager
             myGameData.PermanentHp = 0;
             myGameData.PermanentMoveSpeed = 0;
             myGameData.PermanentCrit = 0;
-            myGameData.playerType = PlayerType.Normal;
+            myGameData.playerType = AirplaneType.Normal;
         }
     }
 
     static void ConfigSkillCD()
     {
-        playerSkillTypeCDDict[PlayerType.Normal] = 10f;
-        playerSkillTypeCDDict[PlayerType.BlackHole] = 30f;
-        playerSkillTypeCDDict[PlayerType.TimeStop] = 35f;
-        playerSkillTypeCDDict[PlayerType.Rage] = 60f;
+        playerSkillTypeCDDict[AirplaneType.Normal] = new AirplaneInfo
+        {
+            id = 0,
+            name = "Normal",
+            desc = "No special skill.",
+            skillCD = 10f
+        };
+        playerSkillTypeCDDict[AirplaneType.BlackHole] = new AirplaneInfo
+        {
+            id = 1,
+            name = "Black Hole",
+            desc = "Summon a black hole that pulls in nearby enemies.",
+            skillCD = 30f
+        };
+        playerSkillTypeCDDict[AirplaneType.TimeStop] = new AirplaneInfo
+        {
+            id = 2,
+            name = "Time Stop",
+            desc = "Stop time for a short duration, freezing all enemies.",
+            skillCD = 35f
+        };
+        playerSkillTypeCDDict[AirplaneType.Rage] = new AirplaneInfo
+        {
+            id = 3,
+            name = "Rage",
+            desc = "Unleash a powerful attack that damages all enemies on screen.",
+            skillCD = 60f
+        };
     }
     static void LoadBulletConfig()
     {

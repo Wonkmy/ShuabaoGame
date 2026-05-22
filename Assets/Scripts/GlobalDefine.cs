@@ -16,6 +16,10 @@ public struct BulletData
     /// 伤害
     /// </summary>
     public float damage;
+    /// <summary>
+    /// 子弹预制体名字字符串
+    /// </summary>
+    public string prefabString;
 }
 public enum EnemyType
 {
@@ -106,11 +110,18 @@ public class PlayerData
     public int Level;// 玩家等级
     public float Hp;// 玩家血量
     public float Atk;// 玩家攻击力
-    public float MoveSpeed;
-    public int CurrentWeaponIndex;// 持有的武器id
+    public float MoveSpeed;// 玩家移动速度
 }
 
-public enum PlayerType
+public struct AirplaneInfo
+{
+    public int id;
+    public string name;
+    public string desc;
+    public float skillCD;
+}
+
+public enum AirplaneType
 {
     Normal,// 普通飞机
     BlackHole,// 黑洞技能飞机
@@ -125,7 +136,7 @@ public class GameData {
     public int PermanentHp;// 永久血量
     public float PermanentMoveSpeed = 0;// 永久移动速度
     public float PermanentCrit = 0;// 永久暴击
-    public PlayerType playerType;// 玩家类型
+    public AirplaneType playerType;// 飞机类型
 }
 
 /// <summary>

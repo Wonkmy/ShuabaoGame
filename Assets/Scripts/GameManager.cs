@@ -218,7 +218,7 @@ public class GameManager : MonoBehaviour
         // 根据玩家类型配置技能冷却时间
         try
         {
-            totalSkillCooldownTime = DataManager.playerSkillTypeCDDict[player.GetComponent<Player>().playerType];
+            totalSkillCooldownTime = DataManager.playerSkillTypeCDDict[GetPlayer().playerType].skillCD;
             skillCooldownTimer = totalSkillCooldownTime;
         }
         catch (System.Exception)
@@ -417,6 +417,15 @@ public class GameManager : MonoBehaviour
         {
             cultivatePanel.GetComponent<CultivatePanel>().Init();
         }
+    }
+
+    public Player GetPlayer()
+    {
+        if(player!= null)
+        {
+            return player.GetComponent<Player>();
+        }
+        return null;
     }
     void RevivalGame()
     {
@@ -780,16 +789,16 @@ public class GameManager : MonoBehaviour
         coolDownLabel.text = skillCooldownTimer.ToString("F1") + "s";
         switch (player.GetComponent<Player>().playerType)
         {
-            case PlayerType.Normal:
+            case AirplaneType.Normal:
                 ExecuteUnstoppable();
                 break;
-            case PlayerType.BlackHole:
+            case AirplaneType.BlackHole:
                 ExecuteBlackHole(transform.position);
                 break;
-            case PlayerType.TimeStop:
+            case AirplaneType.TimeStop:
                 ExecuteTimeStop();
                 break;
-            case PlayerType.Rage:
+            case AirplaneType.Rage:
                 ExecuteNuke();
                 break;
         }
@@ -1186,7 +1195,6 @@ public class GameManager : MonoBehaviour
             Hp = 500 + DataManager.myGameData.PermanentHp,// 玩家生命值 = 500 + 永久增加的生命值
             Atk = 5 + DataManager.myGameData.PermanentAtk,// 当前玩家攻击力
             MoveSpeed = 5.6f + DataManager.myGameData.PermanentMoveSpeed,// 玩家移动速度
-            CurrentWeaponIndex = 3,// 玩家当前使用的武器id
         };
 
         player.GetComponent<Player>().Init(pdata);
@@ -1369,13 +1377,14 @@ public class GameManager : MonoBehaviour
         return wpos;
     }
 
-    public GameObject SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, string CurrentUsedBulletPrefab, Entity belongWho)
+    public GameObject SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, string EntityTag, Entity belongWho)
     {
         //GameObject newBullet_Liner = Instantiate(Resources.Load<GameObject>("bullets/" + CurrentUsedBulletPrefab));
-        GameObject newBullet_Liner = BulletPool.Instance.Get(CurrentUsedBulletPrefab);
+
+        GameObject newBullet_Liner = BulletPool.Instance.Get(bulletData.prefabString);
         newBullet_Liner.transform.position = pos;
         Bullet bullet = newBullet_Liner.GetComponent<Bullet>();
-        bullet.SetBulletPrefabId(CurrentUsedBulletPrefab);
+        bullet.SetBulletPrefabId(bulletData.prefabString);
         bullet.SetBullet(bulletData, pos, dir, belongWho);
         bullet.CanMove = true;
         return newBullet_Liner;
@@ -1397,7 +1406,7 @@ public class GameManager : MonoBehaviour
     }
     public GameObject SpwanExpBall(Vector3 pos,EnemyType enemyType, int expValue)
     {
-        GameObject newExpBall = SpwanSingleCircle(pos);
+        GameObject newExpBall = SpwanSingleExpBall(pos);
         float baseScale = 0.2f;
         switch(enemyType)
         {
@@ -1415,7 +1424,6 @@ public class GameManager : MonoBehaviour
                 break;
         }
         newExpBall.transform.localScale = Vector3.one * baseScale;
-        newExpBall.GetComponent<SpriteRenderer>().color = Color.cyan;
         newExpBall.AddComponent<ExpBall>().SetExpValue(expValue, player);
         DataManager.allExpBall.Add(newExpBall);
         return newExpBall;
@@ -1423,6 +1431,20 @@ public class GameManager : MonoBehaviour
     public GameObject SpwanSingleCircle(Vector3 pos)// cicle  0.4  0.2
     {
         GameObject newExpBall = Instantiate(Resources.Load<GameObject>("cicle"));
+        newExpBall.transform.position = pos;
+        return newExpBall;
+    }
+
+    public GameObject SpwanMuzzleflash(Vector3 pos)
+    {
+        GameObject newMuzzleflash = Instantiate(Resources.Load<GameObject>("muzzleflash"));
+        newMuzzleflash.transform.position = pos;
+        return newMuzzleflash;
+    }
+
+    public GameObject SpwanSingleExpBall(Vector3 pos)
+    {
+        GameObject newExpBall = Instantiate(Resources.Load<GameObject>("expBall"));
         newExpBall.transform.position = pos;
         return newExpBall;
     }

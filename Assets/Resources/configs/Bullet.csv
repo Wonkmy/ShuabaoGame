@@ -1,5 +1,5 @@
-id,moveSpeed,distance,damage
-0,8,15,15
-1,10,18,18
-2,20,20,20
-3,8,15,10
+id,moveSpeed,distance,damage,prefabString
+0,8,15,15,0
+1,10,18,18,0
+2,20,20,20,0
+3,8,15,10,1

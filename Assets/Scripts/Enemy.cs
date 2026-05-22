@@ -208,43 +208,43 @@ public class Enemy : Entity
         float baseExp;
         switch (enemyType)
         {
-            case EnemyType.Normal: baseExp = 2; break;
-            case EnemyType.Fast: baseExp = 3; break;
-            case EnemyType.Elite: baseExp = 3; break;
-            case EnemyType.Thick: baseExp = 2; break;
-            case EnemyType.Boss: baseExp = 6; break;
+            case EnemyType.Normal: baseExp = 2.3f; break;
+            case EnemyType.Fast: baseExp = 3.5f; break;
+            case EnemyType.Elite: baseExp = 3.8f; break;
+            case EnemyType.Thick: baseExp = 2.5f; break;
+            case EnemyType.Boss: baseExp = 6.5f; break;
             default: baseExp = 0; break;
         }
-        int finalExp = (int)(baseExp * (isCrit ? 1.25f : 1f));
+        float finalExp = (baseExp * (isCrit ? 1.25f : 1f));
         if (enemyType == EnemyType.Elite)
         {
             // 如果是精英怪，生成大量经验球。这里默认生成8个，分散在敌人周围
-            int eliteExpCount = 8;
+            int eliteExpCount = 12;
             for (int i = 0; i < eliteExpCount; i++)
             {
                 float angle = i * (360f / eliteExpCount);
-                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 0.5f;
+                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 1.5f;
                 Vector3 randomOffset = new Vector3(Random.Range(-0.2f, 0.2f), Random.Range(-0.2f, 0.2f), 0);
                 GameManager.Instance.SpwanExpBall(transform.position + offset + randomOffset, enemyType, Mathf.FloorToInt(finalExp));
             }
         }
         else if (enemyType == EnemyType.Thick) {
-            int thickExpCount = 10;
+            int thickExpCount = 15;
             for (int i = 0; i < thickExpCount; i++)
             {
                 float angle = i * (360f / thickExpCount);
-                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 0.6f;
+                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 1.85f;
                 Vector3 randomOffset = new Vector3(Random.Range(-0.25f, 0.25f), Random.Range(-0.25f, 0.25f), 0);
                 GameManager.Instance.SpwanExpBall(transform.position + offset + randomOffset, enemyType, Mathf.FloorToInt(finalExp));
             }
         }
         else if (enemyType == EnemyType.Boss)
         {
-            int bossExpCount = 15;
+            int bossExpCount = 18;
             for (int i = 0; i < bossExpCount; i++)
             {
                 float angle = i * (360f / bossExpCount);
-                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 0.7f;
+                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 2.35f;
                 Vector3 randomOffset = new Vector3(Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f), 0);
                 GameManager.Instance.SpwanExpBall(transform.position + offset + randomOffset, enemyType, Mathf.FloorToInt(finalExp));
             }
@@ -287,11 +287,8 @@ public class Enemy : Entity
         transform.localScale = Vector3.zero;
 
         // 增加击杀统计
-        GameManager.Instance.player.GetComponent<Player>().AddKilledCount();
-        if(enemyType == EnemyType.Thick)
-        {
-            GameManager.Instance.player.GetComponent<Player>().AddHP(20);// 击杀厚皮怪物回复20点生命值
-        }
+        GameManager.Instance.GetPlayer().AddKilledCount();
+        
         if (IsSpecialEnemy)
         {
             GameManager.Instance.IsSpecialEvent = false;// 结束特殊事件
@@ -315,9 +312,9 @@ public class Enemy : Entity
         Instantiate(Resources.Load<GameObject>("deadFX"), transform.position, Quaternion.identity);
 
         DataManager.allEnemyDict.Remove(gameObject);// 从敌人字典中移除
-        if (GameManager.Instance.player.GetComponent<Player>().chainedTargets.Contains(gameObject))
+        if (GameManager.Instance.GetPlayer().chainedTargets.Contains(gameObject))
         {
-            GameManager.Instance.player.GetComponent<Player>().chainedTargets.Remove(gameObject);// 从玩家的连锁目标列表中移除
+            GameManager.Instance.GetPlayer().chainedTargets.Remove(gameObject);// 从玩家的连锁目标列表中移除
         }
         Destroy(gameObject);
     }

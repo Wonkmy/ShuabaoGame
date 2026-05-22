@@ -12,7 +12,7 @@ public class CultivatePanel : MonoBehaviour
     public Text goldNumLabel;
 
     Dictionary<string,Button> upgradeButtons = new Dictionary<string, Button>();
-    Dictionary<PlayerType,Button> playerTypeChooseButtons = new Dictionary<PlayerType, Button>();
+    Dictionary<AirplaneType,Button> playerTypeChooseButtons = new Dictionary<AirplaneType, Button>();
 
     public void Init() {
         upgradeButtons["Attack"] = upgradeButtonsList[0];
@@ -24,9 +24,10 @@ public class CultivatePanel : MonoBehaviour
 
         for (int i = 0; i < playerTypeChooses.Count; i++)
         {
-            PlayerType type = (PlayerType)i;
+            AirplaneType type = (AirplaneType)i;
             playerTypeChooseButtons[type] = playerTypeChooses[i];
             playerTypeChooses[i].transform.Find("icon").GetComponent<Image>().sprite = Resources.Load<Sprite>($"sprites/PlayerTypeIcon/{i}");
+            playerTypeChooses[i].transform.Find("name").GetComponent<Text>().text = DataManager.playerSkillTypeCDDict[type].name;
         }
 
         closeButton.onClick.AddListener(() =>

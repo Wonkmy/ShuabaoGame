@@ -23,7 +23,8 @@ public class ExpBall : MonoBehaviour
         float distance = Vector3.Distance(transform.position, _target.transform.position);
         if (distance <= 6)
         {
-            transform.position = Vector3.MoveTowards(transform.position, _target.transform.position, 20f * Time.deltaTime);
+            //transform.position = Vector3.MoveTowards(transform.position, _target.transform.position, 20f * Time.deltaTime);
+            transform.position += (_target.transform.position - transform.position).normalized * 20f * Time.deltaTime;
             if (Vector3.Distance(transform.position, _target.transform.position) < 0.1f)
             {
                 GameManager.Instance.player.GetComponent<Player>().AddExp(_expValue);

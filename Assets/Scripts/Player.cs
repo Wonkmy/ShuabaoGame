@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using Unity.Mathematics;
-using Unity.VisualScripting;
-using UnityEditor.MemoryProfiler;
-using UnityEditor.U2D.Aseprite;
 using UnityEngine;
 public class Player : Entity
 {
@@ -57,7 +52,7 @@ public class Player : Entity
     /// <summary>
     /// 飞机类型，决定了飞机的技能
     /// </summary>
-    public PlayerType playerType { get; set; }
+    public AirplaneType playerType { get; set; }
     public void AddKilledCount()
     {
         KilledCount++;
@@ -78,13 +73,13 @@ public class Player : Entity
         totalHp = (int)playerData.Hp;
         currentHp = (int)playerData.Hp;
         PlayerPower = playerData.Atk;
-        currentExp = 0;
         level = (int)playerData.Level;
-        playerType = DataManager.myGameData.playerType;// 这里后面需要在局外系统中设置成玩家选择的类型
+        playerType = DataManager.myGameData.playerType;
+        currentExp = 0;
 
         transform.Find("Fire/view").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"sprites/PlayerTypeIcon/{(int)playerType}");
         EntityTag = "player";
-        weapon = WeaponSystem.CreateWeapon(playerData.CurrentWeaponIndex, this);
+        weapon = WeaponSystem.CreateWeapon((int)playerType, this);
         weapon.ChangeBullet(2);
         attackType = AttackType.Sector;
         moveSpeed = playerData.MoveSpeed;
@@ -106,7 +101,6 @@ public class Player : Entity
     /// <param name="newWeaponId"></param>
     public void ChangeWeapon(int newWeaponId)
     {
-        playerData.CurrentWeaponIndex = newWeaponId;
         weapon.Init(newWeaponId, this);
     }
 

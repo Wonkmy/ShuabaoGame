@@ -49,7 +49,7 @@ public class BarrageWeapon : Weapon
                     bulletData,
                     finalDir,
                     spawnPos,
-                    "1",
+                    entity.EntityTag,
                     entity);
 
                 Bullet bulletComp = bullet.GetComponent<Bullet>();
@@ -88,7 +88,7 @@ public class BarrageWeapon : Weapon
                 bulletData,
                 extraFanDirections[i],
                 spawnPos,
-                "1",
+                entity.EntityTag,
                 entity);
 
             Bullet bulletComp = bullet.GetComponent<Bullet>();
