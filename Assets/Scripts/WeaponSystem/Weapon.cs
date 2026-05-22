@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+[System.Serializable]
 public class Weapon
 {
     public WeaponData weaponData;
@@ -130,6 +130,32 @@ public class Weapon
     {
         return fireInterval;
     }
+
+    protected void TryApplyEnhancedShot(GameObject bulletObj)
+    {
+        if (entity == null || entity.EntityTag != "player" || bulletObj == null)
+            return;
+
+        Player player = entity as Player;
+        if (player == null || !player.IsEnhancedShotActive)
+            return;
+
+        Bullet bullet = bulletObj.GetComponent<Bullet>();
+        if (bullet == null)
+            return;
+
+        bullet.IsEnhancedShot = true;
+        bullet.EnhancedShotDamageMultiplier = player.EnhancedShotDamageMultiplier;
+        bullet.PierceLeft += player.EnhancedShotBonusPierce;
+
+        bulletObj.transform.localScale *= player.EnhancedShotScaleMultiplier;
+
+        SpriteRenderer sr = bulletObj.GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            sr.color = new Color(1f, 0.85f, 0.35f, 1f);
+        }
+    }
     public void WeaponUpdate()
     {
         fireTime += Time.deltaTime;
@@ -214,12 +240,51 @@ public class Weapon
             };
         }
     }
+    //void ProcessAttack()
+    //{
+    //    AudioManager.instance.PlaySounds("shoot");
+    //    // 枪口火花
+    //    GameObject newExpBall = GameManager.Instance.SpwanMuzzleflash(attackData.firePos);
+    //    newExpBall.transform.rotation = Quaternion.FromToRotation(Vector3.up, attackData.fireDirection);
+
+    //    switch (weaponAttackType)
+    //    {
+    //        case AttackType.Liner:
+    //            AttackLiner(attackData.fireDirection, attackData.firePos, attackData.currentBulletCount);
+    //            break;
+    //        case AttackType.Sector:
+    //            AttackSector(attackData.fireDirection, attackData.firePos, attackData.currentBulletCount);
+    //            break;
+    //        case AttackType.Cicle:
+    //            AttackCicle(attackData.fireDirection, attackData.firePos, attackData.currentBulletCount);
+    //            break;
+    //        default:
+    //            break;
+    //    }
+    //}
     void ProcessAttack()
     {
+        Player player = null;
+
+        if (entity != null && entity.EntityTag == "player")
+        {
+            player = entity as Player;
+            if (player != null)
+            {
+                player.BeginFireCast();
+            }
+        }
+
         AudioManager.instance.PlaySounds("shoot");
+
         // 枪口火花
         GameObject newExpBall = GameManager.Instance.SpwanMuzzleflash(attackData.firePos);
         newExpBall.transform.rotation = Quaternion.FromToRotation(Vector3.up, attackData.fireDirection);
+
+        if (player != null && player.IsEnhancedShotActive)
+        {
+            newExpBall.transform.localScale *= 1.35f;
+        }
 
         switch (weaponAttackType)
         {
@@ -235,6 +300,11 @@ public class Weapon
             default:
                 break;
         }
+
+        if (player != null)
+        {
+            player.EndFireCast();
+        }
     }
     /// <summary>
     /// 线性单发攻击方式
@@ -248,6 +318,7 @@ public class Weapon
         if (currentBulletCount <= 1)
         {
             var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, fireDirection, firePos, entity.EntityTag, entity);
+            TryApplyEnhancedShot(bullet);
             spawnedBullets.Add(bullet);
         }
         else if (currentBulletCount <= 4)
@@ -257,6 +328,7 @@ public class Weapon
                 // 计算currentBulletCount个数量子弹的每发子弹的偏移量，偏移量的方向垂直于攻击方向，大小为0.3f
                 Vector3 offset = Vector3.Cross(fireDirection, Vector3.forward).normalized * 0.3f * (i - (currentBulletCount - 1) / 2.0f);
                 var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, fireDirection, firePos + offset, entity.EntityTag, entity);
+                TryApplyEnhancedShot(bullet);
                 spawnedBullets.Add(bullet);
             }
         }
@@ -281,12 +353,15 @@ public class Weapon
         for (int i = 0; i < allDires.Length; i++)
         {
             var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, allDires[i], firePos, entity.EntityTag, entity);
+
             // 如果i是总数的中间的那个子弹，则给这个子弹添加一个额外的效果
-            if(i == currentBulletCount / 2)
+            if (i == currentBulletCount / 2)
             {
                 bullet.GetComponent<Bullet>().canTriggerHitStop = true;
                 bullet.GetComponent<Bullet>().PierceLeft = bulletPierce;
             }
+
+            TryApplyEnhancedShot(bullet);
             spawnedBullets.Add(bullet);
         }
     }
@@ -306,6 +381,8 @@ public class Weapon
             Vector3 dir = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0);
             var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, dir, firePos, entity.EntityTag, entity);
             bullet.GetComponent<Bullet>().PierceLeft = bulletPierce;
+
+            TryApplyEnhancedShot(bullet);
             spawnedBullets.Add(bullet);
         }
     }

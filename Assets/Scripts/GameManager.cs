@@ -501,6 +501,7 @@ public class GameManager : MonoBehaviour
             mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
             Destroy(player);
             player = null;
+
             AudioManager.instance.StopAllBGM();
         }
         catch (System.Exception e)

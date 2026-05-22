@@ -21,7 +21,14 @@ public class Bullet : MonoBehaviour
 
     private Player player;
     private string bulletPrefabId;
+    public bool IsEnhancedShot { get; set; }
+    public float EnhancedShotDamageMultiplier { get; set; }
 
+    private Vector3 originalLocalScale = Vector3.one;
+    void Awake()
+    {
+        originalLocalScale = transform.localScale;
+    }
     public void SetBulletPrefabId(string id)
     {
         bulletPrefabId = id;
@@ -67,6 +74,9 @@ public class Bullet : MonoBehaviour
 
         canTriggerHitStop = true;
 
+        IsEnhancedShot = false;
+        EnhancedShotDamageMultiplier = 1f;
+
         isExecuteHitStop = false;
 
         moveDir = Vector3.zero;
@@ -76,6 +86,13 @@ public class Bullet : MonoBehaviour
         player = null;
         myBulletData = default;
         transform.rotation = Quaternion.identity;
+        transform.localScale = originalLocalScale;
+
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            sr.color = Color.white;
+        }
 
         gameObject.SetActive(true);
     }
@@ -248,7 +265,13 @@ public class Bullet : MonoBehaviour
 
         fValue = Mathf.Max(fValue, 0.5f);
 
+        //float finalDamage = powerAttack * critDamageMultiplier * fValue;
         float finalDamage = powerAttack * critDamageMultiplier * fValue;
+
+        if (IsEnhancedShot)
+        {
+            finalDamage *= Mathf.Max(1f, EnhancedShotDamageMultiplier);
+        }
 
         // 少弹高伤
         if (player.HasLowBulletHighDamage)

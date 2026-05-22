@@ -25,6 +25,11 @@ public class LaserWeapon : Weapon
         }
         float attack = weaponData.Attack + GetAttack();
         float powerAttack = attack * Mathf.Max(1, entityAttack);
+
+        if (player != null && player.IsEnhancedShotActive)
+        {
+            powerAttack *= player.EnhancedShotDamageMultiplier;
+        }
         if (player.ChainedLightningActive)// 如果玩家的链式闪电技能处于激活状态
         {
             player.chainedTargets.Clear();
@@ -36,7 +41,8 @@ public class LaserWeapon : Weapon
             if (end != null)
             {
                 player.chainedTargets = new List<GameObject> { start, middle, end };
-                LightningManager.Instance.PlayChain(new List<Vector3> { start.transform.position, middle.transform.position, end != null ? end.transform.position : middle.transform.position });
+                LightningManager.Instance.PlayChain(new List<Vector3> { start.transform.position, middle.transform.position, end.transform.position });
+                end.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(powerAttack), false);
             }
             else
             {

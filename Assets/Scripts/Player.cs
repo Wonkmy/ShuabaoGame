@@ -49,6 +49,13 @@ public class Player : Entity
     // Dash残影
     float ghostTimer = 0;
 
+    // 每第N次开火触发一次强化齐射（按一次完整开火算，不按单颗子弹算）
+    public int EnhancedShotInterval { get; set; } = 5;
+    public float EnhancedShotDamageMultiplier { get; set; } = 1.8f;
+    public int EnhancedShotBonusPierce { get; set; } = 2;
+    public float EnhancedShotScaleMultiplier { get; set; } = 1.2f;
+    public bool IsEnhancedShotActive { get; private set; }
+    public int FireCastCount { get; private set; }
     /// <summary>
     /// 飞机类型，决定了飞机的技能
     /// </summary>
@@ -60,6 +67,15 @@ public class Player : Entity
     public void AddKilledCount(int count)
     {
         KilledCount += count;
+    }
+    public void BeginFireCast()
+    {
+        FireCastCount++;
+        IsEnhancedShotActive = EnhancedShotInterval > 0 && FireCastCount % EnhancedShotInterval == 0;
+    }
+    public void EndFireCast()
+    {
+        IsEnhancedShotActive = false;
     }
     public void Init(PlayerData data)
     {
@@ -76,6 +92,9 @@ public class Player : Entity
         level = (int)playerData.Level;
         playerType = DataManager.myGameData.playerType;
         currentExp = 0;
+
+        FireCastCount = 0;
+        IsEnhancedShotActive = false;
 
         transform.Find("Fire/view").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"sprites/PlayerTypeIcon/{(int)playerType}");
         EntityTag = "player";

@@ -32,7 +32,6 @@ public class BulletPool : MonoBehaviour
     }
     public GameObject Get(string bulletPrefabId)
     {
-        Debug.Log(bulletPrefabId);
         if (!poolDict.ContainsKey(bulletPrefabId))
         {
             poolDict.Add(bulletPrefabId, new Queue<GameObject>());
