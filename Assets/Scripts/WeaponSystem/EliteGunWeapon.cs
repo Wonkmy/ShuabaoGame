@@ -56,6 +56,7 @@ public class EliteGunWeapon : Weapon
                     bulletData,
                     fanDirs[i],
                     spawnPos,
+                    bulletSclae,
                     "1",
                     entity);
 
@@ -95,6 +96,7 @@ public class EliteGunWeapon : Weapon
                 bulletData,
                 extraDirs[i],
                 extraSpawnPos,
+                bulletSclae,
                 "1",
                 entity);
 

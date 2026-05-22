@@ -9,7 +9,7 @@ public class Player : Entity
     public PlayerData playerData;
     private Transform fire;
     int currentExp = 0;
-    int needExp = 10;
+    int needExp = 100;
 
     Vector3 MoveDir;
     float MoveAngle;
@@ -241,7 +241,18 @@ public class Player : Entity
         }
         else
         {
-            CurrentBulletCount = CurrentBulletCount + (state == true ? 10 : -10);
+            if (state)
+            {
+                CurrentBulletCount += 10;
+            }
+            else
+            {
+                CurrentBulletCount -= 10;
+                if (CurrentBulletCount < 3)
+                {
+                    CurrentBulletCount = 3;
+                }
+            }
         }
     }
     public override void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount = 3)

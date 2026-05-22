@@ -254,13 +254,13 @@ public class Bullet : MonoBehaviour
         }
 
         // 基础伤害
-        float attack = (weapon.weaponData.Attack + weapon.GetAttack()) * (int)myBulletData.damage;// （武器原始攻击力 + 武器升级增加的攻击力） * 子弹伤害
+        float attack = weapon.GetAttack() * (int)myBulletData.damage;// （武器原始攻击力 + 武器升级增加的攻击力） * 子弹伤害
 
         float powerAttack = attack * player.playerData.Atk;// 武器攻击力 * 玩家攻击力(玩家攻击力为全局永久攻击力)
 
         Enemy enemy = (Enemy)entity;
         float penetrate = PierceLeft;
-        float defence = 1.8f * (1.25f + (int)enemy.enemyType);// 敌人类型越高，防御越高
+        float defence = 1.9f * (1.55f + (int)enemy.enemyType);// 敌人类型越高，防御越高
         float fValue = 100.0f / (100.0f + Mathf.Max(defence - penetrate, 0));
 
         fValue = Mathf.Max(fValue, 0.5f);

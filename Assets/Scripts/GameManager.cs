@@ -1190,7 +1190,7 @@ public class GameManager : MonoBehaviour
             Level = 1,// 玩家等级
             Hp = 500 + DataManager.myGameData.PermanentHp,// 玩家生命值 = 500 + 永久增加的生命值
             Atk = 5 + DataManager.myGameData.PermanentAtk,// 当前玩家攻击力
-            MoveSpeed = 5.6f + DataManager.myGameData.PermanentMoveSpeed,// 玩家移动速度
+            MoveSpeed = 6.6f + DataManager.myGameData.PermanentMoveSpeed,// 玩家移动速度
         };
 
         player.GetComponent<Player>().Init(pdata);
@@ -1373,10 +1373,11 @@ public class GameManager : MonoBehaviour
         return wpos;
     }
 
-    public GameObject SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, string EntityTag, Entity belongWho)
+    public GameObject SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos,float bulletScale, string EntityTag, Entity belongWho)
     {
         GameObject newBullet_Liner = BulletPool.Instance.Get(bulletData.prefabString);
         newBullet_Liner.transform.position = pos;
+        newBullet_Liner.transform.localScale = new Vector3(newBullet_Liner.transform.localScale.x + bulletScale, newBullet_Liner.transform.localScale.y + bulletScale, 1);
         Bullet bullet = newBullet_Liner.GetComponent<Bullet>();
         bullet.SetBulletPrefabId(bulletData.prefabString);
         bullet.SetBullet(bulletData, pos, dir, belongWho);
@@ -1401,20 +1402,20 @@ public class GameManager : MonoBehaviour
     public GameObject SpwanExpBall(Vector3 pos,EnemyType enemyType, int expValue)
     {
         GameObject newExpBall = SpwanSingleExpBall(pos);
-        float baseScale = 0.2f;
+        float baseScale = 0.46f;
         switch(enemyType)
         {
             case EnemyType.Normal:
-                baseScale = 0.2f;
+                baseScale = 0.46f;
                 break;
             case EnemyType.Thick:
-                baseScale = 0.4f;
+                baseScale = 0.5f;
                 break;
             case EnemyType.Elite:
-                baseScale = 0.3f;
+                baseScale = 0.52f;
                 break;
             case EnemyType.Boss:
-                baseScale = 0.5f;
+                baseScale = 0.68f;
                 break;
         }
         newExpBall.transform.localScale = Vector3.one * baseScale;

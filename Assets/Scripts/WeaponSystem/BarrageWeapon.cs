@@ -49,6 +49,7 @@ public class BarrageWeapon : Weapon
                     bulletData,
                     finalDir,
                     spawnPos,
+                    bulletSclae,
                     entity.EntityTag,
                     entity);
 
@@ -88,6 +89,7 @@ public class BarrageWeapon : Weapon
                 bulletData,
                 extraFanDirections[i],
                 spawnPos,
+                    bulletSclae,
                 entity.EntityTag,
                 entity);
 
