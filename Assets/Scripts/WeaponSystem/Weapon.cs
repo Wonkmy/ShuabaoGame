@@ -53,13 +53,13 @@ public class Weapon
         {
             fireInterval = weaponData.FireInterval + Random.Range(-0.1f, 0.1f);
             bulletPierce = 1;
-            Debug.Log("敌人武器攻击范围：" + attackRange);
+            //Debug.Log("敌人武器攻击范围：" + attackRange);
         }
         else
         {
             fireInterval = weaponData.FireInterval;
             bulletPierce = 2;
-            Debug.Log("玩家武器攻击范围：" + attackRange);
+            //Debug.Log("玩家武器攻击范围：" + attackRange);
         }
     }
 

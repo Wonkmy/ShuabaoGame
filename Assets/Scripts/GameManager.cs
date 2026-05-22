@@ -966,7 +966,7 @@ public class GameManager : MonoBehaviour
                 1,
                 5);
 
-        Debug.Log("玩家评分:" + playerPowerScore + " 敌群:" + currentWaveGroupCount + " 每组:" + enemyCountPerGroup);
+        //Debug.Log("玩家评分:" + playerPowerScore + " 敌群:" + currentWaveGroupCount + " 每组:" + enemyCountPerGroup);
         playerScore = playerPowerScore;
     }
 
@@ -1075,11 +1075,6 @@ public class GameManager : MonoBehaviour
 
             SpawnWave();
         }
-
-        // 难度成长
-        //currentWaveGroupCount = Mathf.Clamp(1 + Mathf.FloorToInt(gameTime / 60f), 1, 5);
-
-        //enemyCountPerGroup = Mathf.Clamp(6 + Mathf.FloorToInt(gameTime / 30f), 6, 20);
     }
 
     // 生成一整个波次
@@ -1380,8 +1375,6 @@ public class GameManager : MonoBehaviour
 
     public GameObject SpwanBulletSingle(BulletData bulletData, Vector3 dir, Vector3 pos, string EntityTag, Entity belongWho)
     {
-        //GameObject newBullet_Liner = Instantiate(Resources.Load<GameObject>("bullets/" + CurrentUsedBulletPrefab));
-
         GameObject newBullet_Liner = BulletPool.Instance.Get(bulletData.prefabString);
         newBullet_Liner.transform.position = pos;
         Bullet bullet = newBullet_Liner.GetComponent<Bullet>();
