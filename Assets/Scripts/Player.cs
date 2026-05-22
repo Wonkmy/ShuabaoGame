@@ -9,7 +9,7 @@ public class Player : Entity
     public PlayerData playerData;
     private Transform fire;
     int currentExp = 0;
-    int needExp = 50;
+    int needExp = 10;
 
     Vector3 MoveDir;
     float MoveAngle;
@@ -80,7 +80,6 @@ public class Player : Entity
         transform.Find("Fire/view").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"sprites/PlayerTypeIcon/{(int)playerType}");
         EntityTag = "player";
         weapon = WeaponSystem.CreateWeapon((int)playerType, this);
-        //weapon.ChangeBullet(2);
         attackType = AttackType.Sector;
         moveSpeed = playerData.MoveSpeed;
     }
