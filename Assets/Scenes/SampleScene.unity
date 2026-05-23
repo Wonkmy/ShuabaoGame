@@ -3747,15 +3747,15 @@ MonoBehaviour:
   btn_ReleaseSkill: {fileID: 1229298371}
   coolDownLabel: {fileID: 1886626621}
   coolDownMask: {fileID: 1732488689}
-  spawnWaveIntervalBase: 4
+  spawnWaveIntervalBase: 5.5
   normalGroupMin: 1
-  normalGroupMax: 3
+  normalGroupMax: 2
   normalEnemyMin: 3
   normalEnemyMax: 7
   waveEnemyMultiplier: 2
-  waveAppearInterval: 15
-  waveDuration: 5
-  MaxEnemyCount: 30
+  waveAppearInterval: 35
+  waveDuration: 7
+  MaxEnemyCount: 36
   dashCooldownTime: 1.2
   dashSpeed: 18
   dashDuration: 0.12

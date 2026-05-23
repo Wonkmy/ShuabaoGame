@@ -112,6 +112,16 @@ public class Weapon
         bulletSclae += 0.2f;
     }
 
+    public void ChangeCritical(float v)
+    {
+        weaponData.Critical = Mathf.Clamp(weaponData.Critical + v, 0f, 0.65f);
+    }
+
+    public void ChangeBulletScale(float v)
+    {
+        bulletSclae = Mathf.Clamp(bulletSclae + v, 0f, 0.8f);
+    }
+
     public float GetAttack()
     {
         return attack;
@@ -274,6 +284,7 @@ public class Weapon
             player = entity as Player;
             if (player != null)
             {
+                player.ApplyFireRecoil(attackData.fireDirection, player != null && player.IsEnhancedShotActive ? 0.12f : 0.05f);
                 player.BeginFireCast();
             }
         }
@@ -287,6 +298,7 @@ public class Weapon
         if (player != null && player.IsEnhancedShotActive)
         {
             newExpBall.transform.localScale *= 1.35f;
+            GameManager.Instance.ShakeMainCamera(0.06f, 0.08f);
         }
 
         switch (weaponAttackType)
@@ -320,7 +332,7 @@ public class Weapon
     {
         if (currentBulletCount <= 1)
         {
-            var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, fireDirection, firePos,bulletSclae, entity.EntityTag, entity);
+            var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, fireDirection, firePos, bulletSclae, entity.EntityTag, entity);
             TryApplyEnhancedShot(bullet);
             spawnedBullets.Add(bullet);
         }
@@ -355,7 +367,7 @@ public class Weapon
         var allDires = DataManager.GetFanDirections2D(fireDirection, currentBulletCount);
         for (int i = 0; i < allDires.Length; i++)
         {
-            var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, allDires[i], firePos,bulletSclae, entity.EntityTag, entity);
+            var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, allDires[i], firePos, bulletSclae, entity.EntityTag, entity);
 
             // 如果i是总数的中间的那个子弹，则给这个子弹添加一个额外的效果
             if (i == currentBulletCount / 2)
@@ -382,7 +394,7 @@ public class Weapon
         {
             float angle = (360.0f / currentBulletCount) * i;
             Vector3 dir = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0);
-            var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, dir, firePos,bulletSclae, entity.EntityTag, entity);
+            var bullet = GameManager.Instance.SpwanBulletSingle(bulletData, dir, firePos, bulletSclae, entity.EntityTag, entity);
             bullet.GetComponent<Bullet>().PierceLeft = bulletPierce;
 
             TryApplyEnhancedShot(bullet);

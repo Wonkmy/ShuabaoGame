@@ -23,6 +23,8 @@ public class Bullet : MonoBehaviour
     private string bulletPrefabId;
     public bool IsEnhancedShot { get; set; }
     public float EnhancedShotDamageMultiplier { get; set; }
+    public bool IsSplitShot { get; set; }
+    public float SplitShotDamageMultiplier { get; set; }
 
     private Vector3 originalLocalScale = Vector3.one;
     void Awake()
@@ -76,6 +78,8 @@ public class Bullet : MonoBehaviour
 
         IsEnhancedShot = false;
         EnhancedShotDamageMultiplier = 1f;
+        IsSplitShot = false;
+        SplitShotDamageMultiplier = 1f;
 
         isExecuteHitStop = false;
 
@@ -262,7 +266,6 @@ public class Bullet : MonoBehaviour
         float penetrate = PierceLeft;
         float defence = 1.9f * (1.55f + (int)enemy.enemyType);// 敌人类型越高，防御越高
         float fValue = 100.0f / (100.0f + Mathf.Max(defence - penetrate, 0));
-
         fValue = Mathf.Max(fValue, 0.5f);
 
         //float finalDamage = powerAttack * critDamageMultiplier * fValue;
@@ -271,6 +274,11 @@ public class Bullet : MonoBehaviour
         if (IsEnhancedShot)
         {
             finalDamage *= Mathf.Max(1f, EnhancedShotDamageMultiplier);
+        }
+
+        if (IsSplitShot)
+        {
+            finalDamage *= Mathf.Clamp(SplitShotDamageMultiplier, 0.25f, 1f);
         }
 
         // 少弹高伤
@@ -286,6 +294,14 @@ public class Bullet : MonoBehaviour
         }
         // 主目标伤害
         entity.TakeDamage(Mathf.FloorToInt(finalDamage), isCrit);
+
+        enemy.PlayHitPunch(moveDir);
+        TriggerHitStop(0.018f, 0.03f);
+
+        if (player.HasLegendSplit && !IsSplitShot)
+        {
+            SpawnSplitBullets(entity.transform.position);
+        }
 
         // 原本AOE
         HandleAOE(entity, finalDamage);
@@ -306,9 +322,35 @@ public class Bullet : MonoBehaviour
 
         if (PierceLeft <= 0)
         {
-            //Destroy(gameObject);
             BulletPool.Instance.Release(bulletPrefabId, gameObject);
         }
+    }
+
+    void SpawnSplitBullets(Vector3 splitPos)
+    {
+        Vector3 leftDir = Quaternion.Euler(0, 0, 28f) * moveDir;
+        Vector3 rightDir = Quaternion.Euler(0, 0, -28f) * moveDir;
+
+        SpawnSingleSplitBullet(splitPos, leftDir);
+        SpawnSingleSplitBullet(splitPos, rightDir);
+    }
+
+    void SpawnSingleSplitBullet(Vector3 splitPos, Vector3 splitDir)
+    {
+        GameObject bulletObj = GameManager.Instance.SpwanBulletSingle(
+            myBulletData,
+            splitDir,
+            splitPos,
+            0f,
+            BelongWho.EntityTag,
+            BelongWho);
+
+        Bullet bullet = bulletObj.GetComponent<Bullet>();
+        bullet.IsSplitShot = true;
+        bullet.SplitShotDamageMultiplier = 0.45f;
+        bullet.PierceLeft = 1;
+        bullet.canTriggerHitStop = false;
+        bulletObj.transform.localScale *= 0.8f;
     }
 
     void HandleCrit(Entity entity)
@@ -316,56 +358,24 @@ public class Bullet : MonoBehaviour
         Enemy enemy = entity as Enemy;
         if (enemy.enemyType == EnemyType.Boss || enemy.enemyType == EnemyType.Elite)
         {
-            GameManager.Instance.ShakeMainCamera(0.2f, 0.3f);
+            GameManager.Instance.ShakeMainCamera(0.18f, 0.22f);
+            TriggerHitStop(0.06f, 0.1f);
         }
         if (!isExecuteHitStop && canTriggerHitStop)
         {
             isExecuteHitStop = true;
 
-            if (GameManager.Instance.HitStopIntensity <= 0)
-            {
-                GameManager.Instance.HitStopIntensity = 0.08f;
-
-                GameManager.Instance.HitStopDuration = 0.05f;
-            }
+            TriggerHitStop(0.045f, 0.08f);
         }
     }
-
-    //void HandleAOE(Entity entity, float finalDamage)
-    //{
-    //    List<GameObject> allEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(entity.transform.position, 2.0f);
-
-    //    foreach (var e in allEnemys)
-    //    {
-    //        if (e == entity.gameObject)
-    //            continue;
-
-    //        e.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(finalDamage * 0.5f),false);
-    //    }
-    //}
-
-    //void HandleCritExplosion(Entity entity, float finalDamage)
-    //{
-    //    List<GameObject> allEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(entity.transform.position, 3.0f);
-
-    //    foreach (var e in allEnemys)
-    //    {
-    //        if (e == entity.gameObject)
-    //            continue;
-
-    //        e.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(finalDamage * 0.8f),true);
-    //    }
-    //}
-
-    //void HandlePierceExplosion(float finalDamage)
-    //{
-    //    List<GameObject> allEnemys = GameManager.Instance.FindCicleAllEnemysByDistance(transform.position, 1.5f);
-
-    //    foreach (var e in allEnemys)
-    //    {
-    //        e.GetComponent<Entity>().TakeDamage(Mathf.FloorToInt(finalDamage * 0.3f), false);
-    //    }
-    //}
+    void TriggerHitStop(float duration, float intensity)
+    {
+        if (GameManager.Instance.HitStopIntensity <= 0)
+        {
+            GameManager.Instance.HitStopDuration = duration;
+            GameManager.Instance.HitStopIntensity = intensity;
+        }
+    }
     void HandleAOE(Entity entity, float finalDamage)
     {
         List<GameObject> allEnemys =

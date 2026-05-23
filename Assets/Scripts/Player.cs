@@ -9,7 +9,7 @@ public class Player : Entity
     public PlayerData playerData;
     private Transform fire;
     int currentExp = 0;
-    int needExp = 100;
+    int needExp = 48;
 
     Vector3 MoveDir;
     float MoveAngle;
@@ -60,6 +60,14 @@ public class Player : Entity
     /// 飞机类型，决定了飞机的技能
     /// </summary>
     public AirplaneType playerType { get; set; }
+
+    // 速度、阻尼、惯性相关
+    Vector3 velocity;// 当前速度
+    [SerializeField]private float acceleration = 10;// 加速度
+    [SerializeField] private float drag = 8f;// 阻力
+
+    [SerializeField] private float moveRotateSpeed = 8f;
+    [SerializeField] private float aimRotateSpeed = 36f;
     public void AddKilledCount()
     {
         KilledCount++;
@@ -81,6 +89,7 @@ public class Player : Entity
     {
         fire = transform.Find("Fire");
         FirePos = fire.Find("firePos");
+        view = transform.Find("Fire/view").GetComponent<SpriteRenderer>();
 
         CurrentBulletCount = 3;
         FireDirection = Vector3.up;
@@ -96,7 +105,7 @@ public class Player : Entity
         FireCastCount = 0;
         IsEnhancedShotActive = false;
 
-        transform.Find("Fire/view").GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>($"sprites/PlayerTypeIcon/{(int)playerType}");
+        view.sprite = Resources.Load<Sprite>($"sprites/PlayerTypeIcon/{(int)playerType}");
         EntityTag = "player";
         weapon = WeaponSystem.CreateWeapon((int)playerType, this);
         attackType = AttackType.Sector;
@@ -153,7 +162,7 @@ public class Player : Entity
             isLevelUp = true;
 
             // 经验需求增长
-            needExp = Mathf.CeilToInt(needExp * 1.38f);
+            needExp = Mathf.CeilToInt(needExp * 1.34f);
 
             if (!GameManager.Instance.levelPanel.activeSelf)
             {
@@ -260,38 +269,72 @@ public class Player : Entity
         this.attackType = attackType;
         weapon.ChangeAttackType(this.attackType, this, CurrentBulletCount);
     }
+
+    /// <summary>
+    /// 开火时的后坐力效果
+    /// </summary>
+    /// <param name="fireDir"></param>
+    /// <param name="strength"></param>
+    public void ApplyFireRecoil(Vector3 fireDir, float strength = 0.06f)
+    {
+        transform.position -= fireDir.normalized * strength;
+    }
+
     void Rotate()
     {
         if (Input.GetMouseButton(0))
         {
             Vector3 mpos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mpos.z = 0;
-            RotateToDetination(mpos);
+            RotateToDetination(mpos, aimRotateSpeed);
             return;
         }
 
-        // 其次判断是否有锁定目标
         if (weapon.lockedTarget != null)
         {
-            RotateToDetination(weapon.lockedTarget.transform.position);
+            RotateToDetination(weapon.lockedTarget.transform.position, aimRotateSpeed);
+            return;
         }
-        else if (MoveDir != Vector3.zero)
+
+        if (velocity.sqrMagnitude > 0.01f)
         {
-            MoveAngle = Mathf.Atan2(MoveDir.y, MoveDir.x) * Mathf.Rad2Deg;
+            MoveAngle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
             float targetAngle = MoveAngle - 90;
             float currentZ = transform.localEulerAngles.z;
-            float smoothAngle = Mathf.LerpAngle(currentZ, targetAngle, Time.deltaTime * 60);
+
+            float smoothAngle = Mathf.LerpAngle(
+                currentZ,
+                targetAngle,
+                Time.deltaTime * moveRotateSpeed
+            );
+
             transform.localEulerAngles = new Vector3(0, 0, smoothAngle);
         }
     }
+    public void RotateToDetination(Vector3 pos, float rotateSpeed)
+    {
+        Vector3 dir = pos - transform.position;
 
+        if (dir.sqrMagnitude <= 0.0001f)
+            return;
+
+        FireDirection = dir.normalized;
+
+        float angle = Mathf.Atan2(FireDirection.y, FireDirection.x) * Mathf.Rad2Deg;
+        float targetAngle = angle - 90;
+        float currentZ = transform.localEulerAngles.z;
+
+        float smoothAngle = Mathf.LerpAngle(
+            currentZ,
+            targetAngle,
+            Time.deltaTime * rotateSpeed
+        );
+
+        transform.localEulerAngles = new Vector3(0, 0, smoothAngle);
+    }
     public override void RotateToDetination(Vector3 pos)
     {
-        FireDirection = pos - transform.position;
-        FireDirection = FireDirection.normalized;
-        float angle = Mathf.Atan2(FireDirection.y, FireDirection.x) * Mathf.Rad2Deg;
-        // 这里的旋转用缓动会更好看一些，直接设置角度会有点生硬
-        transform.localEulerAngles = new Vector3(0, 0, angle - 90);
+        RotateToDetination(pos, aimRotateSpeed);
     }
 
     void Move()
@@ -299,13 +342,30 @@ public class Player : Entity
         float x = Input.GetAxis("Horizontal");
         float y = Input.GetAxis("Vertical");
 
-        MoveDir = new Vector3(x, y, 0);
+        MoveDir = new Vector3(x, y, 0).normalized;
+        if (MoveDir.magnitude > 1f)
+            MoveDir.Normalize();
 
         if (IsDash)
             return;
 
-        transform.position += MoveDir * moveSpeed * Time.deltaTime;
+        Vector3 targetVelocity = MoveDir * moveSpeed;
 
+        float accel = MoveDir.sqrMagnitude > 0.01f ? acceleration : drag;
+
+        velocity = Vector3.MoveTowards(
+            velocity,
+            targetVelocity,
+            accel * Time.deltaTime
+        );
+
+        transform.position += velocity * Time.deltaTime;
+
+        ClampToScreen();
+    }
+
+    private void ClampToScreen()
+    {
         Vector3 spos = GameManager.Instance.mainCamera.WorldToScreenPoint(transform.position);
 
         // 玩家半径（或者半宽半高）

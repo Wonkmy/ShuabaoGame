@@ -174,8 +174,8 @@ public enum UpgradeType
     // 子弹数量增加
     BulletCount = 0,
 
-    // 武器攻击力增加
-    Attack = 1,
+    // 重型弹头：子弹变大并提升伤害
+    HeavyBullet = 1,
 
     // 子弹穿透数量增加
     Pierce = 2,
@@ -203,4 +203,13 @@ public enum UpgradeType
 
     // 大幅提升攻速
     LegendFire = 10,
+
+    // 提高暴击率
+    CritChance = 11,
+
+    // 提高开火频率
+    FireRate = 12,
+
+    // 强化每隔数次触发的强力齐射
+    EnhancedShot = 13,
 }

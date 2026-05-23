@@ -54,6 +54,7 @@ public class Enemy : Entity
         {
             weapon.ChangeFireInterval(0.4f);
             weapon.ChangeBullet(2);
+            attackRange += 1.5f;// Boss的攻击范围更大一些
         }
 
 
@@ -139,6 +140,9 @@ public class Enemy : Entity
     public override void TakeDamage(int damage, bool isCrit)
     {
         currentHp -= damage;
+
+        GameManager.Instance.SpwanHitFx(transform.position);//  命中特效
+
         hp.Find("slider").localScale = new Vector3((float)currentHp / (float)totalHp, 1, 1);
         GetComponentInChildren<SpriteRenderer>().color = Color.red;
         StartCoroutine(ResetColor());
@@ -317,5 +321,48 @@ public class Enemy : Entity
             GameManager.Instance.GetPlayer().chainedTargets.Remove(gameObject);// 从玩家的连锁目标列表中移除
         }
         Destroy(gameObject);
+    }
+
+    // 受击脉冲
+    Coroutine hitPunchCoroutine;
+
+    public void PlayHitPunch(Vector3 hitDir)
+    {
+        if (hitPunchCoroutine != null)
+            StopCoroutine(hitPunchCoroutine);
+
+        hitPunchCoroutine = StartCoroutine(HitPunch(hitDir));
+    }
+
+    IEnumerator HitPunch(Vector3 hitDir)
+    {
+        Vector3 startPos = transform.position;
+        Vector3 punchPos = startPos + hitDir.normalized * 0.28f;
+
+        Vector3 startScale = transform.localScale;
+        Vector3 punchScale = startScale * 1.08f;
+
+        float t = 0f;
+        while (t < 0.06f)
+        {
+            t += Time.deltaTime;
+            float k = t / 0.06f;
+            transform.position = Vector3.Lerp(startPos, punchPos, k);
+            transform.localScale = Vector3.Lerp(startScale, punchScale, k);
+            yield return null;
+        }
+
+        t = 0f;
+        while (t < 0.08f)
+        {
+            t += Time.deltaTime;
+            float k = t / 0.08f;
+            transform.position = Vector3.Lerp(punchPos, startPos, k);
+            transform.localScale = Vector3.Lerp(punchScale, startScale, k);
+            yield return null;
+        }
+
+        transform.position = startPos;
+        transform.localScale = startScale;
     }
 }

@@ -44,20 +44,20 @@ public class GameManager : MonoBehaviour
     // 数值配置区
     // =========================
     [Header("波次配置")]
-    public float spawnWaveIntervalBase = 4f;
+    public float spawnWaveIntervalBase = 5.5f;
     public int normalGroupMin = 1;
-    public int normalGroupMax = 3;
+    public int normalGroupMax = 2;
     public int normalEnemyMin = 3;
     public int normalEnemyMax = 7;
     public int waveEnemyMultiplier = 2;
 
     [Header("尸潮配置")]
-    public float waveAppearInterval = 15f;
-    public float waveDuration = 5f;
+    public float waveAppearInterval = 35f;
+    public float waveDuration = 7f;
 
     // 当前这一轮特殊事件需要等待的时间
     public float nextSpecialEventInterval { get; set; }
-    public int MaxEnemyCount = 30;// 场上最大敌人数量，超过后不再刷怪，直到数量降低
+    public int MaxEnemyCount = 36;// 场上最大敌人数量，超过后不再刷怪，直到数量降低
     [Header("玩家配置")]
     public float dashCooldownTime = 1.2f;
     public float dashSpeed = 18f;
@@ -71,10 +71,10 @@ public class GameManager : MonoBehaviour
     float spawnWaveTimer = 0;
 
     // 波次间隔
-    float spawnWaveInterval = 4f;// 当前动态波次间隔
+    float spawnWaveInterval = 5.5f;// 当前动态波次间隔
 
     // 每组怪物数量
-    int enemyCountPerGroup = 6;
+    int enemyCountPerGroup = 4;
 
     // 当前波次组数量
     int currentWaveGroupCount = 1;
@@ -201,9 +201,9 @@ public class GameManager : MonoBehaviour
         GameOver = false;
         IsGameStarted = true;
         // 基础难度固定
-        difficulty = 3;
+        difficulty = 2;
         // 当前特殊事件等待时间
-        nextSpecialEventInterval = 45.0f;
+        nextSpecialEventInterval = 55.0f;
         mainCamera = Camera.main;
         cameraEffect = mainCamera.GetComponent<CameraEffect>();
         cameraOriginPos = mainCamera.transform.localPosition;
@@ -438,7 +438,7 @@ public class GameManager : MonoBehaviour
         playerConponent.buildDict.Clear();
         // 重置尸潮、难度、预算、游戏时间等所有数据
         isWave = false;
-        difficulty = 3;
+        difficulty = 2;
         gameTime = 0;
         HitStopDuration = 0;
         HitStopIntensity = 0;
@@ -449,7 +449,7 @@ public class GameManager : MonoBehaviour
         // 波次间隔
         spawnWaveInterval = spawnWaveIntervalBase;
         // 每组怪物数量
-        enemyCountPerGroup = 6;
+        enemyCountPerGroup = 4;
         // 当前波次组数量
         currentWaveGroupCount = 1;
         // 特殊事件相关
@@ -475,7 +475,7 @@ public class GameManager : MonoBehaviour
             playerConponent.buildDict.Clear();
             // 重置尸潮、难度、预算、游戏时间等所有数据
             isWave = false;
-            difficulty = 3;
+            difficulty = 2;
             gameTime = 0;
             HitStopDuration = 0;
             HitStopIntensity = 0;
@@ -486,7 +486,7 @@ public class GameManager : MonoBehaviour
             // 波次间隔
             spawnWaveInterval = spawnWaveIntervalBase;
             // 每组怪物数量
-            enemyCountPerGroup = 6;
+            enemyCountPerGroup = 4;
             // 当前波次组数量
             currentWaveGroupCount = 1;
             // 特殊事件相关
@@ -580,15 +580,23 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-
-        for (int i = DataManager.allEnemyDict.Count - 1; i >= 0; i--)
+        // 敌人的更新
+        if(DataManager.allEnemyDict.Count > 0)
         {
-            GameObject enemy = DataManager.allEnemyDict[i];
-            if (enemy)
+            float nearest = float.MaxValue;
+            for (int i = DataManager.allEnemyDict.Count - 1; i >= 0; i--)
             {
+                GameObject enemy = DataManager.allEnemyDict[i];
+                if (enemy == null) continue;
+                float d = Vector3.Distance(player.transform.position, enemy.transform.position);
+                nearest = Mathf.Min(nearest, d);
+
                 enemy.GetComponent<Enemy>().EnemyUpdate();
             }
+            float pressure = Mathf.InverseLerp(6f, 1.5f, nearest);
+            cameraEffect.intensity = Mathf.Max(cameraEffect.intensity, pressure * 0.35f);
         }
+        
 
         for (int i = DataManager.allDamageText.Count - 1; i >= 0; i--)
         {
@@ -626,7 +634,7 @@ public class GameManager : MonoBehaviour
             UpdateDynamicDifficulty(out playerScore);
         }
 
-        difficulty = Mathf.Clamp(2 + Mathf.FloorToInt(gameTime / 30f), 2, 8);
+        difficulty = Mathf.Clamp(1.5f + Mathf.FloorToInt(gameTime / 35f), 1.5f, 8);
 
         // 特殊事件逻辑
         specialEventTimer += Time.deltaTime;
@@ -912,19 +920,19 @@ public class GameManager : MonoBehaviour
         // 压力高，延后特殊事件
         if (pressureScore >= 70)
         {
-            return 75f;
+            return 85f;
         }
         else if (pressureScore >= 45)
         {
-            return 60f;
+            return 70f;
         }
         else if (pressureScore >= 25)
         {
-            return 45f;
+            return 55f;
         }
         else
         {
-            return 35f;
+            return 40f;
         }
     }
     void UpdateDynamicDifficulty(out int playerScore)
@@ -950,14 +958,14 @@ public class GameManager : MonoBehaviour
         // =========================
 
         // 波次间隔
-        spawnWaveInterval =Mathf.Clamp(5f - playerPowerScore * 0.02f,1.5f,5f);
+        spawnWaveInterval = Mathf.Clamp(6f - playerPowerScore * 0.018f, 2.2f, 6f);
 
         // 每组敌人数量
         enemyCountPerGroup =
             Mathf.Clamp(
-                5 + playerPowerScore / 15,
-                5,
-                25);
+                3 + playerPowerScore / 25,
+                3,
+                16);
 
         // 最大同时敌群数量
         currentWaveGroupCount =
@@ -1027,8 +1035,8 @@ public class GameManager : MonoBehaviour
             StartCoroutine(ShowFlashWarningTxt(shichao));
         }
 
-        // 尸潮持续8秒
-        if (isWave && waveTimer >= 8)
+        // 尸潮持续一小段时间
+        if (isWave && waveTimer >= waveDuration)
         {
             isWave = false;
             waveTimer = 0;
@@ -1188,9 +1196,9 @@ public class GameManager : MonoBehaviour
         pdata = new PlayerData
         {
             Level = 1,// 玩家等级
-            Hp = 500 + DataManager.myGameData.PermanentHp,// 玩家生命值 = 500 + 永久增加的生命值
+            Hp = 520 + DataManager.myGameData.PermanentHp,// 玩家生命值 = 520 + 永久增加的生命值
             Atk = 5 + DataManager.myGameData.PermanentAtk,// 当前玩家攻击力
-            MoveSpeed = 6.6f + DataManager.myGameData.PermanentMoveSpeed,// 玩家移动速度
+            MoveSpeed = 5.4f + DataManager.myGameData.PermanentMoveSpeed,// 玩家移动速度
         };
 
         player.GetComponent<Player>().Init(pdata);
@@ -1212,10 +1220,12 @@ public class GameManager : MonoBehaviour
 
                 break;
 
-            // 攻击力
-            case UpgradeType.Attack:
+            // 重型弹头
+            case UpgradeType.HeavyBullet:
 
                 p.GetCurrentWeapon().ChangeAttack((int)data.value);
+                p.EnhancedShotDamageMultiplier += 0.08f;
+                ShakeMainCamera(0.08f, 0.08f);
 
                 break;
 
@@ -1223,6 +1233,7 @@ public class GameManager : MonoBehaviour
             case UpgradeType.Pierce:
 
                 p.GetCurrentWeapon().ChangeBulletPierce((int)data.value);
+                p.GetCurrentWeapon().ChangeBulletScale(0.1f);
 
                 break;
 
@@ -1230,6 +1241,7 @@ public class GameManager : MonoBehaviour
             case UpgradeType.AtkRatio:
 
                 p.playerData.Atk += data.value;
+                p.EnhancedShotDamageMultiplier += 0.12f;
 
                 break;
 
@@ -1273,6 +1285,11 @@ public class GameManager : MonoBehaviour
             case UpgradeType.LowBulletHighDamage:
 
                 p.HasLowBulletHighDamage = true;
+                p.CurrentBulletCount = Mathf.Max(1, p.CurrentBulletCount - 2);
+                p.GetCurrentWeapon().ChangeAttack(2);
+                p.GetCurrentWeapon().ChangeBulletScale(0.25f);
+                p.EnhancedShotDamageMultiplier += 0.35f;
+                ShakeMainCamera(0.12f, 0.12f);
 
                 break;
 
@@ -1285,6 +1302,27 @@ public class GameManager : MonoBehaviour
             case UpgradeType.LegendFire:
 
                 p.GetCurrentWeapon().ChangeFireInterval(-0.15f);
+
+                break;
+
+            case UpgradeType.CritChance:
+
+                p.GetCurrentWeapon().ChangeCritical(data.value);
+
+                break;
+
+            case UpgradeType.FireRate:
+
+                p.GetCurrentWeapon().ChangeFireInterval(-Mathf.Abs(data.value));
+
+                break;
+
+            case UpgradeType.EnhancedShot:
+
+                p.EnhancedShotInterval = Mathf.Max(3, p.EnhancedShotInterval - 1);
+                p.EnhancedShotDamageMultiplier += data.value;
+                p.EnhancedShotBonusPierce = Mathf.Min(5, p.EnhancedShotBonusPierce + 1);
+                p.EnhancedShotScaleMultiplier += 0.08f;
 
                 break;
 
@@ -1377,10 +1415,10 @@ public class GameManager : MonoBehaviour
     {
         GameObject newBullet_Liner = BulletPool.Instance.Get(bulletData.prefabString);
         newBullet_Liner.transform.position = pos;
-        newBullet_Liner.transform.localScale = new Vector3(newBullet_Liner.transform.localScale.x + bulletScale, newBullet_Liner.transform.localScale.y + bulletScale, 1);
         Bullet bullet = newBullet_Liner.GetComponent<Bullet>();
         bullet.SetBulletPrefabId(bulletData.prefabString);
         bullet.SetBullet(bulletData, pos, dir, belongWho);
+        newBullet_Liner.transform.localScale += new Vector3(bulletScale, bulletScale, 0);
         bullet.CanMove = true;
         return newBullet_Liner;
     }
@@ -1457,6 +1495,15 @@ public class GameManager : MonoBehaviour
         textMesh.color = Color.red;
         textMesh.text = txt;
         return newWarningTxt;
+    }
+
+    public GameObject SpwanHitFx(Vector3 pos)
+    {
+        GameObject fx = Instantiate(Resources.Load<GameObject>("muzzleflash"));
+        fx.transform.position = pos;
+        fx.transform.localScale = Vector3.one * 0.45f;
+        Destroy(fx, 0.12f);
+        return fx;
     }
 
     public List<GameObject> FindCicleAllEnemysByDistance(Vector3 pos, float distance)
@@ -1600,7 +1647,9 @@ public class GameManager : MonoBehaviour
             // 暴击爆炸
             if (data.type == UpgradeType.CritExplosion)
             {
-                if (!player.buildDict.ContainsKey("crit") || player.buildDict["crit"] < 5)
+                if (player.HasCritExplosion ||
+                    !player.buildDict.ContainsKey("crit") ||
+                    player.buildDict["crit"] < 2)
                 {
                     tempList.RemoveAt(i);
 
@@ -1611,7 +1660,9 @@ public class GameManager : MonoBehaviour
             // 穿透爆炸
             if (data.type == UpgradeType.PierceExplosion)
             {
-                if (!player.buildDict.ContainsKey("pierce") || player.buildDict["pierce"] < 5)
+                if (player.HasPierceExplosion ||
+                    !player.buildDict.ContainsKey("pierce") ||
+                    player.buildDict["pierce"] < 2)
                 {
                     tempList.RemoveAt(i);
 
@@ -1622,7 +1673,8 @@ public class GameManager : MonoBehaviour
             // 传奇裂变
             if (data.type == UpgradeType.LegendSplit)
             {
-                if (!player.HasCritExplosion)
+                if (player.HasLegendSplit ||
+                    (!player.HasCritExplosion && !player.HasPierceExplosion))
                 {
                     tempList.RemoveAt(i);
 
@@ -1633,12 +1685,22 @@ public class GameManager : MonoBehaviour
             // 无限火力
             if (data.type == UpgradeType.LegendFire)
             {
-                if (!player.buildDict.ContainsKey("bullet") || player.buildDict["bullet"] < 8)
+                if (!player.buildDict.ContainsKey("fire") ||
+                    !player.buildDict.ContainsKey("bullet") ||
+                    player.buildDict["fire"] < 2 ||
+                    player.buildDict["bullet"] < 5)
                 {
                     tempList.RemoveAt(i);
 
                     continue;
                 }
+            }
+
+            if (data.type == UpgradeType.LowBulletHighDamage && player.HasLowBulletHighDamage)
+            {
+                tempList.RemoveAt(i);
+
+                continue;
             }
         }
 
