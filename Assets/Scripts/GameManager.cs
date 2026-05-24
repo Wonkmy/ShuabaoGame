@@ -95,10 +95,14 @@ public class GameManager : MonoBehaviour
     // 当前难度
     float difficulty = 1;
     // 尸潮相关
-    bool isWave = false;
+    public bool isWave { get; set; }
     float waveTimer = 0;
     int maxSpawnPerFrame = 5;
     int safeSide = 0;// 尸潮来袭时的安全区，0左1右2下3上
+
+    // 敌人血量和攻击力的动态调整系数，初始为1，随着难度增加而增加
+    public float currentEnemyHpFactor = 1f;
+    public float currentEnemyAtkFactor = 1f;
     // 相机相关
     public Camera mainCamera { get; set; }
     public CameraEffect cameraEffect { get; set; }
@@ -132,6 +136,8 @@ public class GameManager : MonoBehaviour
     public Transform startPos;
     public Transform middlePos;
     public Transform endPos;
+
+    public GameObject dash_slider;
     private void Start()
     {
         if (RunningGame)
@@ -193,7 +199,7 @@ public class GameManager : MonoBehaviour
     }
     IEnumerator Init()
     {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(1.2f);
         ShowCultivatePanel(true);
         yield return new WaitUntil(()=> CultivatePanelActive() == false);
         btn_ReleaseSkill.gameObject.SetActive(true);
@@ -393,17 +399,29 @@ public class GameManager : MonoBehaviour
         {
             levelPanel.GetComponent<ChooseOnePanel>().Init();
         }
+        else
+        {
+            levelPanel.GetComponent<ChooseOnePanel>().Dispose();
+        }
+            
         Time.timeScale = show == true ? 0 : 1;
     }
 
     public void ShowGameOverPanel(bool show)
     {
         gameOverPanel.SetActive(show);
-        if(show == true)
+        
+        if (show == true)
         {
             Player playerC = player.GetComponent<Player>();
             // 将存活时长、击杀数、最高难度、玩家等级等数据传递给结算界面
             gameOverPanel.GetComponent<GameOverPanel>().Init(gameTime, playerC.KilledCount, difficulty, playerC.GetCurrentLevel());
+
+            DataManager.Clear();
+        }
+        else
+        {
+            gameOverPanel.GetComponent<GameOverPanel>().Dispose();
         }
     }
     public bool CultivatePanelActive()
@@ -416,6 +434,10 @@ public class GameManager : MonoBehaviour
         if (show == true)
         {
             cultivatePanel.GetComponent<CultivatePanel>().Init();
+        }
+        else
+        {
+            cultivatePanel.GetComponent<CultivatePanel>().Dispose();
         }
     }
 
@@ -463,62 +485,52 @@ public class GameManager : MonoBehaviour
     }
     void ResetAllGameDatas()
     {
-        try
-        {
-            // 清理所有敌人和子弹、数据、字典、玩家已有的构筑列表buildDict、HasCritExplosion、HasPierceExplosion、HasLowBulletHighDamage
-            DataManager.Clear();
-            WeaponSystem.Clear();
-            Player playerConponent = player.GetComponent<Player>();
-            playerConponent.HasCritExplosion = false;
-            playerConponent.HasPierceExplosion = false;
-            playerConponent.HasLowBulletHighDamage = false;
-            playerConponent.buildDict.Clear();
-            // 重置尸潮、难度、预算、游戏时间等所有数据
-            isWave = false;
-            difficulty = 2;
-            gameTime = 0;
-            HitStopDuration = 0;
-            HitStopIntensity = 0;
-            safeSide = 0;
-            waveTimer = 0;
-            // 波次计时器
-            spawnWaveTimer = 0;
-            // 波次间隔
-            spawnWaveInterval = spawnWaveIntervalBase;
-            // 每组怪物数量
-            enemyCountPerGroup = 4;
-            // 当前波次组数量
-            currentWaveGroupCount = 1;
-            // 特殊事件相关
-            IsSpecialEvent = false;
-            specialEventTimer = 0;
+        // 清理所有敌人和子弹、数据、字典、玩家已有的构筑列表buildDict、HasCritExplosion、HasPierceExplosion、HasLowBulletHighDamage
+        
+        WeaponSystem.Clear();
+        // 重置尸潮、难度、预算、游戏时间等所有数据
+        isWave = false;
+        difficulty = 2;
+        gameTime = 0;
+        HitStopDuration = 0;
+        HitStopIntensity = 0;
+        safeSide = 0;
+        waveTimer = 0;
+        // 波次计时器
+        spawnWaveTimer = 0;
+        // 波次间隔
+        spawnWaveInterval = spawnWaveIntervalBase;
+        // 每组怪物数量
+        enemyCountPerGroup = 4;
+        // 当前波次组数量
+        currentWaveGroupCount = 1;
+        // 特殊事件相关
+        IsSpecialEvent = false;
+        specialEventTimer = 0;
 
-            // 隐藏经验和血条
-            playerExpSlider.gameObject.SetActive(false);
-            playerHpSlider.gameObject.SetActive(false);
+        // 隐藏经验和血条
+        playerExpSlider.gameObject.SetActive(false);
+        playerHpSlider.gameObject.SetActive(false);
+        dash_slider.GetComponent<Image>().fillAmount = 0;
+        dash_slider.SetActive(false);
 
-            cameraEffect.intensity = 0;
-            mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
-            Destroy(player);
-            player = null;
+        cameraEffect.intensity = 0;
+        mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
 
-            AudioManager.instance.StopAllBGM();
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError("ResetAllGameDatas error: " + e.Message);
-        }
+        Destroy(player);
+        player = null;
+        AudioManager.instance.StopAllBGM();
     }
     public void RestartGame()
     {
-        ShowGameOverPanel(false);
         ResetAllGameDatas();
+        ShowGameOverPanel(false);
         StartCoroutine(Init()); 
     }
     public void Revival()
     {
-        ShowGameOverPanel(false);
         RevivalGame();
+        ShowGameOverPanel(false);
     }
     private void Update()
     {
@@ -961,20 +973,22 @@ public class GameManager : MonoBehaviour
         spawnWaveInterval = Mathf.Clamp(6f - playerPowerScore * 0.018f, 2.2f, 6f);
 
         // 每组敌人数量
-        enemyCountPerGroup =
-            Mathf.Clamp(
-                3 + playerPowerScore / 25,
-                3,
-                16);
+        enemyCountPerGroup = Mathf.Clamp(3 + playerPowerScore / 25, 3, 16);
 
         // 最大同时敌群数量
-        currentWaveGroupCount =
-            Mathf.Clamp(
-                1 + playerPowerScore / 40,
-                1,
-                5);
+        currentWaveGroupCount = Mathf.Clamp(1 + playerPowerScore / 40, 1, 5);
 
-        //Debug.Log("玩家评分:" + playerPowerScore + " 敌群:" + currentWaveGroupCount + " 每组:" + enemyCountPerGroup);
+        Debug.Log("玩家评分:" + playerPowerScore + " 敌群:" + currentWaveGroupCount + " 每组:" + enemyCountPerGroup);
+
+        //float powerFactor = Mathf.Clamp01(playerPowerScore / 120f);
+        float powerFactor = Mathf.Clamp01(playerPowerScore / (50f + gameTime * 0.8f));
+
+        // 血量成长明显
+        currentEnemyHpFactor = Mathf.Lerp(1f, 4f, powerFactor);
+
+        // 攻击成长轻微
+        currentEnemyAtkFactor = Mathf.Lerp(1f, 2f, powerFactor);
+
         playerScore = playerPowerScore;
     }
 
@@ -1192,13 +1206,14 @@ public class GameManager : MonoBehaviour
         player = Instantiate(Resources.Load<GameObject>("player"));
 
         player.transform.position = Vector3.zero;
-
+        dash_slider.SetActive(true);
         pdata = new PlayerData
         {
             Level = 1,// 玩家等级
             Hp = 520 + DataManager.myGameData.PermanentHp,// 玩家生命值 = 520 + 永久增加的生命值
             Atk = 5 + DataManager.myGameData.PermanentAtk,// 当前玩家攻击力
             MoveSpeed = 5.4f + DataManager.myGameData.PermanentMoveSpeed,// 玩家移动速度
+            Def = 15,// 玩家防御力
         };
 
         player.GetComponent<Player>().Init(pdata);
@@ -1225,16 +1240,13 @@ public class GameManager : MonoBehaviour
 
                 p.GetCurrentWeapon().ChangeAttack((int)data.value);
                 p.EnhancedShotDamageMultiplier += 0.08f;
-                ShakeMainCamera(0.08f, 0.08f);
-
+                p.GetCurrentWeapon().ChangeBulletScale(0.1f);
                 break;
 
             // 穿透
             case UpgradeType.Pierce:
 
                 p.GetCurrentWeapon().ChangeBulletPierce((int)data.value);
-                p.GetCurrentWeapon().ChangeBulletScale(0.1f);
-
                 break;
 
             // 攻击倍率
@@ -1264,7 +1276,8 @@ public class GameManager : MonoBehaviour
 
                 // 提升攻速
                 p.GetCurrentWeapon().ChangeFireInterval(-0.05f);
-
+                // 提升防御。
+                p.AddDefence(2);
                 break;
 
             // 暴击爆炸
@@ -1418,7 +1431,10 @@ public class GameManager : MonoBehaviour
         Bullet bullet = newBullet_Liner.GetComponent<Bullet>();
         bullet.SetBulletPrefabId(bulletData.prefabString);
         bullet.SetBullet(bulletData, pos, dir, belongWho);
-        newBullet_Liner.transform.localScale += new Vector3(bulletScale, bulletScale, 0);
+        if(belongWho.EntityTag == "player")
+        {
+            newBullet_Liner.transform.Find("fx").localScale += new Vector3(bulletScale, bulletScale, 0);
+        }
         bullet.CanMove = true;
         return newBullet_Liner;
     }

@@ -119,7 +119,8 @@ public class Weapon
 
     public void ChangeBulletScale(float v)
     {
-        bulletSclae = Mathf.Clamp(bulletSclae + v, 0f, 0.8f);
+        if (bulletSclae >= 4.5f) return;
+        bulletSclae = bulletSclae + v;
     }
 
     public float GetAttack()

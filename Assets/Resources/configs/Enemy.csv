@@ -4,4 +4,4 @@ id,moveSpeed,hp,damage,scale,type,CurrentWeaponIndex,note
 2,1.8,900,12,1.45,2,1,Thick
 3,3.6,260,18,1.15,3,1,SelfExplosion
 4,2.1,3200,18,1.35,4,2,Elite
-5,1.8,7200,35,2,5,1,Boss
+5,1.8,15000,35,2,5,1,Boss

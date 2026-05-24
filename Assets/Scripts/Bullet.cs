@@ -26,10 +26,15 @@ public class Bullet : MonoBehaviour
     public bool IsSplitShot { get; set; }
     public float SplitShotDamageMultiplier { get; set; }
 
-    private Vector3 originalLocalScale = Vector3.one;
+    public Vector3 originalLocalScale = Vector3.one;
     void Awake()
     {
-        originalLocalScale = transform.localScale;
+        originalLocalScale = transform.Find("fx").localScale;
+    }
+
+    public void SetFxScaleToDefalut()
+    {
+        transform.Find("fx").localScale = originalLocalScale;
     }
     public void SetBulletPrefabId(string id)
     {
@@ -90,7 +95,7 @@ public class Bullet : MonoBehaviour
         player = null;
         myBulletData = default;
         transform.rotation = Quaternion.identity;
-        transform.localScale = originalLocalScale;
+        transform.Find("fx").localScale = originalLocalScale;
 
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null)

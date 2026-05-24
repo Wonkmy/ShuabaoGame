@@ -111,6 +111,7 @@ public class PlayerData
     public float Hp;// 玩家血量
     public float Atk;// 玩家攻击力
     public float MoveSpeed;// 玩家移动速度
+    public float Def;// 玩家防御力
 }
 
 public struct AirplaneInfo

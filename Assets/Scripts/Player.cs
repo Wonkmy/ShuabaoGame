@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 public class Player : Entity
 {
     int currentHp = 0;
@@ -14,6 +15,7 @@ public class Player : Entity
     Vector3 MoveDir;
     float MoveAngle;
     public float PlayerPower { get; set; }
+    public float playerDefence { get; set; }
 
     public Dictionary<string, int> buildDict = new Dictionary<string, int>();
     // =========================
@@ -68,6 +70,9 @@ public class Player : Entity
 
     [SerializeField] private float moveRotateSpeed = 8f;
     [SerializeField] private float aimRotateSpeed = 36f;
+
+    Transform _canvas;
+    RectTransform canvasRect;
     public void AddKilledCount()
     {
         KilledCount++;
@@ -88,7 +93,7 @@ public class Player : Entity
     public void Init(PlayerData data)
     {
         fire = transform.Find("Fire");
-        FirePos = fire.Find("firePos");
+        FirePos = fire.Find("view/firePos");
         view = transform.Find("Fire/view").GetComponent<SpriteRenderer>();
 
         CurrentBulletCount = 3;
@@ -99,6 +104,7 @@ public class Player : Entity
         currentHp = (int)playerData.Hp;
         PlayerPower = playerData.Atk;
         level = (int)playerData.Level;
+        playerDefence = playerData.Def;
         playerType = DataManager.myGameData.playerType;
         currentExp = 0;
 
@@ -110,6 +116,9 @@ public class Player : Entity
         weapon = WeaponSystem.CreateWeapon((int)playerType, this);
         attackType = AttackType.Sector;
         moveSpeed = playerData.MoveSpeed;
+
+        _canvas = GameObject.Find("Canvas").transform;
+        canvasRect = _canvas.GetComponent<RectTransform>();
     }
 
     public void SetWeaponAttackRange(float v)
@@ -198,12 +207,18 @@ public class Player : Entity
     {
         return (float)currentHp / totalHp;
     }
+
+    public void AddDefence(float def)
+    {
+        playerDefence += def;
+    }
     public void PlayerUpdate()
     {
         if(Dead) { return; }
 
         UpdateDash();
         Move();
+        DashSliderFollow();
         Rotate();
 
         if(weapon != null && weapon.lockedTarget != null)
@@ -234,6 +249,23 @@ public class Player : Entity
                 LightningManager.Instance.ClearSingle();
             }
         }
+    }
+
+    void DashSliderFollow()
+    {
+        Vector3 worldPos = transform.position - new Vector3(0, 0.5f, 0);
+        Vector3 screenPoint = Camera.main.WorldToScreenPoint(worldPos);
+
+        Vector2 localPoint;
+        // 关键转换API
+        bool isInside = RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRect,
+            screenPoint,
+            null,
+            out localPoint
+        );
+
+        GameManager.Instance.dash_slider.GetComponent<RectTransform>().anchoredPosition = localPoint;
     }
     
     public void ChangeWhenInWave(bool state)
@@ -300,7 +332,7 @@ public class Player : Entity
         {
             MoveAngle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
             float targetAngle = MoveAngle - 90;
-            float currentZ = transform.localEulerAngles.z;
+            float currentZ = view.transform.localEulerAngles.z;
 
             float smoothAngle = Mathf.LerpAngle(
                 currentZ,
@@ -308,7 +340,7 @@ public class Player : Entity
                 Time.deltaTime * moveRotateSpeed
             );
 
-            transform.localEulerAngles = new Vector3(0, 0, smoothAngle);
+            view.transform.localEulerAngles = new Vector3(0, 0, smoothAngle);
         }
     }
     public void RotateToDetination(Vector3 pos, float rotateSpeed)
@@ -322,7 +354,7 @@ public class Player : Entity
 
         float angle = Mathf.Atan2(FireDirection.y, FireDirection.x) * Mathf.Rad2Deg;
         float targetAngle = angle - 90;
-        float currentZ = transform.localEulerAngles.z;
+        float currentZ = view.transform.localEulerAngles.z;
 
         float smoothAngle = Mathf.LerpAngle(
             currentZ,
@@ -330,7 +362,7 @@ public class Player : Entity
             Time.deltaTime * rotateSpeed
         );
 
-        transform.localEulerAngles = new Vector3(0, 0, smoothAngle);
+        view.transform.localEulerAngles = new Vector3(0, 0, smoothAngle);
     }
     public override void RotateToDetination(Vector3 pos)
     {
@@ -398,6 +430,7 @@ public class Player : Entity
         if (dashCooldown > 0)
         {
             dashCooldown -= Time.deltaTime;
+            GameManager.Instance.dash_slider.GetComponent<Image>().fillAmount = 1 - dashCooldown / dashCooldownTime;
         }
 
         // Dash期间
@@ -427,11 +460,8 @@ public class Player : Entity
         }
 
         // 触发Dash
-        if (Input.GetKeyDown(KeyCode.Space) &&
-            dashCooldown <= 0)
+        if (Input.GetKeyDown(KeyCode.Space) && dashCooldown <= 0)
         {
-            
-
             dashDir = MoveDir;
 
             IsDash = true;
@@ -496,7 +526,10 @@ public class Player : Entity
     public override void TakeDamage(int damage,bool isCrit)
     {
         if (IsInvincible) return;
-        currentHp -= damage;
+
+        // 计算实际伤害。需要考虑玩家的防御力，公式为：实际伤害 = 伤害 * (100 / (100 + 防御力))
+        int actualDamage = Mathf.RoundToInt(damage * (100f / (100f + playerDefence)));
+        currentHp -= actualDamage;
         GetComponentInChildren<SpriteRenderer>().color = Color.red;
         StartCoroutine(ResetColor());
 

@@ -30,7 +30,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4137993718096781425}
-  - {fileID: 5643191153665703922}
   m_Father: {fileID: 2321749134411432891}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4963254537135151801
@@ -84,6 +83,8 @@ MonoBehaviour:
   chainedTargets: []
   acceleration: 18
   drag: 5
+  moveRotateSpeed: 8
+  aimRotateSpeed: 36
 --- !u!1 &6191648463943152349
 GameObject:
   m_ObjectHideFlags: 0
@@ -108,12 +109,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6191648463943152349}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.65, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 906026665543582997}
+  m_Father: {fileID: 4137993718096781425}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6850282791291088029
 GameObject:
@@ -144,7 +145,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 5643191153665703922}
   m_Father: {fileID: 906026665543582997}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &472169357918305103

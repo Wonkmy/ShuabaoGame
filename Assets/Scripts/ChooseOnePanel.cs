@@ -1,9 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ChooseOnePanel : MonoBehaviour
+public class ChooseOnePanel : MonoBehaviour,IDisposable
 {
     // 选项按钮列表
     public List<Button> optionButtons;
@@ -11,6 +12,16 @@ public class ChooseOnePanel : MonoBehaviour
     public Sprite green;
     public Sprite blue;
     public Sprite purple;
+
+    public void Dispose()
+    {
+        for (int i = 0; i < optionButtons.Count; i++)
+        {
+            optionButtons[i].GetComponentInChildren<Text>().text = "";
+            optionButtons[i].onClick.RemoveAllListeners();
+        }
+    }
+
     public void Init()
     {
         Player player = GameManager.Instance.player.GetComponent<Player>();
@@ -63,4 +74,6 @@ public class ChooseOnePanel : MonoBehaviour
             optionButtons[i].onClick.RemoveAllListeners();
         }
     }
+
+
 }

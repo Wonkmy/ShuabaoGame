@@ -61,7 +61,7 @@ public class BulletPool : MonoBehaviour
         {
             poolDict.Add(bulletPrefabId, new Queue<GameObject>());
         }
-
+        obj.GetComponent<Bullet>().SetFxScaleToDefalut();
         obj.SetActive(false);
         poolDict[bulletPrefabId].Enqueue(obj);
     }

@@ -1,10 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 // 局外金币永久升级界面
-public class CultivatePanel : MonoBehaviour
+public class CultivatePanel : MonoBehaviour,IDisposable
 {
     public List<Button> upgradeButtonsList;
     public List<Button> playerTypeChooses;
@@ -136,6 +137,18 @@ public class CultivatePanel : MonoBehaviour
     }
 
     private void OnDisable()
+    {
+        for (int i = 0; i < upgradeButtonsList.Count; i++)
+        {
+            upgradeButtonsList[i].GetComponentInChildren<Text>().text = "";
+            upgradeButtonsList[i].onClick.RemoveAllListeners();
+        }
+        closeButton.onClick.RemoveAllListeners();
+        upgradeButtons.Clear();
+        playerTypeChooseButtons.Clear();
+    }
+
+    public void Dispose()
     {
         for (int i = 0; i < upgradeButtonsList.Count; i++)
         {

@@ -1,9 +1,11 @@
-﻿using System.Collections;
+﻿using System.Buffers.Text;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Enemy : Entity
 {
+    int baseHp = 0;
     int currentHp = 0;
     int totalHp = 0;
     public EnemyType enemyType;
@@ -16,6 +18,7 @@ public class Enemy : Entity
     public Transform hp { get; set; }
 
     float attackRange = 0f;// 攻击范围，也就是敌人停止移动开始攻击的距离
+    float findTargetRange = 10f;// 寻找目标的范围
     public void SetEnemy(EnemyData enemyData)
     {
         view = GetComponentInChildren<SpriteRenderer>();
@@ -23,8 +26,12 @@ public class Enemy : Entity
         moveSpeed = enemyData.moveSpeed;
         transform.localScale = Vector3.one * enemyData.scale;
 
-        totalHp = enemyData.hp;
-        currentHp = enemyData.hp;
+        baseHp = enemyData.hp;
+
+        currentHp = Mathf.FloorToInt(baseHp * GameManager.Instance.currentEnemyHpFactor);
+        totalHp = currentHp;
+
+
 
         hp = transform.Find("hp");
         hp.Find("slider").localScale = new Vector3((float)currentHp / totalHp, 1, 1);
@@ -40,7 +47,7 @@ public class Enemy : Entity
             hp.gameObject.SetActive(false);
         }
 
-        Damage = enemyData.damage;
+        Damage = Mathf.FloorToInt(enemyData.damage * GameManager.Instance.currentEnemyAtkFactor);
 
         view.sprite = Resources.Load<Sprite>("sprites/" + enemyType.ToString().ToLower());
 
@@ -54,7 +61,8 @@ public class Enemy : Entity
         {
             weapon.ChangeFireInterval(0.4f);
             weapon.ChangeBullet(2);
-            attackRange += 1.5f;// Boss的攻击范围更大一些
+            attackRange += 5f;// Boss的攻击范围更大一些
+            findTargetRange += 3f;// Boss的寻找目标范围更大一些
         }
 
 
@@ -93,7 +101,7 @@ public class Enemy : Entity
 
             return;
         }
-        if (target != null && CanMove && Vector3.Distance(transform.position,target.position) > attackRange)
+        if (target != null && CanMove && Vector3.Distance(transform.position,target.position) > findTargetRange)
         {
             transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
         }
@@ -184,28 +192,40 @@ public class Enemy : Entity
     }
     private void SpwanCoinAndChest() {
 
-        if (enemyType != EnemyType.Elite && enemyType != EnemyType.Boss) return;
-        int spwanType = Random.Range(0, 2);
-        if (spwanType == 0)
+        if (GameManager.Instance.isWave)
         {
-            GameManager.Instance.SpwanChest(transform.position);
-        }
-        else if (spwanType == 1)
-        {
-            int baseCoinCount = enemyType == EnemyType.Elite ? 2 : 5;// 精英怪生成2个金币，Boss生成5个金币
-            int baseCoinValue = enemyType == EnemyType.Elite ? 1 : 2;// 精英怪生成的金币价值1，Boss生成的金币价值2
-            if (baseCoinCount > 0)
+            for (int i = 0; i < 2; i++)
             {
-                for (int i = 0; i < baseCoinCount; i++)
-                {
-                    float angle = i * (360f / baseCoinCount);
-                    Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 0.5f;
-                    Vector3 randomOffset = new Vector3(Random.Range(-0.2f, 0.2f), Random.Range(-0.2f, 0.2f), 0);
-                    GameManager.Instance.SpwanCoin(transform.position + offset + randomOffset, baseCoinValue);
-                }
+                float angle = i * (360f / 2);
+                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 0.55f;
+                Vector3 randomOffset = new Vector3(Random.Range(-0.12f, 0.2f), Random.Range(-0.2f, 0.35f), 0);
+                GameManager.Instance.SpwanCoin(transform.position + offset + randomOffset, 1);
             }
         }
-            
+        else
+        {
+            if (enemyType != EnemyType.Elite && enemyType != EnemyType.Boss) return;
+            int spwanType = Random.Range(0, 2);
+            if (spwanType == 0)
+            {
+                GameManager.Instance.SpwanChest(transform.position);
+            }
+            else if (spwanType == 1)
+            {
+                int baseCoinCount = enemyType == EnemyType.Elite ? 5 : 8;// 精英怪生成2个金币，Boss生成5个金币
+                int baseCoinValue = enemyType == EnemyType.Elite ? 2 : 4;// 精英怪生成的金币价值1，Boss生成的金币价值2
+                if (baseCoinCount > 0)
+                {
+                    for (int i = 0; i < baseCoinCount; i++)
+                    {
+                        float angle = i * (360f / baseCoinCount);
+                        Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 0.55f;
+                        Vector3 randomOffset = new Vector3(Random.Range(-0.12f, 0.2f), Random.Range(-0.2f, 0.35f), 0);
+                        GameManager.Instance.SpwanCoin(transform.position + offset + randomOffset, baseCoinValue);
+                    }
+                }
+            }
+        }  
     }
     private void SpwanExpBall(bool isCrit)
     {
@@ -306,7 +326,7 @@ public class Enemy : Entity
         if (enemyType == EnemyType.Elite || enemyType == EnemyType.Thick)
         {
             float r = Random.Range(0f, 1f);
-            if(r < 0.233f)
+            if(r < 0.333f)
             {
                 GameObject newAddHp = Instantiate(Resources.Load<GameObject>("add_hp"), transform.position, Quaternion.identity);
                 newAddHp.GetComponent<AddHP>().SetAddHP(10, GameManager.Instance.player, true);

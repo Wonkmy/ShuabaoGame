@@ -99,7 +99,6 @@ public class EliteGunWeapon : Weapon
                 bulletSclae,
                 "1",
                 entity);
-
             Bullet bulletComp = bullet != null ? bullet.GetComponent<Bullet>() : null;
             if (bulletComp != null)
             {

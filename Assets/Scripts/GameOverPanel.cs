@@ -40,6 +40,11 @@ public class GameOverPanel : MonoBehaviour
         });
     }
 
+    public void Dispose()
+    {
+        restartGameBtn.onClick.RemoveAllListeners();
+        revivalBtn.onClick.RemoveAllListeners();
+    }
     private void OnDisable()
     {
         restartGameBtn.onClick.RemoveAllListeners();
