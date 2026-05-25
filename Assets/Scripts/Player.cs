@@ -330,11 +330,11 @@ public class Player : Entity
             }
             else
             {
-                ChangeWeaponAttackType(AttackType.Sector);
+                ChangeWeaponAttackType(AttackType.Sector,CurrentBulletCount);
             }
         }
     }
-    public override void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount = 3)
+    public override void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount)
     {
         this.attackType = attackType;
         weapon.ChangeAttackType(this.attackType, this, _currentBulletCount <= 3 ? CurrentBulletCount : _currentBulletCount);
@@ -468,7 +468,7 @@ public class Player : Entity
         if (dashCooldown > 0)
         {
             dashCooldown -= Time.deltaTime;
-            GameManager.Instance.dash_slider.GetComponent<Image>().fillAmount = 1 - dashCooldown / dashCooldownTime;
+            GameManager.Instance.dash_slider.GetComponent<Image>().fillAmount = dashCooldown / dashCooldownTime;
         }
 
         // Dash期间
@@ -507,6 +507,7 @@ public class Player : Entity
             dashTimer = dashDuration;
 
             dashCooldown = dashCooldownTime;
+            GameManager.Instance.dash_slider.GetComponent<Image>().fillAmount = 1;
         }
     }
 
@@ -516,7 +517,7 @@ public class Player : Entity
 
         ghost.transform.position = transform.position;
 
-        ghost.transform.rotation = transform.rotation;
+        ghost.transform.localEulerAngles = view.transform.localEulerAngles;
 
         ghost.transform.localScale = transform.localScale;
 

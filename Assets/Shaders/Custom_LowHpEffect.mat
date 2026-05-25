@@ -30,6 +30,6 @@ Material:
     m_Ints: []
     m_Floats:
     - _DarkIntensity: 0
-    - _Intensity: 0.12218329
+    - _Intensity: 0
     m_Colors: []
   m_BuildTextureStacks: []

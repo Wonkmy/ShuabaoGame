@@ -230,7 +230,11 @@ public class GameManager : MonoBehaviour
 
     void ApplyDifficultyFromCurrentTime()
     {
-        ApplyDifficultyFromCurrentTime();
+        DynamicDifficultyTuning dynamicTuning = BalanceConfig.dynamicDifficulty;
+        difficulty = Mathf.Clamp(
+            dynamicTuning.difficultyBase + Mathf.FloorToInt(gameTime / dynamicTuning.difficultyStepSeconds),
+            dynamicTuning.minDifficulty,
+            dynamicTuning.maxDifficulty);
     }
 
     void EnsureBalanceConfig()
@@ -499,154 +503,6 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(0.1f);
         // 播放BGM
         AudioManager.instance.PlayBGM("main");
-    }
-
-    // TODO
-    void LoadDefaultUpgradeConfig()
-    {
-        // =========================
-        // 基础成长（只保留少量）
-        // =========================
-
-        DataManager.upgradeList.Add(new UpgradeData()
-        {
-            name = "+1子弹",
-            tag = "bullet",
-            action = () =>
-            {
-                player.GetComponent<Player>().CurrentBulletCount += 1;
-            }
-        });
-
-        DataManager.upgradeList.Add(new UpgradeData()
-        {
-            name = "+5攻击力",
-            tag = "attack",
-            action = () =>
-            {
-                player.GetComponent<Player>().GetCurrentWeapon().ChangeAttack(5);
-            }
-        });
-        DataManager.upgradeList.Add(new UpgradeData()
-        {
-            name = "+1穿透",
-            tag = "bullet",
-            action = () =>
-            {
-                player.GetComponent<Player>().GetCurrentWeapon().ChangeBulletPierce(1);
-            }
-        });
-
-
-
-        DataManager.upgradeList.Add(new UpgradeData()
-        {
-            name = "伤害倍率提升",
-            tag = "power",
-            action = () =>
-            {
-                player.GetComponent<Player>().playerData.Atk += 1;
-            }
-        });
-
-        // =========================
-        // 真正构筑开始
-        // =========================
-
-        // 超级散射
-        DataManager.upgradeList.Add(new UpgradeData()
-        {
-            name = "超级散射",
-            tag = "bullet",
-            action = () =>
-            {
-                // 加一个最大的子弹数限制，这里限制为不能超过10发
-                int maxBullet = 10;
-                int v = player.GetComponent<Player>().CurrentBulletCount + 3;
-                if (v >= maxBullet)
-                {
-                    v = maxBullet;
-                }
-                player.GetComponent<Player>().CurrentBulletCount = v;
-            }
-        });
-
-        // 精准射击
-        DataManager.upgradeList.Add(new UpgradeData()
-        {
-            name = "精准射击",
-            tag = "power",
-            action = () =>
-            {
-                // 高倍率
-                player.GetComponent<Player>().playerData.Atk += 1f;
-            }
-        });
-
-        // 游击模式
-        DataManager.upgradeList.Add(new UpgradeData()
-        {
-            name = "游击模式",
-            tag = "move_speed",
-            action = () =>
-            {
-                player.GetComponent<Player>().moveSpeed += 3f;
-
-                // 移速高但伤害降低
-                player.GetComponent<Player>().playerData.Atk -= 0.2f;
-            }
-        });
-
-        // 重装炮台
-        DataManager.upgradeList.Add(new UpgradeData()
-        {
-            name = "重装炮台",
-            tag = "power",
-            action = () =>
-            {
-                player.GetComponent<Player>().playerData.Atk += 1.5f;
-
-                // 降低移速
-                player.GetComponent<Player>().moveSpeed -= 1f;
-
-                // 降低攻速
-                player.GetComponent<Player>().GetCurrentWeapon().ChangeFireInterval(-0.05f);
-            }
-        });
-
-        // 暴击爆炸
-        DataManager.upgradeList.Add(new UpgradeData()
-        {
-            name = "暴击爆炸",
-            tag = "crit",
-
-            action = () =>
-            {
-                player.GetComponent<Player>().HasCritExplosion = true;
-            }
-        });
-
-        DataManager.upgradeList.Add(new UpgradeData()
-        {
-            name = "穿透爆炸",
-            tag = "pierce",
-
-            action = () =>
-            {
-                player.GetComponent<Player>().HasPierceExplosion = true;
-            }
-        });
-
-        DataManager.upgradeList.Add(new UpgradeData()
-        {
-            name = "精准重炮",
-            tag = "power",
-
-            action = () =>
-            {
-                player.GetComponent<Player>().HasLowBulletHighDamage = true;
-            }
-        });
     }
 
     public bool LevelUpPanelActive()
@@ -1589,7 +1445,6 @@ public class GameManager : MonoBehaviour
             case UpgradeType.LowBulletHighDamage:
 
                 p.HasLowBulletHighDamage = true;
-                p.CurrentBulletCount = Mathf.Max(1, p.CurrentBulletCount - 2);
                 p.GetCurrentWeapon().ChangeAttack(2);
                 p.GetCurrentWeapon().ChangeBulletScale(0.25f);
                 p.EnhancedShotDamageMultiplier += 0.35f;

@@ -369,6 +369,7 @@ public class Weapon
     /// <param name="currentBulletCount"></param>
     public virtual void AttackCicle(Vector3 fireDirection, Vector3 firePos, int currentBulletCount)
     {
+        Debug.Log("环形射击下需要多少颗子弹：" + currentBulletCount);
         for (int i = 0; i < currentBulletCount; i++)
         {
             float angle = (360.0f / currentBulletCount) * i;

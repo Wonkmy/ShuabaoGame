@@ -86,7 +86,7 @@ public class EliteGunWeapon : Weapon
         }
 
         // 前压补射：让精英怪的扇形更有“压迫推进感”
-        int extraCount = Mathf.Clamp(currentBulletCount, 3, 5);
+        int extraCount = Mathf.Clamp(currentBulletCount, 5, 8);
         Vector3[] extraDirs = DataManager.GetFanDirections2D(mainDir, extraCount);
         Vector3 extraSpawnPos = firePos + mainDir * 0.75f;
 

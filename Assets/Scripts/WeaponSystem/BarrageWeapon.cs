@@ -33,7 +33,7 @@ public class BarrageWeapon : Weapon
         Vector3 mainDir = fireDirection.normalized;
         Vector3 sideDir = Vector3.Cross(mainDir, Vector3.forward).normalized;
 
-        int baseBulletCount = Mathf.Max(currentBulletCount + 2, 5);
+        int baseBulletCount = Mathf.Max(currentBulletCount + 2, 8);
         Vector3[] mainFanDirections = DataManager.GetFanDirections2D(mainDir, baseBulletCount);
 
         float[] laneOffsets = new float[] { -0.55f, -0.25f, 0f, 0.25f, 0.55f };

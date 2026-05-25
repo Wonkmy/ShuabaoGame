@@ -154,35 +154,36 @@ public struct AttackData
 //升级数据结构
 public class UpgradeData
 {
+    public int id;
     public string name;
     // 流派tag
     public string tag;
-    public int id;
 
+    public string rarity;
     public string desc;
 
-    // normal rare epic legendary
-    public string rarity;
-
-    // attack bullet_count crit_explosion ...
-    public UpgradeType type;
-
     public float value;
-    public System.Action action;
+    public UpgradeType type;
 }
 
 public enum UpgradeType
 {
-    // 子弹数量增加
+    /// <summary>
+    /// 副炮展开：增加子弹数量
+    /// </summary>
     BulletCount = 0,
 
-    // 重型弹头：子弹变大并提升伤害
+    /// <summary>
+    /// 重型弹头：子弹变大提升伤害
+    /// </summary>
     HeavyBullet = 1,
 
-    // 子弹穿透数量增加
+    /// <summary>
+    /// 穿甲弹
+    /// </summary>
     Pierce = 2,
 
-    // 玩家最终攻击倍率增加
+
     AtkRatio = 3,
 
     // 大幅增加移速，但降低部分攻击
