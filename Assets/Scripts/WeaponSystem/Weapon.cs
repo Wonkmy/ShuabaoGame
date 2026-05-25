@@ -254,28 +254,6 @@ public class Weapon
             };
         }
     }
-    //void ProcessAttack()
-    //{
-    //    AudioManager.instance.PlaySounds("shoot");
-    //    // 枪口火花
-    //    GameObject newExpBall = GameManager.Instance.SpwanMuzzleflash(attackData.firePos);
-    //    newExpBall.transform.rotation = Quaternion.FromToRotation(Vector3.up, attackData.fireDirection);
-
-    //    switch (weaponAttackType)
-    //    {
-    //        case AttackType.Liner:
-    //            AttackLiner(attackData.fireDirection, attackData.firePos, attackData.currentBulletCount);
-    //            break;
-    //        case AttackType.Sector:
-    //            AttackSector(attackData.fireDirection, attackData.firePos, attackData.currentBulletCount);
-    //            break;
-    //        case AttackType.Cicle:
-    //            AttackCicle(attackData.fireDirection, attackData.firePos, attackData.currentBulletCount);
-    //            break;
-    //        default:
-    //            break;
-    //    }
-    //}
     void ProcessAttack()
     {
         Player player = null;

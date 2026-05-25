@@ -119,6 +119,8 @@ public class Player : Entity
 
         _canvas = GameObject.Find("Canvas").transform;
         canvasRect = _canvas.GetComponent<RectTransform>();
+
+        GameManager.Instance.dash_slider.GetComponent<Image>().fillAmount = 0;
     }
 
     public void SetWeaponAttackRange(float v)
@@ -218,7 +220,7 @@ public class Player : Entity
 
         UpdateDash();
         Move();
-        DashSliderFollow();
+        //DashSliderFollow();
         Rotate();
 
         if(weapon != null && weapon.lockedTarget != null)
@@ -282,24 +284,32 @@ public class Player : Entity
         }
         else
         {
+            //if (state)
+            //{
+            //    CurrentBulletCount += 10;
+            //}
+            //else
+            //{
+            //    CurrentBulletCount -= 10;
+            //    if (CurrentBulletCount < 3)
+            //    {
+            //        CurrentBulletCount = 3;
+            //    }
+            //}
             if (state)
             {
-                CurrentBulletCount += 10;
+                ChangeWeaponAttackType(AttackType.Cicle, 15);
             }
             else
             {
-                CurrentBulletCount -= 10;
-                if (CurrentBulletCount < 3)
-                {
-                    CurrentBulletCount = 3;
-                }
+                ChangeWeaponAttackType(AttackType.Sector);
             }
         }
     }
     public override void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount = 3)
     {
         this.attackType = attackType;
-        weapon.ChangeAttackType(this.attackType, this, CurrentBulletCount);
+        weapon.ChangeAttackType(this.attackType, this, _currentBulletCount <= 3 ? CurrentBulletCount : _currentBulletCount);
     }
 
     /// <summary>

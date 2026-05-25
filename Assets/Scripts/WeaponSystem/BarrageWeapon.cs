@@ -49,7 +49,7 @@ public class BarrageWeapon : Weapon
                     bulletData,
                     finalDir,
                     spawnPos,
-                    bulletSclae,
+                    0.5f,
                     entity.EntityTag,
                     entity);
 

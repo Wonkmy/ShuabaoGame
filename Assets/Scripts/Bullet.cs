@@ -293,6 +293,7 @@ public class Bullet : MonoBehaviour
 
             finalDamage *= bonus;
         }
+        // 核弹增伤
         if (player.HasNuclearBuild)
         {
             finalDamage *= 1.5f;

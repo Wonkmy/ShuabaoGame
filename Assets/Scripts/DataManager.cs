@@ -59,28 +59,32 @@ public class DataManager
             id = 0,
             name = "Normal",
             desc = "No special skill.",
-            skillCD = 10f
+            skillCD = 10f,
+            iconString = "PlayerSkillTypeIcon/skill_invincible"
         };
         playerSkillTypeCDDict[AirplaneType.BlackHole] = new AirplaneInfo
         {
             id = 1,
             name = "Black Hole",
             desc = "Summon a black hole that pulls in nearby enemies.",
-            skillCD = 30f
+            skillCD = 30f,
+            iconString = "PlayerSkillTypeIcon/skill_blackhole"
         };
         playerSkillTypeCDDict[AirplaneType.TimeStop] = new AirplaneInfo
         {
             id = 2,
             name = "Time Stop",
             desc = "Stop time for a short duration, freezing all enemies.",
-            skillCD = 35f
+            skillCD = 35f,
+            iconString = "PlayerSkillTypeIcon/skill_timestop"
         };
         playerSkillTypeCDDict[AirplaneType.Rage] = new AirplaneInfo
         {
             id = 3,
             name = "Rage",
             desc = "Unleash a powerful attack that damages all enemies on screen.",
-            skillCD = 60f
+            skillCD = 60f,
+            iconString = "PlayerSkillTypeIcon/skill_rage_nuke"
         };
     }
     static void LoadBulletConfig()

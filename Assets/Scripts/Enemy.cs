@@ -55,17 +55,18 @@ public class Enemy : Entity
         attackType = AttackType.Sector;
         CurrentBulletCount = 3;
         EntityTag = "enemy";
-        weapon = WeaponSystem.CreateWeapon(enemyData.CurrentWeaponIndex, this);
-        attackRange = weapon.attackRange;
-        if (enemyType == EnemyType.Boss)
-        {
-            weapon.ChangeFireInterval(0.4f);
-            weapon.ChangeBullet(2);
-            attackRange += 5f;// Boss的攻击范围更大一些
-            findTargetRange += 3f;// Boss的寻找目标范围更大一些
+
+        if (enemyType != EnemyType.SelfExplosion) {
+            weapon = WeaponSystem.CreateWeapon(enemyData.CurrentWeaponIndex, this);
+            attackRange = weapon.attackRange;
+            if (enemyType == EnemyType.Boss)
+            {
+                weapon.ChangeFireInterval(0.4f);
+                weapon.ChangeBullet(2);
+                attackRange += 5f;// Boss的攻击范围更大一些
+                findTargetRange += 3f;// Boss的寻找目标范围更大一些
+            }
         }
-
-
         CanMove = true;
         Dead = false;
     }
@@ -84,24 +85,63 @@ public class Enemy : Entity
         {
             if (viewPos.x >= 0 &&viewPos.x <= 1 &&viewPos.y >= 0 && viewPos.y <= 1)
             {
+                if(enemyType == EnemyType.Elite || enemyType == EnemyType.Boss)
+                {
+                    var specialEventObj = GameManager.Instance.SpwanWorldTxt($"{enemyType.ToString()}来袭！", 1.0f);
+                    StartCoroutine(GameManager.Instance.ShowFlashWarningTxt(specialEventObj));
+                }
+
                 HasEnterScreen = true;
                 IsBattleActive = true;
                 // 如果是boss进场，则时间放慢为0.25倍速，增加紧张感。0.2秒钟之后恢复正常速度
                 if (enemyType == EnemyType.Boss)
                 {
-                    Time.timeScale = 0.25f;
+                    Time.timeScale = 0.5f;
                     GameManager.Instance.StartCoroutine(ResetTimeScale());
                 }
             }
         }
 
-        if (GameManager.Instance.IsBlackHole)
+        if(enemyType != EnemyType.SelfExplosion)
+        {
+            NormalMove();// 普通移动
+        }
+        else
+        {
+            ExplosionMove();// 自爆怪的移动
+        }
+    }
+
+    void ExplosionMove()
+    {
+        if (target != null && CanMove)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
+            if (Vector3.Distance(transform.position, target.position) <= 0.1f)
+            {
+                // 造成伤害
+                Player player = target.GetComponent<Player>();
+                if (player != null)
+                {
+                    player.TakeDamage(Mathf.FloorToInt(Damage), false);
+                }
+                Dead = true;
+                CanMove = false;
+
+                SpwanExpBall(false);
+                StartCoroutine(DeathEffect());
+            }
+        }
+    }
+
+    void NormalMove()
+    {
+        if (GameManager.Instance.IsBlackHole && enemyType != EnemyType.Boss)
         {
             transform.position = Vector3.MoveTowards(transform.position, GameManager.Instance.BlackHolePos, 8f * Time.deltaTime);
-
             return;
         }
-        if (target != null && CanMove && Vector3.Distance(transform.position,target.position) > findTargetRange)
+        if (target != null && CanMove && Vector3.Distance(transform.position, target.position) > findTargetRange)
         {
             transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
         }
@@ -212,8 +252,8 @@ public class Enemy : Entity
             }
             else if (spwanType == 1)
             {
-                int baseCoinCount = enemyType == EnemyType.Elite ? 5 : 8;// 精英怪生成2个金币，Boss生成5个金币
-                int baseCoinValue = enemyType == EnemyType.Elite ? 2 : 4;// 精英怪生成的金币价值1，Boss生成的金币价值2
+                int baseCoinCount = enemyType == EnemyType.Elite ? 5 : 8;// 数量
+                int baseCoinValue = enemyType == EnemyType.Elite ? 2 : 4;// 价值
                 if (baseCoinCount > 0)
                 {
                     for (int i = 0; i < baseCoinCount; i++)

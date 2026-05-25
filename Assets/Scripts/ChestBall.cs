@@ -8,7 +8,7 @@ using UnityEngine;
 public class ChestBall : MonoBehaviour
 {
     GameObject _target;
-    public void SetCoinValue(GameObject target)
+    public void SetChestValue(GameObject target)
     {
         _target = target;
     }

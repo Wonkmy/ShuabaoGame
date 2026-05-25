@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,7 +32,7 @@ public class EliteGunWeapon : Weapon
         Vector3 mainDir = fireDirection.normalized;
         Vector3 sideDir = Vector3.Cross(mainDir, Vector3.forward).normalized;
 
-        // ¾«Ó¢¹Ö£º±ÈÆÕÍ¨¹Ö¸ü¿äÕÅ£¬µ«±ÈBossÊÕÁ²
+        // ç²¾è‹±æ€ªï¼šæ¯”æ™®é€šæ€ªæ›´å¤¸å¼ ï¼Œä½†æ¯”Bossæ”¶æ•›
         int centerFanCount = Mathf.Clamp(currentBulletCount + 3, 5, 9);
         int sideFanCount = Mathf.Clamp(currentBulletCount + 1, 3, 6);
 
@@ -56,7 +56,7 @@ public class EliteGunWeapon : Weapon
                     bulletData,
                     fanDirs[i],
                     spawnPos,
-                    bulletSclae,
+                    0.2f,
                     "1",
                     entity);
 
@@ -85,7 +85,7 @@ public class EliteGunWeapon : Weapon
             }
         }
 
-        // Ç°Ñ¹²¹Éä£ºÈÃ¾«Ó¢¹ÖµÄÉÈĞÎ¸üÓĞ¡°Ñ¹ÆÈÍÆ½ø¸Ğ¡±
+        // å‰å‹è¡¥å°„ï¼šè®©ç²¾è‹±æ€ªçš„æ‰‡å½¢æ›´æœ‰â€œå‹è¿«æ¨è¿›æ„Ÿâ€
         int extraCount = Mathf.Clamp(currentBulletCount, 3, 5);
         Vector3[] extraDirs = DataManager.GetFanDirections2D(mainDir, extraCount);
         Vector3 extraSpawnPos = firePos + mainDir * 0.75f;
@@ -96,7 +96,7 @@ public class EliteGunWeapon : Weapon
                 bulletData,
                 extraDirs[i],
                 extraSpawnPos,
-                bulletSclae,
+                0.2f,
                 "1",
                 entity);
             Bullet bulletComp = bullet != null ? bullet.GetComponent<Bullet>() : null;

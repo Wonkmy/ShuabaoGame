@@ -119,12 +119,13 @@ public struct AirplaneInfo
     public int id;
     public string name;
     public string desc;
+    public string iconString;
     public float skillCD;
 }
 
 public enum AirplaneType
 {
-    Normal,// 普通飞机
+    Normal,// 无敌5秒技能飞机
     BlackHole,// 黑洞技能飞机
     TimeStop,// 时间停止技能飞机
     Rage// 核爆（清屏）技能飞机

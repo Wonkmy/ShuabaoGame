@@ -225,6 +225,7 @@ public class GameManager : MonoBehaviour
         try
         {
             totalSkillCooldownTime = DataManager.playerSkillTypeCDDict[GetPlayer().playerType].skillCD;
+            btn_ReleaseSkill.GetComponent<Image>().sprite = Resources.Load<Sprite>("sprites/" + DataManager.playerSkillTypeCDDict[GetPlayer().playerType].iconString);
             skillCooldownTimer = totalSkillCooldownTime;
         }
         catch (System.Exception)
@@ -663,10 +664,8 @@ public class GameManager : MonoBehaviour
 
             cameraEffect.darkIntensity = 0.45f;
 
-            var specialEventObj = SpwanWorldTxt($"{enemyType.ToString()}来袭！",1.0f);
-            StartCoroutine(ShowFlashWarningTxt(specialEventObj));
-
-            //player.GetComponent<Player>().SetWeaponAttackRange(3);
+            //var specialEventObj = SpwanWorldTxt($"{enemyType.ToString()}来袭！",1.0f);
+            //StartCoroutine(ShowFlashWarningTxt(specialEventObj));
             Debug.Log("特殊事件开始");
         }
 
@@ -879,9 +878,7 @@ public class GameManager : MonoBehaviour
             if (DataManager.allEnemyDict[i] == null)
                 continue;
 
-            Enemy enemy =
-                DataManager.allEnemyDict[i]
-                .GetComponent<Enemy>();
+            Enemy enemy = DataManager.allEnemyDict[i].GetComponent<Enemy>();
 
             // Boss/精英
             if (enemy.IsSpecialEnemy)
@@ -1061,7 +1058,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    IEnumerator ShowFlashWarningTxt(GameObject warningObject)
+    public IEnumerator ShowFlashWarningTxt(GameObject warningObject)
     {
         warningObject.SetActive(true);
         float timer = 0;
@@ -1206,7 +1203,7 @@ public class GameManager : MonoBehaviour
         player = Instantiate(Resources.Load<GameObject>("player"));
 
         player.transform.position = Vector3.zero;
-        dash_slider.SetActive(true);
+        dash_slider.transform.parent.gameObject.SetActive(true);
         pdata = new PlayerData
         {
             Level = 1,// 玩家等级
@@ -1303,7 +1300,6 @@ public class GameManager : MonoBehaviour
                 p.GetCurrentWeapon().ChangeBulletScale(0.25f);
                 p.EnhancedShotDamageMultiplier += 0.35f;
                 ShakeMainCamera(0.12f, 0.12f);
-
                 break;
 
             // 传奇裂变
@@ -1435,6 +1431,10 @@ public class GameManager : MonoBehaviour
         {
             newBullet_Liner.transform.Find("fx").localScale += new Vector3(bulletScale, bulletScale, 0);
         }
+        else
+        {
+            newBullet_Liner.transform.localScale += new Vector3(bulletScale, bulletScale, 0);
+        }
         bullet.CanMove = true;
         return newBullet_Liner;
     }
@@ -1442,7 +1442,7 @@ public class GameManager : MonoBehaviour
     {
         GameObject newChest = SpwanSingleCircle(pos);
         newChest.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("sprites/chest");
-        newChest.AddComponent<ChestBall>();
+        newChest.AddComponent<ChestBall>().SetChestValue(player);
         return newChest;
     }
 

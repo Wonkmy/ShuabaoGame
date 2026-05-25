@@ -24,6 +24,7 @@ public class Entity : MonoBehaviour
 
     public Weapon GetCurrentWeapon()
     {
+        if(weapon == null)return null;
         return weapon;
     }
 }
