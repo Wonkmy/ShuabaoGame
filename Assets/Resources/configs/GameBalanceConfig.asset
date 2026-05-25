@@ -1,0 +1,173 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b41444a9ba56924c9f3cfa51e27abdb, type: 3}
+  m_Name: GameBalanceConfig
+  m_EditorClassIdentifier: 
+  player:
+    startHp: 520
+    startAttack: 5
+    startMoveSpeed: 5.4
+    startDefence: 15
+    firstLevelExp: 34
+    expGrowth: 1.34
+  wave:
+    spawnWaveIntervalBase: 5.5
+    normalGroupMin: 1
+    normalGroupMax: 2
+    normalEnemyMin: 2
+    normalEnemyMax: 5
+    waveEnemyMultiplier: 2
+    waveAppearInterval: 35
+    waveDuration: 7
+    maxEnemyCount: 36
+    initialEnemyCountPerGroup: 4
+    groupSpawnDelay: 0.25
+  dynamicDifficulty:
+    initialDifficulty: 2
+    difficultyBase: 1.5
+    difficultyStepSeconds: 35
+    minDifficulty: 1.5
+    maxDifficulty: 8
+    updateInterval: 10
+    spawnIntervalBase: 6
+    spawnIntervalPowerScale: 0.018
+    minSpawnInterval: 2.2
+    maxSpawnInterval: 6
+    enemyCountBase: 3
+    enemyCountPowerDivisor: 25
+    minEnemyCountPerGroup: 3
+    maxEnemyCountPerGroup: 16
+    groupCountBase: 1
+    groupCountPowerDivisor: 40
+    minGroupCount: 1
+    maxGroupCount: 5
+    powerFactorBase: 50
+    powerFactorTimeScale: 0.8
+    maxEnemyHpFactor: 4
+    maxEnemyAtkFactor: 2
+    levelScorePerLevel: 6
+    killScoreDivisor: 15
+    buildScorePerTag: 8
+    attackScorePerPoint: 6
+    scoreOnlyAttackAboveStart: 1
+  specialEvent:
+    firstSpecialEventInterval: 85
+    enemyPressureScore: 50
+    lowHpPressureScore: 40
+    wavePressureBonus: 30
+    specialEventPressureBonus: 30
+    highPressureThreshold: 70
+    midPressureThreshold: 45
+    lowPressureThreshold: 25
+    highPressureInterval: 85
+    midPressureInterval: 70
+    lowPressureInterval: 55
+    calmInterval: 40
+  reward:
+    waveCoinCount: 2
+    waveCoinValue: 1
+    eliteBossChestChance: 0.41
+    eliteCoinCount: 5
+    eliteCoinValue: 2
+    bossCoinCount: 8
+    bossCoinValue: 4
+    critExpMultiplier: 1.25
+    enemyRewards:
+    - enemyType: 0
+      baseExp: 3.2
+      expBallCount: 1
+      spreadRadius: 0
+    - enemyType: 1
+      baseExp: 4.2
+      expBallCount: 1
+      spreadRadius: 0
+    - enemyType: 2
+      baseExp: 2.5
+      expBallCount: 15
+      spreadRadius: 1.85
+    - enemyType: 3
+      baseExp: 0
+      expBallCount: 1
+      spreadRadius: 0
+    - enemyType: 4
+      baseExp: 3.8
+      expBallCount: 12
+      spreadRadius: 1.5
+    - enemyType: 5
+      baseExp: 6.5
+      expBallCount: 18
+      spreadRadius: 2.35
+  upgradeRules:
+    critExplosionMinCritStacks: 2
+    pierceExplosionMinPierceStacks: 2
+    legendFireMinFireStacks: 2
+    legendFireMinBulletStacks: 5
+  debug:
+    showDebugHud: 1
+    writeRunReport: 1
+    toggleHudKey: 293
+    enableFlowStageJump: 1
+    flowStageKeys: 1a0100001b0100001c0100001d010000
+    flowStageSnapshots:
+    - stageIndex: 0
+      targetTime: 5
+      playerLevel: 1
+      expRatio: 0.2
+      hpRatio: 1
+      upgradeIds: 
+      secondsBeforeSpecialEvent: 80
+    - stageIndex: 1
+      targetTime: 35
+      playerLevel: 2
+      expRatio: 0.15
+      hpRatio: 1
+      upgradeIds: 01000000
+      secondsBeforeSpecialEvent: 45
+    - stageIndex: 2
+      targetTime: 95
+      playerLevel: 4
+      expRatio: 0.25
+      hpRatio: 0.85
+      upgradeIds: 010000000600000007000000
+      secondsBeforeSpecialEvent: 25
+    - stageIndex: 3
+      targetTime: 185
+      playerLevel: 7
+      expRatio: 0.35
+      hpRatio: 0.75
+      upgradeIds: 010000000400000006000000070000000300000005000000
+      secondsBeforeSpecialEvent: 18
+  timeline:
+  - startTime: 0
+    endTime: 30
+    label: Opening
+    goal: First kills and first upgrade
+    expectedEnemies: Normal/Fast
+    pressure: Low
+  - startTime: 30
+    endTime: 90
+    label: First Pressure
+    goal: Build direction appears
+    expectedEnemies: Normal/Fast/Thick
+    pressure: Medium
+  - startTime: 90
+    endTime: 180
+    label: Build Check
+    goal: Elite pressure and combo payoff
+    expectedEnemies: Thick/SelfExplosion/Elite
+    pressure: High
+  - startTime: 180
+    endTime: 9999
+    label: Endless Scaling
+    goal: Boss and wave endurance
+    expectedEnemies: All
+    pressure: Rising

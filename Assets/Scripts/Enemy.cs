@@ -234,26 +234,27 @@ public class Enemy : Entity
 
         if (GameManager.Instance.isWave)
         {
-            for (int i = 0; i < 2; i++)
+            RewardTuning rewardTuning = GameManager.Instance.BalanceConfig.reward;
+            for (int i = 0; i < rewardTuning.waveCoinCount; i++)
             {
-                float angle = i * (360f / 2);
+                float angle = i * (360f / rewardTuning.waveCoinCount);
                 Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 0.55f;
                 Vector3 randomOffset = new Vector3(Random.Range(-0.12f, 0.2f), Random.Range(-0.2f, 0.35f), 0);
-                GameManager.Instance.SpwanCoin(transform.position + offset + randomOffset, 1);
+                GameManager.Instance.SpwanCoin(transform.position + offset + randomOffset, rewardTuning.waveCoinValue);
             }
         }
         else
         {
             if (enemyType != EnemyType.Elite && enemyType != EnemyType.Boss) return;
-            int spwanType = Random.Range(0, 2);
-            if (spwanType == 0)
+            RewardTuning rewardTuning = GameManager.Instance.BalanceConfig.reward;
+            if (Random.value < rewardTuning.eliteBossChestChance)
             {
                 GameManager.Instance.SpwanChest(transform.position);
             }
-            else if (spwanType == 1)
+            else
             {
-                int baseCoinCount = enemyType == EnemyType.Elite ? 5 : 8;// 数量
-                int baseCoinValue = enemyType == EnemyType.Elite ? 2 : 4;// 价值
+                int baseCoinCount = enemyType == EnemyType.Elite ? rewardTuning.eliteCoinCount : rewardTuning.bossCoinCount;// 数量
+                int baseCoinValue = enemyType == EnemyType.Elite ? rewardTuning.eliteCoinValue : rewardTuning.bossCoinValue;// 价值
                 if (baseCoinCount > 0)
                 {
                     for (int i = 0; i < baseCoinCount; i++)
@@ -269,53 +270,24 @@ public class Enemy : Entity
     }
     private void SpwanExpBall(bool isCrit)
     {
-        float baseExp;
-        switch (enemyType)
+        RewardTuning rewardTuning = GameManager.Instance.BalanceConfig.reward;
+        EnemyReward reward = rewardTuning.GetEnemyReward(enemyType);
+        float finalExp = reward.baseExp * (isCrit ? rewardTuning.critExpMultiplier : 1f);
+        int expValue = Mathf.FloorToInt(finalExp);
+        int expBallCount = Mathf.Max(1, reward.expBallCount);
+
+        if (expBallCount <= 1 || reward.spreadRadius <= 0f)
         {
-            case EnemyType.Normal: baseExp = 2.3f; break;
-            case EnemyType.Fast: baseExp = 3.5f; break;
-            case EnemyType.Elite: baseExp = 3.8f; break;
-            case EnemyType.Thick: baseExp = 2.5f; break;
-            case EnemyType.Boss: baseExp = 6.5f; break;
-            default: baseExp = 0; break;
+            GameManager.Instance.SpwanExpBall(transform.position, enemyType, expValue);
+            return;
         }
-        float finalExp = (baseExp * (isCrit ? 1.25f : 1f));
-        if (enemyType == EnemyType.Elite)
+
+        for (int i = 0; i < expBallCount; i++)
         {
-            // 如果是精英怪，生成大量经验球。这里默认生成8个，分散在敌人周围
-            int eliteExpCount = 12;
-            for (int i = 0; i < eliteExpCount; i++)
-            {
-                float angle = i * (360f / eliteExpCount);
-                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 1.5f;
-                Vector3 randomOffset = new Vector3(Random.Range(-0.2f, 0.2f), Random.Range(-0.2f, 0.2f), 0);
-                GameManager.Instance.SpwanExpBall(transform.position + offset + randomOffset, enemyType, Mathf.FloorToInt(finalExp));
-            }
-        }
-        else if (enemyType == EnemyType.Thick) {
-            int thickExpCount = 15;
-            for (int i = 0; i < thickExpCount; i++)
-            {
-                float angle = i * (360f / thickExpCount);
-                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 1.85f;
-                Vector3 randomOffset = new Vector3(Random.Range(-0.25f, 0.25f), Random.Range(-0.25f, 0.25f), 0);
-                GameManager.Instance.SpwanExpBall(transform.position + offset + randomOffset, enemyType, Mathf.FloorToInt(finalExp));
-            }
-        }
-        else if (enemyType == EnemyType.Boss)
-        {
-            int bossExpCount = 18;
-            for (int i = 0; i < bossExpCount; i++)
-            {
-                float angle = i * (360f / bossExpCount);
-                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 2.35f;
-                Vector3 randomOffset = new Vector3(Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f), 0);
-                GameManager.Instance.SpwanExpBall(transform.position + offset + randomOffset, enemyType, Mathf.FloorToInt(finalExp));
-            }
-        }
-        else
-        {
-            GameManager.Instance.SpwanExpBall(transform.position, enemyType, Mathf.FloorToInt(finalExp));
+            float angle = i * (360f / expBallCount);
+            Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * reward.spreadRadius;
+            Vector3 randomOffset = new Vector3(Random.Range(-0.25f, 0.25f), Random.Range(-0.25f, 0.25f), 0);
+            GameManager.Instance.SpwanExpBall(transform.position + offset + randomOffset, enemyType, expValue);
         }
     }
 
@@ -351,6 +323,7 @@ public class Enemy : Entity
         transform.localScale = Vector3.zero;
 
         // 增加击杀统计
+        GameManager.Instance.RecordEnemyKilled(enemyType);
         GameManager.Instance.GetPlayer().AddKilledCount();
         
         if (IsSpecialEnemy)

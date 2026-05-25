@@ -29,6 +29,7 @@ public class ExpBall : MonoBehaviour
 
             if (Vector3.Distance(transform.position, _target.transform.position) < 0.1f)
             {
+                GameManager.Instance.RecordExpCollected(_expValue);
                 GameManager.Instance.player.GetComponent<Player>().AddExp(_expValue);
                 DataManager.allExpBall.Remove(gameObject);
                 GameManager.Instance.playerExpSlider.localScale = Vector3.one * 1.2f;

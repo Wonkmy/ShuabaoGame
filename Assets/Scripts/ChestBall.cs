@@ -26,6 +26,7 @@ public class ChestBall : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, _target.transform.position, 20f * Time.deltaTime);
             if (Vector3.Distance(transform.position, _target.transform.position) < 0.1f)
             {
+                GameManager.Instance.RecordChestCollected();
                 if (!GameManager.Instance.LevelUpPanelActive())
                 {
                     GameManager.Instance.ShowLevelUpPanel(true);

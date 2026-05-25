@@ -11,6 +11,7 @@ public class Player : Entity
     private Transform fire;
     int currentExp = 0;
     int needExp = 48;
+    float needExpGrowth = 1.34f;
 
     Vector3 MoveDir;
     float MoveAngle;
@@ -107,6 +108,8 @@ public class Player : Entity
         playerDefence = playerData.Def;
         playerType = DataManager.myGameData.playerType;
         currentExp = 0;
+        needExp = GameManager.Instance.BalanceConfig.player.firstLevelExp;
+        needExpGrowth = GameManager.Instance.BalanceConfig.player.expGrowth;
 
         FireCastCount = 0;
         IsEnhancedShotActive = false;
@@ -169,11 +172,12 @@ public class Player : Entity
             currentExp -= needExp;
 
             level++;
+            GameManager.Instance.RecordLevelUp(level);
 
             isLevelUp = true;
 
             // 经验需求增长
-            needExp = Mathf.CeilToInt(needExp * 1.34f);
+            needExp = Mathf.CeilToInt(needExp * needExpGrowth);
 
             if (!GameManager.Instance.levelPanel.activeSelf)
             {
@@ -195,11 +199,35 @@ public class Player : Entity
     {
         return level;
     }
+    public int GetCurrentExp()
+    {
+        return currentExp;
+    }
+    public int GetNeedExp()
+    {
+        return needExp;
+    }
     public int SetCurrentLevel(int newLevel)
     {
         level = newLevel;
         return level;
     }
+
+    public void DebugSetProgression(int newLevel, float expRatio, float hpRatio)
+    {
+        level = Mathf.Max(1, newLevel);
+
+        needExp = GameManager.Instance.BalanceConfig.player.firstLevelExp;
+        for (int i = 1; i < level; i++)
+        {
+            needExp = Mathf.CeilToInt(needExp * needExpGrowth);
+        }
+
+        currentExp = Mathf.Clamp(Mathf.FloorToInt(needExp * expRatio), 0, needExp - 1);
+        currentHp = Mathf.Clamp(Mathf.RoundToInt(totalHp * hpRatio), 1, totalHp);
+        Dead = false;
+    }
+
     public float GetExpProgress()
     {
         return (float)currentExp / needExp;
@@ -539,6 +567,7 @@ public class Player : Entity
 
         // 计算实际伤害。需要考虑玩家的防御力，公式为：实际伤害 = 伤害 * (100 / (100 + 防御力))
         int actualDamage = Mathf.RoundToInt(damage * (100f / (100f + playerDefence)));
+        GameManager.Instance.RecordPlayerDamageTaken(actualDamage);
         currentHp -= actualDamage;
         GetComponentInChildren<SpriteRenderer>().color = Color.red;
         StartCoroutine(ResetColor());

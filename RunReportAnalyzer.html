@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>跑局报告分析工具</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101217;
+      --panel: #181b22;
+      --panel-2: #20242d;
+      --text: #eef2f8;
+      --muted: #a9b2c3;
+      --line: #313744;
+      --good: #69d18f;
+      --warn: #ffd166;
+      --bad: #ff6b6b;
+      --info: #7db7ff;
+      --chip: #2a3140;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      padding: 22px 28px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #141720;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    main {
+      padding: 20px 28px 34px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .file {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text);
+    }
+    input[type="file"] { display: none; }
+    button {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 14px;
+      background: #263246;
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+    }
+    button:hover, .file:hover { border-color: #536075; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      min-width: 0;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 760px) {
+      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    .metric {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      min-height: 70px;
+    }
+    .metric .label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .metric .value {
+      font-size: 20px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .metric .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+    .issue {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      border-radius: 7px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .issue h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+    .sev {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .sev.high { color: #250606; background: var(--bad); }
+    .sev.medium { color: #251800; background: var(--warn); }
+    .sev.low { color: #04170a; background: var(--good); }
+    .evidence {
+      color: var(--muted);
+      margin: 0 0 8px;
+      font-size: 13px;
+    }
+    .suggestions {
+      display: grid;
+      gap: 8px;
+    }
+    .suggestion {
+      border-left: 3px solid var(--info);
+      padding: 8px 10px;
+      background: #182133;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .field {
+      color: #b7d5ff;
+      font-family: Consolas, "Courier New", monospace;
+      font-weight: 700;
+    }
+    .fromto {
+      color: var(--text);
+      font-family: Consolas, "Courier New", monospace;
+    }
+    .tagrow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0 0;
+    }
+    .tag {
+      background: var(--chip);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    pre {
+      margin: 0;
+      padding: 12px;
+      background: #0b0d12;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: auto;
+      font-size: 12px;
+      max-height: 520px;
+    }
+    .empty {
+      color: var(--muted);
+      padding: 18px;
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      text-align: center;
+    }
+    .ok {
+      color: var(--good);
+      font-weight: 700;
+    }
+    .warnText { color: var(--warn); }
+    .badText { color: var(--bad); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>跑局报告分析工具</h1>
+    <div class="sub">选择 RunReportLogger 生成的 JSON，工具会本地分析心流阶段、异常字段，并输出建议修改的 GameBalanceConfig 字段和值。</div>
+  </header>
+  <main>
+    <div class="toolbar">
+      <label class="file">
+        选择跑局报告 JSON
+        <input id="fileInput" type="file" accept=".json,application/json">
+      </label>
+      <button id="demoButton" type="button">载入示例报告</button>
+      <button id="clearButton" type="button">清空</button>
+      <span id="fileName" class="sub">未选择文件</span>
+    </div>
+
+    <div id="result" class="empty">请选择一份跑局报告 JSON。</div>
+  </main>
+
+  <script>
+    const currentConfig = {
+      player: { firstLevelExp: 34, expGrowth: 1.34, startHp: 520, startAttack: 5 },
+      reward: { normalExp: 3.2, fastExp: 4.2, eliteBossChestChance: 0.41 },
+      dynamicDifficulty: {
+        maxEnemyHpFactor: 4,
+        maxEnemyAtkFactor: 2,
+        powerFactorBase: 50,
+        powerFactorTimeScale: 0.8,
+        spawnIntervalPowerScale: 0.018,
+        attackScorePerPoint: 6,
+        killScoreDivisor: 15,
+        levelScorePerLevel: 6,
+        buildScorePerTag: 8
+      },
+      specialEvent: { firstSpecialEventInterval: 85, calmInterval: 40, lowPressureInterval: 55 },
+      wave: { maxEnemyCount: 36, normalEnemyMax: 5, spawnWaveIntervalBase: 5.5 }
+    };
+
+    const stages = {
+      Opening: {
+        cn: "开局阶段",
+        minTime: 0,
+        maxTime: 30,
+        expectedLevel: 1,
+        expectedLevelUps: 0,
+        expectedUpgrades: 0,
+        hpTarget: 0.75,
+        maxHpFactor: 1.25,
+        maxAtkFactor: 1.15,
+        goal: "完成第一次击杀，接近第一次升级。"
+      },
+      "First Pressure": {
+        cn: "第一压力阶段",
+        minTime: 30,
+        maxTime: 90,
+        expectedLevel: 2,
+        expectedLevelUps: 1,
+        expectedUpgrades: 1,
+        hpTarget: 0.55,
+        maxHpFactor: 1.65,
+        maxAtkFactor: 1.35,
+        goal: "完成第一次升级，开始形成构筑方向。"
+      },
+      "Build Check": {
+        cn: "构筑检查阶段",
+        minTime: 90,
+        maxTime: 180,
+        expectedLevel: 4,
+        expectedLevelUps: 3,
+        expectedUpgrades: 3,
+        hpTarget: 0.45,
+        maxHpFactor: 2.4,
+        maxAtkFactor: 1.65,
+        goal: "构筑开始产生实际效果，能处理精英压力。"
+      },
+      "Endless Scaling": {
+        cn: "无尽成长阶段",
+        minTime: 180,
+        maxTime: 9999,
+        expectedLevel: 7,
+        expectedLevelUps: 6,
+        expectedUpgrades: 5,
+        hpTarget: 0.35,
+        maxHpFactor: 3.4,
+        maxAtkFactor: 1.9,
+        goal: "持续加压，考验成型构筑和生存。"
+      }
+    };
+
+    const demoReport = {
+      timestamp: "2026-05-25 16:19:30",
+      gameTime: 48.31,
+      timelineLabel: "First Pressure",
+      timelineGoal: "Build direction appears",
+      difficulty: 2.5,
+      playerPowerScore: 57,
+      enemyHpFactor: 3.08,
+      enemyAtkFactor: 1.69,
+      spawnWaveInterval: 4.97,
+      enemyCountPerGroup: 5,
+      currentWaveGroupCount: 2,
+      maxEnemyCount: 36,
+      finalEnemyCount: 18,
+      isWave: false,
+      isSpecialEvent: false,
+      specialEventRemainingTime: 6.69,
+      playerLevel: 1,
+      playerCurrentExp: 20,
+      playerNeedExp: 48,
+      playerHpProgress: 0,
+      killCount: 29,
+      buildSummary: "",
+      levelUpCount: 0,
+      upgradeSelectCount: 0,
+      expBallSpawned: 29,
+      expBallCollected: 20,
+      expValueSpawned: 80,
+      expValueCollected: 20,
+      expCollectRate: 0.69,
+      normalKillCount: 20,
+      fastKillCount: 9,
+      thickKillCount: 0,
+      debugJumpUsed: false
+    };
+
+    const fileInput = document.getElementById("fileInput");
+    const result = document.getElementById("result");
+    const fileName = document.getElementById("fileName");
+
+    fileInput.addEventListener("change", async (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      fileName.textContent = file.name;
+      try {
+        const text = await file.text();
+        const report = JSON.parse(text);
+        renderAnalysis(report);
+      } catch (error) {
+        result.className = "empty";
+        result.textContent = "读取或解析 JSON 失败：" + error.message;
+      }
+    });
+
+    document.getElementById("demoButton").addEventListener("click", () => {
+      fileName.textContent = "示例报告";
+      renderAnalysis(demoReport);
+    });
+
+    document.getElementById("clearButton").addEventListener("click", () => {
+      fileInput.value = "";
+      fileName.textContent = "未选择文件";
+      result.className = "empty";
+      result.textContent = "请选择一份跑局报告 JSON。";
+    });
+
+    function renderAnalysis(report) {
+      const normalized = normalizeReport(report);
+      const analysis = analyzeReport(normalized);
+      result.className = "";
+      result.innerHTML = `
+        <div class="summary">
+          ${metric("阶段", `${analysis.stage.cn}`, normalized.timelineLabel || "未知")}
+          ${metric("存活时间", `${fmt(normalized.gameTime)}s`, normalized.debugJumpUsed ? "阶段跳转测试局" : "正常跑局")}
+          ${metric("等级/升级", `${normalized.playerLevel}级 / ${normalized.levelUpCount}次`, `目标：${analysis.stage.expectedLevel}级以上`)}
+          ${metric("敌人强度", `HPx ${fmt(normalized.enemyHpFactor)} / ATKx ${fmt(normalized.enemyAtkFactor)}`, `建议上限：${analysis.stage.maxHpFactor}/${analysis.stage.maxAtkFactor}`)}
+        </div>
+        <div class="grid">
+          <section>
+            <h2>问题判断</h2>
+            ${analysis.issues.length ? analysis.issues.map(renderIssue).join("") : `<div class="empty"><span class="ok">未发现明显心流问题。</span><br>这局报告和当前阶段目标基本一致。</div>`}
+          </section>
+          <section>
+            <h2>建议修改清单</h2>
+            ${renderPatchList(analysis)}
+            <h2 style="margin-top:16px;">报告摘要</h2>
+            <pre>${escapeHtml(JSON.stringify(compactReport(normalized), null, 2))}</pre>
+          </section>
+        </div>
+      `;
+    }
+
+    function normalizeReport(report) {
+      const timelineLabel = report.timelineLabel || inferStageLabel(Number(report.gameTime || 0));
+      return {
+        ...report,
+        timelineLabel,
+        gameTime: num(report.gameTime),
+        difficulty: num(report.difficulty),
+        playerPowerScore: num(report.playerPowerScore),
+        enemyHpFactor: num(report.enemyHpFactor),
+        enemyAtkFactor: num(report.enemyAtkFactor),
+        spawnWaveInterval: num(report.spawnWaveInterval),
+        enemyCountPerGroup: num(report.enemyCountPerGroup),
+        currentWaveGroupCount: num(report.currentWaveGroupCount),
+        maxEnemyCount: num(report.maxEnemyCount || currentConfig.wave.maxEnemyCount),
+        finalEnemyCount: num(report.finalEnemyCount),
+        specialEventRemainingTime: num(report.specialEventRemainingTime),
+        playerLevel: num(report.playerLevel),
+        playerCurrentExp: num(report.playerCurrentExp),
+        playerNeedExp: num(report.playerNeedExp),
+        playerHpProgress: clamp01(num(report.playerHpProgress)),
+        killCount: num(report.killCount),
+        levelUpCount: num(report.levelUpCount),
+        upgradeSelectCount: num(report.upgradeSelectCount),
+        expBallSpawned: num(report.expBallSpawned),
+        expBallCollected: num(report.expBallCollected),
+        expValueSpawned: num(report.expValueSpawned),
+        expValueCollected: num(report.expValueCollected),
+        expCollectRate: report.expCollectRate == null
+          ? safeDivide(num(report.expBallCollected), num(report.expBallSpawned))
+          : clamp01(num(report.expCollectRate)),
+        coinSpawned: num(report.coinSpawned),
+        coinCollected: num(report.coinCollected),
+        chestSpawned: num(report.chestSpawned),
+        chestCollected: num(report.chestCollected),
+        totalDamageTaken: num(report.totalDamageTaken),
+        lastDamageTaken: num(report.lastDamageTaken),
+        normalKillCount: num(report.normalKillCount),
+        fastKillCount: num(report.fastKillCount),
+        thickKillCount: num(report.thickKillCount),
+        eliteKillCount: num(report.eliteKillCount),
+        bossKillCount: num(report.bossKillCount),
+        buildSummary: report.buildSummary || "",
+        debugJumpUsed: Boolean(report.debugJumpUsed),
+        debugJumpMode: report.debugJumpMode || "",
+        debugJumpStage: report.debugJumpStage || ""
+      };
+    }
+
+    function analyzeReport(report) {
+      const stage = stages[report.timelineLabel] || stages[inferStageLabel(report.gameTime)] || stages.Opening;
+      const issues = [];
+      const patches = [];
+
+      const progressRatio = safeDivide(report.playerCurrentExp, report.playerNeedExp);
+      const enemyPressure = safeDivide(report.finalEnemyCount, report.maxEnemyCount);
+      const early = report.gameTime < 90;
+      const noBuild = !report.buildSummary || report.buildSummary.trim() === "";
+
+      if (report.gameTime >= 30 && (report.levelUpCount < stage.expectedLevelUps || report.playerLevel < stage.expectedLevel)) {
+        const severe = report.playerLevel <= 1 && report.gameTime >= 40 ? "high" : "medium";
+        issues.push(issue(severe, "升级节奏落后", [
+          `当前 ${fmt(report.gameTime)} 秒处于「${stage.cn}」，玩家 ${report.playerLevel} 级，升级 ${report.levelUpCount} 次。`,
+          `该阶段目标至少 ${stage.expectedLevel} 级 / ${stage.expectedLevelUps} 次升级。当前经验进度 ${pct(progressRatio)}。`
+        ], [
+          suggest("player.firstLevelExp", currentConfig.player.firstLevelExp, clampInt(Math.round(currentConfig.player.firstLevelExp * 0.88), 24, 60), "降低首级经验，让第一压力阶段前能稳定出现第一次升级。"),
+          suggest("reward.enemyRewards[Normal].baseExp", currentConfig.reward.normalExp, round1(currentConfig.reward.normalExp * 1.12), "提高普通怪经验，改善前期升级速度。"),
+          suggest("reward.enemyRewards[Fast].baseExp", currentConfig.reward.fastExp, round1(currentConfig.reward.fastExp * 1.08), "快速怪更难追击，经验略提高。")
+        ]));
+      }
+
+      if (report.expBallSpawned > 0 && report.expCollectRate < 0.78) {
+        issues.push(issue("medium", "经验拾取效率偏低", [
+          `经验球生成 ${report.expBallSpawned} 个，拾取 ${report.expBallCollected} 个，拾取率 ${pct(report.expCollectRate)}。`,
+          "如果击杀不少但经验少，优先怀疑拾取半径/吸附速度，而不是只加经验值。"
+        ], [
+          suggest("ExpBall 吸附半径", "6", "7.5", "这是代码手感参数，不在 GameBalanceConfig 里。建议下一步也配置化。"),
+          suggest("ExpBall 最大吸附速度", "32", "38", "提高拾取爽感，减少经验留在屏幕边缘的情况。")
+        ]));
+      }
+
+      if (report.enemyHpFactor > stage.maxHpFactor && (report.playerLevel < stage.expectedLevel || noBuild)) {
+        issues.push(issue("high", "动态难度过早放大敌人血量", [
+          `敌人血量倍率 ${fmt(report.enemyHpFactor)}，高于「${stage.cn}」建议上限 ${stage.maxHpFactor}。`,
+          `玩家等级 ${report.playerLevel}，构筑：${report.buildSummary || "无"}。这说明敌人强度领先玩家成长。`
+        ], [
+          suggest("dynamicDifficulty.powerFactorBase", currentConfig.dynamicDifficulty.powerFactorBase, Math.round(currentConfig.dynamicDifficulty.powerFactorBase * 1.25), "放缓玩家战力转化为敌人血量倍率的速度。"),
+          suggest("dynamicDifficulty.maxEnemyHpFactor", currentConfig.dynamicDifficulty.maxEnemyHpFactor, round1(Math.max(2.8, currentConfig.dynamicDifficulty.maxEnemyHpFactor * 0.85)), "降低整体血量倍率天花板，避免前中期敌人过肉。"),
+          suggest("dynamicDifficulty.levelScorePerLevel", currentConfig.dynamicDifficulty.levelScorePerLevel, Math.max(4, currentConfig.dynamicDifficulty.levelScorePerLevel - 1), "减少等级对动态难度的推动。")
+        ]));
+      }
+
+      if (report.enemyAtkFactor > stage.maxAtkFactor && report.playerHpProgress <= stage.hpTarget) {
+        issues.push(issue("medium", "敌人攻击成长偏快", [
+          `敌人攻击倍率 ${fmt(report.enemyAtkFactor)}，玩家剩余血量 ${pct(report.playerHpProgress)}。`,
+          `本局累计受伤 ${report.totalDamageTaken || "未知"}，最后一次伤害 ${report.lastDamageTaken || "未知"}。`
+        ], [
+          suggest("dynamicDifficulty.maxEnemyAtkFactor", currentConfig.dynamicDifficulty.maxEnemyAtkFactor, round1(Math.max(1.5, currentConfig.dynamicDifficulty.maxEnemyAtkFactor * 0.9)), "降低敌人攻击成长上限。"),
+          suggest("dynamicDifficulty.powerFactorTimeScale", currentConfig.dynamicDifficulty.powerFactorTimeScale, round2(currentConfig.dynamicDifficulty.powerFactorTimeScale + 0.2), "随时间进一步稀释战力评分，避免早期攻击倍率过高。")
+        ]));
+      }
+
+      if (early && report.specialEventRemainingTime > 0 && report.specialEventRemainingTime < 20 && report.upgradeSelectCount < 2) {
+        issues.push(issue("medium", "特殊事件逼近过早", [
+          `距离特殊事件只剩 ${fmt(report.specialEventRemainingTime)} 秒，但玩家只选择过 ${report.upgradeSelectCount} 次升级。`,
+          "特殊事件最好等玩家至少形成 1-2 个基础构筑后再出现。"
+        ], [
+          suggest("specialEvent.firstSpecialEventInterval", currentConfig.specialEvent.firstSpecialEventInterval, Math.max(95, currentConfig.specialEvent.firstSpecialEventInterval + 10), "延后首次特殊事件，让玩家先完成基础构筑。"),
+          suggest("specialEvent.calmInterval", currentConfig.specialEvent.calmInterval, Math.max(50, currentConfig.specialEvent.calmInterval + 10), "低压力局不要太快再次触发特殊事件。")
+        ]));
+      }
+
+      if (enemyPressure > 0.75 && report.playerHpProgress <= stage.hpTarget) {
+        issues.push(issue("medium", "场上敌人压力偏高", [
+          `场上敌人 ${report.finalEnemyCount}/${report.maxEnemyCount}，占比 ${pct(enemyPressure)}。`,
+          `刷怪间隔 ${fmt(report.spawnWaveInterval)} 秒，每轮 ${report.currentWaveGroupCount} 组，每组 ${report.enemyCountPerGroup} 个。`
+        ], [
+          suggest("wave.maxEnemyCount", currentConfig.wave.maxEnemyCount, Math.max(26, currentConfig.wave.maxEnemyCount - 4), "降低当前阶段敌人堆积上限。"),
+          suggest("dynamicDifficulty.spawnIntervalPowerScale", currentConfig.dynamicDifficulty.spawnIntervalPowerScale, round3(currentConfig.dynamicDifficulty.spawnIntervalPowerScale * 0.85), "减弱战力评分对刷怪间隔的压缩。")
+        ]));
+      }
+
+      if (report.gameTime >= 30 && report.killCount < expectedKillsByTime(report.gameTime) * 0.65 && report.enemyHpFactor > stage.maxHpFactor) {
+        issues.push(issue("medium", "击杀效率偏低", [
+          `存活 ${fmt(report.gameTime)} 秒，击杀 ${report.killCount}。`,
+          "结合敌人血量倍率偏高，可能是敌人变肉导致输出反馈下降。"
+        ], [
+          suggest("dynamicDifficulty.maxEnemyHpFactor", currentConfig.dynamicDifficulty.maxEnemyHpFactor, round1(currentConfig.dynamicDifficulty.maxEnemyHpFactor * 0.85), "优先降低敌人血量成长，而不是继续提高玩家初始攻击。")
+        ]));
+      }
+
+      if (report.debugJumpUsed) {
+        issues.push(issue("low", "这是阶段跳转测试局", [
+          `跳转模式：${report.debugJumpMode || "未知"}，阶段：${report.debugJumpStage || report.timelineLabel}。`,
+          "分析结果适合用于该阶段局部调参，不适合直接判断完整开局节奏。"
+        ], []));
+      }
+
+      for (const item of issues) {
+        for (const s of item.suggestions) {
+          patches.push(s);
+        }
+      }
+
+      return { stage, issues, patches: mergeSuggestions(patches) };
+    }
+
+    function issue(severity, title, evidence, suggestions) {
+      return { severity, title, evidence, suggestions };
+    }
+
+    function suggest(field, current, recommended, reason) {
+      return { field, current, recommended, reason };
+    }
+
+    function mergeSuggestions(suggestions) {
+      const map = new Map();
+      for (const s of suggestions) {
+        if (!map.has(s.field)) {
+          map.set(s.field, { ...s, reasons: [s.reason] });
+        } else {
+          const existing = map.get(s.field);
+          existing.reasons.push(s.reason);
+          existing.recommended = s.recommended;
+        }
+      }
+      return Array.from(map.values());
+    }
+
+    function renderIssue(item) {
+      return `
+        <div class="issue">
+          <h3><span class="sev ${item.severity}">${severityText(item.severity)}</span>${escapeHtml(item.title)}</h3>
+          ${item.evidence.map(e => `<p class="evidence">${escapeHtml(e)}</p>`).join("")}
+          ${item.suggestions.length ? `<div class="suggestions">${item.suggestions.map(renderSuggestion).join("")}</div>` : ""}
+        </div>
+      `;
+    }
+
+    function renderSuggestion(s) {
+      return `
+        <div class="suggestion">
+          <div><span class="field">${escapeHtml(s.field)}</span>：
+            <span class="fromto">${escapeHtml(String(s.current))} -> ${escapeHtml(String(s.recommended))}</span>
+          </div>
+          <div class="evidence">${escapeHtml(s.reason)}</div>
+        </div>
+      `;
+    }
+
+    function renderPatchList(analysis) {
+      if (!analysis.patches.length) {
+        return `<div class="empty">暂无建议修改值。</div>`;
+      }
+      return `
+        <div class="suggestions">
+          ${analysis.patches.map(s => `
+            <div class="suggestion">
+              <div><span class="field">${escapeHtml(s.field)}</span>：<span class="fromto">${escapeHtml(String(s.current))} -> ${escapeHtml(String(s.recommended))}</span></div>
+              <div class="evidence">${escapeHtml(s.reasons.join("；"))}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function compactReport(report) {
+      return {
+        gameTime: round2(report.gameTime),
+        timelineLabel: report.timelineLabel,
+        playerLevel: report.playerLevel,
+        levelUpCount: report.levelUpCount,
+        upgradeSelectCount: report.upgradeSelectCount,
+        killCount: report.killCount,
+        buildSummary: report.buildSummary,
+        enemyHpFactor: round2(report.enemyHpFactor),
+        enemyAtkFactor: round2(report.enemyAtkFactor),
+        finalEnemyCount: report.finalEnemyCount,
+        maxEnemyCount: report.maxEnemyCount,
+        expCollectRate: round2(report.expCollectRate),
+        specialEventRemainingTime: round2(report.specialEventRemainingTime),
+        debugJumpUsed: report.debugJumpUsed,
+        debugJumpMode: report.debugJumpMode,
+        debugJumpStage: report.debugJumpStage
+      };
+    }
+
+    function inferStageLabel(time) {
+      if (time < 30) return "Opening";
+      if (time < 90) return "First Pressure";
+      if (time < 180) return "Build Check";
+      return "Endless Scaling";
+    }
+
+    function expectedKillsByTime(time) {
+      if (time < 30) return time * 0.35;
+      if (time < 90) return 20 + (time - 30) * 0.75;
+      if (time < 180) return 65 + (time - 90) * 1.1;
+      return 160 + (time - 180) * 1.35;
+    }
+
+    function severityText(severity) {
+      if (severity === "high") return "高";
+      if (severity === "medium") return "中";
+      return "低";
+    }
+
+    function metric(label, value, hint) {
+      return `
+        <div class="metric">
+          <div class="label">${escapeHtml(label)}</div>
+          <div class="value">${escapeHtml(value)}</div>
+          <div class="hint">${escapeHtml(hint || "")}</div>
+        </div>
+      `;
+    }
+
+    function num(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function safeDivide(a, b) {
+      a = num(a);
+      b = num(b);
+      return b > 0 ? a / b : 0;
+    }
+
+    function clamp01(v) {
+      return Math.max(0, Math.min(1, num(v)));
+    }
+
+    function clampInt(v, min, max) {
+      return Math.max(min, Math.min(max, Math.round(v)));
+    }
+
+    function round1(v) { return Math.round(v * 10) / 10; }
+    function round2(v) { return Math.round(v * 100) / 100; }
+    function round3(v) { return Math.round(v * 1000) / 1000; }
+    function fmt(v) { return round2(num(v)).toFixed(2).replace(/\.00$/, ""); }
+    function pct(v) { return `${Math.round(clamp01(v) * 100)}%`; }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

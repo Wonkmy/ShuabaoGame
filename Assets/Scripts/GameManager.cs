@@ -9,10 +9,266 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
+    public GameBalanceConfig balanceConfig;
+    GameBalanceConfig runtimeDefaultBalanceConfig;
 
     void Awake()
     {
         Instance = this;
+        EnsureBalanceConfig();
+        ApplyBalanceConfig();
+        ConfigureDebugTools();
+    }
+
+    public GameBalanceConfig BalanceConfig
+    {
+        get
+        {
+            EnsureBalanceConfig();
+            return balanceConfig != null ? balanceConfig : runtimeDefaultBalanceConfig;
+        }
+    }
+
+    public float GameTime => gameTime;
+    public float Difficulty => difficulty;
+    public float SpawnWaveInterval => spawnWaveInterval;
+    public int EnemyCountPerGroup => enemyCountPerGroup;
+    public int CurrentWaveGroupCount => currentWaveGroupCount;
+    public float SpecialEventRemainingTime => Mathf.Max(0f, nextSpecialEventInterval - specialEventTimer);
+    public TimelineSegment CurrentTimelineSegment => BalanceConfig.GetTimelineSegment(gameTime);
+
+    public string GetBuildSummary()
+    {
+        if (player == null)
+            return "";
+
+        Player playerC = player.GetComponent<Player>();
+        if (playerC == null || playerC.buildDict == null || playerC.buildDict.Count == 0)
+            return "";
+
+        List<string> entries = new List<string>();
+        foreach (KeyValuePair<string, int> pair in playerC.buildDict)
+        {
+            entries.Add(pair.Key + ":" + pair.Value);
+        }
+
+        entries.Sort();
+        return string.Join(", ", entries);
+    }
+
+    public void RecordLevelUp(int newLevel)
+    {
+        RunTelemetry.levelUpCount++;
+        RunTelemetry.levelUpTimes.Add(gameTime);
+        RunTelemetry.levelUpLevels.Add(newLevel);
+    }
+
+    public void RecordUpgradeSelected(UpgradeData data)
+    {
+        RunTelemetry.upgradeSelectCount++;
+        RunTelemetry.upgradeSelectTimes.Add(gameTime);
+        RunTelemetry.upgradeSelectNames.Add(data.name);
+    }
+
+    public void RecordEnemyKilled(EnemyType enemyType)
+    {
+        RunTelemetry.killByEnemyType[(int)enemyType]++;
+    }
+
+    public void RecordExpSpawned(int expValue)
+    {
+        RunTelemetry.expBallSpawned++;
+        RunTelemetry.expValueSpawned += expValue;
+    }
+
+    public void RecordExpCollected(int expValue)
+    {
+        RunTelemetry.expBallCollected++;
+        RunTelemetry.expValueCollected += expValue;
+    }
+
+    public void RecordCoinSpawned(int coinValue)
+    {
+        RunTelemetry.coinSpawned++;
+        RunTelemetry.coinValueSpawned += coinValue;
+    }
+
+    public void RecordCoinCollected(int coinValue)
+    {
+        RunTelemetry.coinCollected++;
+        RunTelemetry.coinValueCollected += coinValue;
+    }
+
+    public void RecordChestSpawned()
+    {
+        RunTelemetry.chestSpawned++;
+    }
+
+    public void RecordChestCollected()
+    {
+        RunTelemetry.chestCollected++;
+    }
+
+    public void RecordPlayerDamageTaken(int damage)
+    {
+        RunTelemetry.totalDamageTaken += damage;
+        RunTelemetry.lastDamageTaken = damage;
+    }
+
+    public void RecordDebugFlowJump(string stageLabel, FlowJumpMode mode)
+    {
+        RunTelemetry.debugJumpUsed = true;
+        RunTelemetry.debugJumpStage = stageLabel;
+        RunTelemetry.debugJumpMode = mode.ToString();
+        RunTelemetry.debugJumpTime = gameTime;
+    }
+
+    public void DebugJumpToFlowStage(int stageIndex, FlowJumpMode mode)
+    {
+        if (!IsGameStarted || player == null)
+            return;
+
+        FlowStageSnapshot snapshot = GetFlowStageSnapshot(stageIndex);
+        TimelineSegment segment = GetTimelineSegmentByIndex(stageIndex);
+        if (snapshot == null && segment == null)
+            return;
+
+        float targetTime = snapshot != null ? snapshot.targetTime : segment.startTime;
+        gameTime = Mathf.Max(0f, targetTime);
+        difficultyUpdateTimer = difficultyUpdateInterval;
+        ApplyDifficultyFromCurrentTime();
+
+        if (mode == FlowJumpMode.FlowSnapshot && snapshot != null)
+        {
+            ApplyFlowSnapshot(snapshot);
+        }
+
+        UpdateDynamicDifficulty(out _);
+        RecordDebugFlowJump(segment != null ? segment.label : "Stage " + stageIndex, mode);
+        Debug.Log("Flow stage jump: " + mode + " -> " + (segment != null ? segment.label : stageIndex.ToString()));
+    }
+
+    FlowStageSnapshot GetFlowStageSnapshot(int stageIndex)
+    {
+        FlowStageSnapshot[] snapshots = BalanceConfig.debug.flowStageSnapshots;
+        if (snapshots == null)
+            return null;
+
+        for (int i = 0; i < snapshots.Length; i++)
+        {
+            if (snapshots[i] != null && snapshots[i].stageIndex == stageIndex)
+                return snapshots[i];
+        }
+
+        return stageIndex >= 0 && stageIndex < snapshots.Length ? snapshots[stageIndex] : null;
+    }
+
+    TimelineSegment GetTimelineSegmentByIndex(int stageIndex)
+    {
+        TimelineSegment[] timeline = BalanceConfig.timeline;
+        if (timeline == null || stageIndex < 0 || stageIndex >= timeline.Length)
+            return null;
+
+        return timeline[stageIndex];
+    }
+
+    void ApplyFlowSnapshot(FlowStageSnapshot snapshot)
+    {
+        Player playerC = player.GetComponent<Player>();
+        playerC.DebugSetProgression(snapshot.playerLevel, snapshot.expRatio, snapshot.hpRatio);
+
+        playerC.HasCritExplosion = false;
+        playerC.HasPierceExplosion = false;
+        playerC.HasLegendSplit = false;
+        playerC.HasLowBulletHighDamage = false;
+        playerC.HasNuclearBuild = false;
+        playerC.HasSplitBuild = false;
+        playerC.HasFireBuild = false;
+        playerC.buildDict.Clear();
+
+        if (snapshot.upgradeIds != null)
+        {
+            for (int i = 0; i < snapshot.upgradeIds.Length; i++)
+            {
+                DebugApplyUpgradeById(snapshot.upgradeIds[i]);
+            }
+        }
+
+        playerC.CheckBuildCombo();
+        isWave = false;
+        IsSpecialEvent = false;
+        waveTimer = Mathf.Repeat(gameTime, Mathf.Max(1f, waveAppearInterval));
+        specialEventTimer = Mathf.Max(0f, nextSpecialEventInterval - snapshot.secondsBeforeSpecialEvent);
+    }
+
+    void DebugApplyUpgradeById(int upgradeId)
+    {
+        UpgradeData data = default;
+        bool found = false;
+        for (int i = 0; i < DataManager.upgradeList.Count; i++)
+        {
+            if (DataManager.upgradeList[i].id == upgradeId)
+            {
+                data = DataManager.upgradeList[i];
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+            return;
+
+        ExecuteUpgrade(data);
+        Player playerC = player.GetComponent<Player>();
+        if (!playerC.buildDict.ContainsKey(data.tag))
+        {
+            playerC.buildDict.Add(data.tag, 0);
+        }
+
+        playerC.buildDict[data.tag]++;
+    }
+
+    void ApplyDifficultyFromCurrentTime()
+    {
+        ApplyDifficultyFromCurrentTime();
+    }
+
+    void EnsureBalanceConfig()
+    {
+        if (balanceConfig == null && runtimeDefaultBalanceConfig == null)
+        {
+            runtimeDefaultBalanceConfig = ScriptableObject.CreateInstance<GameBalanceConfig>();
+        }
+    }
+
+    void ApplyBalanceConfig()
+    {
+        GameBalanceConfig config = BalanceConfig;
+        spawnWaveIntervalBase = config.wave.spawnWaveIntervalBase;
+        normalGroupMin = config.wave.normalGroupMin;
+        normalGroupMax = config.wave.normalGroupMax;
+        normalEnemyMin = config.wave.normalEnemyMin;
+        normalEnemyMax = config.wave.normalEnemyMax;
+        waveEnemyMultiplier = config.wave.waveEnemyMultiplier;
+        waveAppearInterval = config.wave.waveAppearInterval;
+        waveDuration = config.wave.waveDuration;
+        MaxEnemyCount = config.wave.maxEnemyCount;
+        spawnWaveInterval = config.wave.spawnWaveIntervalBase;
+        enemyCountPerGroup = config.wave.initialEnemyCountPerGroup;
+        difficultyUpdateInterval = config.dynamicDifficulty.updateInterval;
+    }
+
+    void ConfigureDebugTools()
+    {
+        if (BalanceConfig.debug.showDebugHud && GetComponent<GameDebugHUD>() == null)
+        {
+            gameObject.AddComponent<GameDebugHUD>();
+        }
+
+        if (BalanceConfig.debug.enableFlowStageJump && GetComponent<FlowStageDebugController>() == null)
+        {
+            gameObject.AddComponent<FlowStageDebugController>();
+        }
     }
 
     public GameObject player { get; private set; }
@@ -32,6 +288,8 @@ public class GameManager : MonoBehaviour
 
     public bool GameOver { get; set; }
     public bool IsGameStarted { get; set; }
+    bool runReportWritten = false;
+    public RunTelemetry RunTelemetry { get; private set; } = new RunTelemetry();
 
     // 技能释放相关
     public Button btn_ReleaseSkill;
@@ -199,17 +457,19 @@ public class GameManager : MonoBehaviour
     }
     IEnumerator Init()
     {
-        yield return new WaitForSeconds(1.2f);
+        yield return new WaitForSeconds(0.6f);
         ShowCultivatePanel(true);
         yield return new WaitUntil(()=> CultivatePanelActive() == false);
         btn_ReleaseSkill.gameObject.SetActive(true);
         coolDownMask.fillAmount = 0;
         GameOver = false;
         IsGameStarted = true;
+        runReportWritten = false;
+        RunTelemetry = new RunTelemetry();
         // 基础难度固定
-        difficulty = 2;
+        difficulty = BalanceConfig.dynamicDifficulty.initialDifficulty;
         // 当前特殊事件等待时间
-        nextSpecialEventInterval = 55.0f;
+        nextSpecialEventInterval = BalanceConfig.specialEvent.firstSpecialEventInterval;
         mainCamera = Camera.main;
         cameraEffect = mainCamera.GetComponent<CameraEffect>();
         cameraOriginPos = mainCamera.transform.localPosition;
@@ -418,12 +678,23 @@ public class GameManager : MonoBehaviour
             // 将存活时长、击杀数、最高难度、玩家等级等数据传递给结算界面
             gameOverPanel.GetComponent<GameOverPanel>().Init(gameTime, playerC.KilledCount, difficulty, playerC.GetCurrentLevel());
 
+            TryWriteRunReport(playerC);
+
             DataManager.Clear();
         }
         else
         {
             gameOverPanel.GetComponent<GameOverPanel>().Dispose();
         }
+    }
+
+    void TryWriteRunReport(Player playerC)
+    {
+        if (runReportWritten || !BalanceConfig.debug.writeRunReport)
+            return;
+
+        runReportWritten = true;
+        RunReportLogger.Write(this, playerC);
     }
     public bool CultivatePanelActive()
     {
@@ -461,7 +732,7 @@ public class GameManager : MonoBehaviour
         playerConponent.buildDict.Clear();
         // 重置尸潮、难度、预算、游戏时间等所有数据
         isWave = false;
-        difficulty = 2;
+        difficulty = BalanceConfig.dynamicDifficulty.initialDifficulty;
         gameTime = 0;
         HitStopDuration = 0;
         HitStopIntensity = 0;
@@ -472,7 +743,7 @@ public class GameManager : MonoBehaviour
         // 波次间隔
         spawnWaveInterval = spawnWaveIntervalBase;
         // 每组怪物数量
-        enemyCountPerGroup = 4;
+        enemyCountPerGroup = BalanceConfig.wave.initialEnemyCountPerGroup;
         // 当前波次组数量
         currentWaveGroupCount = 1;
         // 特殊事件相关
@@ -489,9 +760,9 @@ public class GameManager : MonoBehaviour
         // 清理所有敌人和子弹、数据、字典、玩家已有的构筑列表buildDict、HasCritExplosion、HasPierceExplosion、HasLowBulletHighDamage
         
         WeaponSystem.Clear();
-        // 重置尸潮、难度、预算、游戏时间等所有数据
-        isWave = false;
-        difficulty = 2;
+            // 重置尸潮、难度、预算、游戏时间等所有数据
+            isWave = false;
+            difficulty = BalanceConfig.dynamicDifficulty.initialDifficulty;
         gameTime = 0;
         HitStopDuration = 0;
         HitStopIntensity = 0;
@@ -501,8 +772,8 @@ public class GameManager : MonoBehaviour
         spawnWaveTimer = 0;
         // 波次间隔
         spawnWaveInterval = spawnWaveIntervalBase;
-        // 每组怪物数量
-        enemyCountPerGroup = 4;
+            // 每组怪物数量
+            enemyCountPerGroup = BalanceConfig.wave.initialEnemyCountPerGroup;
         // 当前波次组数量
         currentWaveGroupCount = 1;
         // 特殊事件相关
@@ -647,7 +918,11 @@ public class GameManager : MonoBehaviour
             UpdateDynamicDifficulty(out playerScore);
         }
 
-        difficulty = Mathf.Clamp(1.5f + Mathf.FloorToInt(gameTime / 35f), 1.5f, 8);
+        DynamicDifficultyTuning dynamicTuning = BalanceConfig.dynamicDifficulty;
+        difficulty = Mathf.Clamp(
+            dynamicTuning.difficultyBase + Mathf.FloorToInt(gameTime / dynamicTuning.difficultyStepSeconds),
+            dynamicTuning.minDifficulty,
+            dynamicTuning.maxDifficulty);
 
         // 特殊事件逻辑
         specialEventTimer += Time.deltaTime;
@@ -908,40 +1183,42 @@ public class GameManager : MonoBehaviour
         int pressureScore = 0;
 
         // 当前敌人数量占上限的比例
+        SpecialEventTuning specialTuning = BalanceConfig.specialEvent;
+
         float enemyPressure = (float)DataManager.allEnemyDict.Count / MaxEnemyCount;
 
-        pressureScore += Mathf.FloorToInt(enemyPressure * 50f);
+        pressureScore += Mathf.FloorToInt(enemyPressure * specialTuning.enemyPressureScore);
 
         // 血量越低，压力越高
-        pressureScore += Mathf.FloorToInt((1f - playerC.GetHpProgress()) * 40f);
+        pressureScore += Mathf.FloorToInt((1f - playerC.GetHpProgress()) * specialTuning.lowHpPressureScore);
 
         if (isWave)
         {
-            pressureScore += 30;
+            pressureScore += specialTuning.wavePressureBonus;
         }
 
         // Boss/精英事件期间不用算，但保险
         if (IsSpecialEvent)
         {
-            pressureScore += 30;
+            pressureScore += specialTuning.specialEventPressureBonus;
         }
 
         // 压力高，延后特殊事件
-        if (pressureScore >= 70)
+        if (pressureScore >= specialTuning.highPressureThreshold)
         {
-            return 85f;
+            return specialTuning.highPressureInterval;
         }
-        else if (pressureScore >= 45)
+        else if (pressureScore >= specialTuning.midPressureThreshold)
         {
-            return 70f;
+            return specialTuning.midPressureInterval;
         }
-        else if (pressureScore >= 25)
+        else if (pressureScore >= specialTuning.lowPressureThreshold)
         {
-            return 55f;
+            return specialTuning.lowPressureInterval;
         }
         else
         {
-            return 40f;
+            return specialTuning.calmInterval;
         }
     }
     void UpdateDynamicDifficulty(out int playerScore)
@@ -952,13 +1229,18 @@ public class GameManager : MonoBehaviour
         // 计算玩家战力
         // =========================
 
-        int levelScore = player.playerData.Level * 5;
+        DynamicDifficultyTuning dynamicTuning = BalanceConfig.dynamicDifficulty;
 
-        int killScore = player.KilledCount / 10;
+        int levelScore = Mathf.Max(0, player.GetCurrentLevel() - 1) * dynamicTuning.levelScorePerLevel;
 
-        int buildScore = player.buildDict.Count * 8;
+        int killScore = player.KilledCount / Mathf.Max(1, dynamicTuning.killScoreDivisor);
 
-        int powerScore = Mathf.FloorToInt(player.playerData.Atk * 10);
+        int buildScore = player.buildDict.Count * dynamicTuning.buildScorePerTag;
+
+        float attackForScore = dynamicTuning.scoreOnlyAttackAboveStart
+            ? Mathf.Max(0f, player.playerData.Atk - BalanceConfig.player.startAttack)
+            : player.playerData.Atk;
+        int powerScore = Mathf.FloorToInt(attackForScore * dynamicTuning.attackScorePerPoint);
 
         playerPowerScore = levelScore + killScore + buildScore + powerScore;
 
@@ -967,24 +1249,35 @@ public class GameManager : MonoBehaviour
         // =========================
 
         // 波次间隔
-        spawnWaveInterval = Mathf.Clamp(6f - playerPowerScore * 0.018f, 2.2f, 6f);
+        spawnWaveInterval = Mathf.Clamp(
+            dynamicTuning.spawnIntervalBase - playerPowerScore * dynamicTuning.spawnIntervalPowerScale,
+            dynamicTuning.minSpawnInterval,
+            dynamicTuning.maxSpawnInterval);
 
         // 每组敌人数量
-        enemyCountPerGroup = Mathf.Clamp(3 + playerPowerScore / 25, 3, 16);
+        enemyCountPerGroup = Mathf.Clamp(
+            dynamicTuning.enemyCountBase + playerPowerScore / dynamicTuning.enemyCountPowerDivisor,
+            dynamicTuning.minEnemyCountPerGroup,
+            dynamicTuning.maxEnemyCountPerGroup);
 
         // 最大同时敌群数量
-        currentWaveGroupCount = Mathf.Clamp(1 + playerPowerScore / 40, 1, 5);
+        currentWaveGroupCount = Mathf.Clamp(
+            dynamicTuning.groupCountBase + playerPowerScore / dynamicTuning.groupCountPowerDivisor,
+            dynamicTuning.minGroupCount,
+            dynamicTuning.maxGroupCount);
 
         Debug.Log("玩家评分:" + playerPowerScore + " 敌群:" + currentWaveGroupCount + " 每组:" + enemyCountPerGroup);
 
         //float powerFactor = Mathf.Clamp01(playerPowerScore / 120f);
-        float powerFactor = Mathf.Clamp01(playerPowerScore / (50f + gameTime * 0.8f));
+        float powerFactor = Mathf.Clamp01(
+            playerPowerScore /
+            (dynamicTuning.powerFactorBase + gameTime * dynamicTuning.powerFactorTimeScale));
 
         // 血量成长明显
-        currentEnemyHpFactor = Mathf.Lerp(1f, 4f, powerFactor);
+        currentEnemyHpFactor = Mathf.Lerp(1f, dynamicTuning.maxEnemyHpFactor, powerFactor);
 
         // 攻击成长轻微
-        currentEnemyAtkFactor = Mathf.Lerp(1f, 2f, powerFactor);
+        currentEnemyAtkFactor = Mathf.Lerp(1f, dynamicTuning.maxEnemyAtkFactor, powerFactor);
 
         playerScore = playerPowerScore;
     }
@@ -1118,7 +1411,7 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < groupCount; i++)
         {
-            StartCoroutine(SpawnEnemyGroup(i * 0.25f));
+            StartCoroutine(SpawnEnemyGroup(i * BalanceConfig.wave.groupSpawnDelay));
         }
     }
 
@@ -1135,7 +1428,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            count = Random.Range(2, 6);
+            count = Random.Range(normalEnemyMin, normalEnemyMax + 1);
         }
 
         Vector3 centerPos = GetEnemyGroupCenter();
@@ -1207,10 +1500,10 @@ public class GameManager : MonoBehaviour
         pdata = new PlayerData
         {
             Level = 1,// 玩家等级
-            Hp = 520 + DataManager.myGameData.PermanentHp,// 玩家生命值 = 520 + 永久增加的生命值
-            Atk = 5 + DataManager.myGameData.PermanentAtk,// 当前玩家攻击力
-            MoveSpeed = 5.4f + DataManager.myGameData.PermanentMoveSpeed,// 玩家移动速度
-            Def = 15,// 玩家防御力
+            Hp = BalanceConfig.player.startHp + DataManager.myGameData.PermanentHp,// 玩家生命值 = 基础值 + 永久增加的生命值
+            Atk = BalanceConfig.player.startAttack + DataManager.myGameData.PermanentAtk,// 当前玩家攻击力
+            MoveSpeed = BalanceConfig.player.startMoveSpeed + DataManager.myGameData.PermanentMoveSpeed,// 玩家移动速度
+            Def = BalanceConfig.player.startDefence,// 玩家防御力
         };
 
         player.GetComponent<Player>().Init(pdata);
@@ -1219,6 +1512,7 @@ public class GameManager : MonoBehaviour
     public void ExecuteUpgrade(UpgradeData data)
     {
         Player p = player.GetComponent<Player>();
+        RecordUpgradeSelected(data);
 
         switch (data.type)
         {
@@ -1443,6 +1737,7 @@ public class GameManager : MonoBehaviour
         GameObject newChest = SpwanSingleCircle(pos);
         newChest.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("sprites/chest");
         newChest.AddComponent<ChestBall>().SetChestValue(player);
+        RecordChestSpawned();
         return newChest;
     }
 
@@ -1451,6 +1746,7 @@ public class GameManager : MonoBehaviour
         GameObject newCoin = SpwanSingleCircle(pos);
         newCoin.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("sprites/coin");
         newCoin.AddComponent<CoinBall>().SetCoinValue(coinValue, player);
+        RecordCoinSpawned(coinValue);
         return newCoin;
     }
     public GameObject SpwanExpBall(Vector3 pos,EnemyType enemyType, int expValue)
@@ -1475,6 +1771,7 @@ public class GameManager : MonoBehaviour
         newExpBall.transform.localScale = Vector3.one * baseScale;
         newExpBall.AddComponent<ExpBall>().SetExpValue(expValue, player);
         DataManager.allExpBall.Add(newExpBall);
+        RecordExpSpawned(expValue);
         return newExpBall;
     }
     public GameObject SpwanSingleCircle(Vector3 pos)// cicle  0.4  0.2
@@ -1659,13 +1956,14 @@ public class GameManager : MonoBehaviour
         for (int i = tempList.Count - 1; i >= 0; i--)
         {
             UpgradeData data = tempList[i];
+            UpgradeRuleTuning upgradeRules = BalanceConfig.upgradeRules;
 
             // 暴击爆炸
             if (data.type == UpgradeType.CritExplosion)
             {
                 if (player.HasCritExplosion ||
                     !player.buildDict.ContainsKey("crit") ||
-                    player.buildDict["crit"] < 2)
+                    player.buildDict["crit"] < upgradeRules.critExplosionMinCritStacks)
                 {
                     tempList.RemoveAt(i);
 
@@ -1678,7 +1976,7 @@ public class GameManager : MonoBehaviour
             {
                 if (player.HasPierceExplosion ||
                     !player.buildDict.ContainsKey("pierce") ||
-                    player.buildDict["pierce"] < 2)
+                    player.buildDict["pierce"] < upgradeRules.pierceExplosionMinPierceStacks)
                 {
                     tempList.RemoveAt(i);
 
@@ -1703,8 +2001,8 @@ public class GameManager : MonoBehaviour
             {
                 if (!player.buildDict.ContainsKey("fire") ||
                     !player.buildDict.ContainsKey("bullet") ||
-                    player.buildDict["fire"] < 2 ||
-                    player.buildDict["bullet"] < 5)
+                    player.buildDict["fire"] < upgradeRules.legendFireMinFireStacks ||
+                    player.buildDict["bullet"] < upgradeRules.legendFireMinBulletStacks)
                 {
                     tempList.RemoveAt(i);
 

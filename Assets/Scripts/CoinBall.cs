@@ -25,6 +25,7 @@ public class CoinBall : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, _target.transform.position, 20f * Time.deltaTime);
             if (Vector3.Distance(transform.position, _target.transform.position) < 0.1f)
             {
+                GameManager.Instance.RecordCoinCollected(_coinValue);
                 DataManager.myGameData.TotalCoinCount += _coinValue;
                 Destroy(gameObject);
             }

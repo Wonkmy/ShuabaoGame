@@ -3972,6 +3972,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5bfad5a0f683f6b4697580330b894624, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  balanceConfig: {fileID: 11400000, guid: 60234ea05cb4d834c85e053ac26dbb4d, type: 2}
   RunningGame: 1
   levelPanel: {fileID: 54184021}
   gameOverPanel: {fileID: 1156865705}
