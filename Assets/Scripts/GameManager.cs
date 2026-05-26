@@ -123,6 +123,14 @@ public class GameManager : MonoBehaviour
         RunTelemetry.debugJumpTime = gameTime;
     }
 
+    public void RecordChapterEvent(string chapterName, EnemyType enemyType)
+    {
+        RunTelemetry.chapterEventCount++;
+        RunTelemetry.chapterEventTimes.Add(gameTime);
+        RunTelemetry.chapterEventNames.Add(chapterName);
+        RunTelemetry.chapterEnemyTypes.Add(enemyType.ToString());
+    }
+
     public void DebugJumpToFlowStage(int stageIndex, FlowJumpMode mode)
     {
         if (!IsGameStarted || player == null)
@@ -135,6 +143,7 @@ public class GameManager : MonoBehaviour
 
         float targetTime = snapshot != null ? snapshot.targetTime : segment.startTime;
         gameTime = Mathf.Max(0f, targetTime);
+        SyncChapterEventProgress();
         difficultyUpdateTimer = difficultyUpdateInterval;
         ApplyDifficultyFromCurrentTime();
 
@@ -237,6 +246,29 @@ public class GameManager : MonoBehaviour
             dynamicTuning.maxDifficulty);
     }
 
+    void SyncChapterEventProgress()
+    {
+        CombatChapterTuning chapterTuning = BalanceConfig.chapter;
+        nextMiniBossChapterIndex = 0;
+        finalBossChapterTriggered = false;
+
+        if (chapterTuning == null)
+            return;
+
+        if (chapterTuning.miniBossTimes != null)
+        {
+            for (int i = 0; i < chapterTuning.miniBossTimes.Length; i++)
+            {
+                if (gameTime >= chapterTuning.miniBossTimes[i])
+                {
+                    nextMiniBossChapterIndex = i + 1;
+                }
+            }
+        }
+
+        finalBossChapterTriggered = gameTime >= chapterTuning.finalBossTime;
+    }
+
     void EnsureBalanceConfig()
     {
         if (balanceConfig == null && runtimeDefaultBalanceConfig == null)
@@ -272,6 +304,14 @@ public class GameManager : MonoBehaviour
         if (BalanceConfig.debug.enableFlowStageJump && GetComponent<FlowStageDebugController>() == null)
         {
             gameObject.AddComponent<FlowStageDebugController>();
+        }
+    }
+
+    void ConfigureSpaceBackground()
+    {
+        if (mainCamera != null && mainCamera.GetComponent<SpaceBackgroundController>() == null)
+        {
+            mainCamera.gameObject.AddComponent<SpaceBackgroundController>();
         }
     }
 
@@ -383,6 +423,8 @@ public class GameManager : MonoBehaviour
     private float specialEventTimer = 0;
     public bool IsSpecialEvent { get; set; }// 是否正在进行特殊事件
     private EnemyType[] enemyTypes;// 特殊事件专用的敌人类型：精英、Boss
+    int nextMiniBossChapterIndex = 0;
+    bool finalBossChapterTriggered = false;
 
     // 时间停止相关
     public bool IsTimeStop = false;
@@ -470,6 +512,8 @@ public class GameManager : MonoBehaviour
         IsGameStarted = true;
         runReportWritten = false;
         RunTelemetry = new RunTelemetry();
+        nextMiniBossChapterIndex = 0;
+        finalBossChapterTriggered = false;
         // 基础难度固定
         difficulty = BalanceConfig.dynamicDifficulty.initialDifficulty;
         // 当前特殊事件等待时间
@@ -477,6 +521,7 @@ public class GameManager : MonoBehaviour
         mainCamera = Camera.main;
         cameraEffect = mainCamera.GetComponent<CameraEffect>();
         cameraOriginPos = mainCamera.transform.localPosition;
+        ConfigureSpaceBackground();
         yield return new WaitForSeconds(0.1f);
         // 生成玩家
         GenPlayer();
@@ -605,6 +650,8 @@ public class GameManager : MonoBehaviour
         // 特殊事件相关
         IsSpecialEvent = false;
         specialEventTimer = 0;
+        nextMiniBossChapterIndex = 0;
+        finalBossChapterTriggered = false;
 
         cameraEffect.intensity = 0;
         mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
@@ -635,6 +682,8 @@ public class GameManager : MonoBehaviour
         // 特殊事件相关
         IsSpecialEvent = false;
         specialEventTimer = 0;
+        nextMiniBossChapterIndex = 0;
+        finalBossChapterTriggered = false;
 
         // 隐藏经验和血条
         playerExpSlider.gameObject.SetActive(false);
@@ -782,6 +831,7 @@ public class GameManager : MonoBehaviour
 
         // 特殊事件逻辑
         specialEventTimer += Time.deltaTime;
+        UpdateChapterEvents();
 
         // 时间到了并且当前没有特殊事件
         if (!IsSpecialEvent && specialEventTimer >= nextSpecialEventInterval)
@@ -918,6 +968,60 @@ public class GameManager : MonoBehaviour
             // 直接进入特殊事件
             specialEventTimer = nextSpecialEventInterval;
         }
+    }
+
+
+    void UpdateChapterEvents()
+    {
+        CombatChapterTuning chapterTuning = BalanceConfig.chapter;
+        if (chapterTuning == null || !chapterTuning.enableChapterEvents || IsSpecialEvent)
+            return;
+
+        if (!finalBossChapterTriggered && gameTime >= chapterTuning.finalBossTime)
+        {
+            finalBossChapterTriggered = true;
+            TriggerChapterEvent(chapterTuning.finalBossTitle, EnemyType.Boss);
+            return;
+        }
+
+        float[] miniBossTimes = chapterTuning.miniBossTimes;
+        if (miniBossTimes == null)
+            return;
+
+        if (nextMiniBossChapterIndex < miniBossTimes.Length && gameTime >= miniBossTimes[nextMiniBossChapterIndex])
+        {
+            nextMiniBossChapterIndex++;
+            TriggerChapterEvent(chapterTuning.miniBossTitle, EnemyType.Elite);
+        }
+    }
+
+    void TriggerChapterEvent(string chapterName, EnemyType enemyType)
+    {
+        CombatChapterTuning chapterTuning = BalanceConfig.chapter;
+        specialEventTimer = 0f;
+        IsSpecialEvent = true;
+        cameraEffect.darkIntensity = chapterTuning.darkIntensity;
+        ShakeMainCamera(chapterTuning.cameraShakeDuration, chapterTuning.cameraShakeStrength);
+        RecordChapterEvent(chapterName, enemyType);
+        StartCoroutine(SpawnChapterSpecialEnemy(chapterName, enemyType));
+    }
+
+    IEnumerator SpawnChapterSpecialEnemy(string chapterName, EnemyType enemyType)
+    {
+        CombatChapterTuning chapterTuning = BalanceConfig.chapter;
+        GameObject title = SpwanWorldTxt(chapterName, chapterTuning.chapterTitleSize);
+        StartCoroutine(ShowFlashWarningTxt(title));
+
+        Vector3 centerPos = GetEnemyGroupCenter();
+        GameObject centerObj = new GameObject("ChapterEnemyGroupCenter");
+        centerObj.transform.position = centerPos;
+        GameObject warning = ShowWarning(centerObj.transform, enemyType == EnemyType.Boss ? "warning_boss" : "warning");
+
+        yield return new WaitForSeconds(chapterTuning.warningDelay);
+
+        Destroy(warning);
+        Destroy(centerObj);
+        StartCoroutine(SpawnSpecialEnemy(enemyType));
     }
 
 
@@ -1672,6 +1776,24 @@ public class GameManager : MonoBehaviour
         fx.transform.localScale = Vector3.one * 0.45f;
         Destroy(fx, 0.12f);
         return fx;
+    }
+
+    public GameObject SpwanEnemyAttackPulse(Vector3 pos, Color color, float targetScale, float duration)
+    {
+        GameObject pulse = SpwanSingleCircle(pos);
+        pulse.name = "EnemyAttackPulse";
+
+        SpriteRenderer sr = pulse.GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            sr.color = color;
+            sr.sortingOrder = 30;
+        }
+
+        pulse.transform.localScale = Vector3.one * 0.35f;
+        PulseFx fx = pulse.AddComponent<PulseFx>();
+        fx.Init(targetScale, duration);
+        return pulse;
     }
 
     public List<GameObject> FindCicleAllEnemysByDistance(Vector3 pos, float distance)

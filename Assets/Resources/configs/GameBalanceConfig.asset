@@ -72,14 +72,27 @@ MonoBehaviour:
     midPressureInterval: 70
     lowPressureInterval: 55
     calmInterval: 40
+  chapter:
+    enableChapterEvents: 1
+    miniBossTimes:
+    - 90
+    - 180
+    finalBossTime: 300
+    miniBossTitle: "\u5C0F\u578BBoss\u6218"
+    finalBossTitle: "\u6700\u7EC8Boss\u6218"
+    chapterTitleSize: 1.25
+    warningDelay: 1
+    darkIntensity: 0.5
+    cameraShakeDuration: 0.25
+    cameraShakeStrength: 0.18
   reward:
     waveCoinCount: 2
     waveCoinValue: 1
-    eliteBossChestChance: 0.41
+    eliteBossChestChance: 0.605
     eliteCoinCount: 5
     eliteCoinValue: 2
-    bossCoinCount: 8
-    bossCoinValue: 4
+    bossCoinCount: 12
+    bossCoinValue: 3
     critExpMultiplier: 1.25
     enemyRewards:
     - enemyType: 0

@@ -16,6 +16,9 @@ public class GameBalanceConfig : ScriptableObject
     [Header("特殊事件触发节奏")]
     public SpecialEventTuning specialEvent = new SpecialEventTuning();
 
+    [Header("战斗章节事件配置")]
+    public CombatChapterTuning chapter = new CombatChapterTuning();
+
     [Header("经验、金币、宝箱奖励")]
     public RewardTuning reward = new RewardTuning();
 
@@ -232,6 +235,40 @@ public class SpecialEventTuning
 
     [Header("平稳状态下下一次特殊事件间隔")]
     public float calmInterval = 40f;
+}
+
+[Serializable]
+public class CombatChapterTuning
+{
+    [Header("是否启用战斗章节事件")]
+    public bool enableChapterEvents = true;
+
+    [Header("小Boss章节触发时间，单位秒")]
+    public float[] miniBossTimes = { 90f, 180f };
+
+    [Header("最终Boss章节触发时间，单位秒")]
+    public float finalBossTime = 300f;
+
+    [Header("小Boss章节标题")]
+    public string miniBossTitle = "小型Boss战";
+
+    [Header("最终Boss章节标题")]
+    public string finalBossTitle = "最终Boss战";
+
+    [Header("章节标题字号")]
+    public float chapterTitleSize = 1.25f;
+
+    [Header("章节出场前警告等待时间")]
+    public float warningDelay = 1.0f;
+
+    [Header("章节触发时镜头暗化强度")]
+    [Range(0f, 1f)] public float darkIntensity = 0.5f;
+
+    [Header("章节触发时震屏时长")]
+    public float cameraShakeDuration = 0.25f;
+
+    [Header("章节触发时震屏强度")]
+    public float cameraShakeStrength = 0.18f;
 }
 
 [Serializable]

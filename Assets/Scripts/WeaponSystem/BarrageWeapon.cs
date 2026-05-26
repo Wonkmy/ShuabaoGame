@@ -4,10 +4,32 @@ using UnityEngine;
 
 public class BarrageWeapon : Weapon
 {
+    int bossAttackIndex = 0;
+
     public override void Init(int weaponType, Entity _entity)
     {
         base.Init(weaponType, _entity);
     }
+
+    protected override void OnBeforeProcessAttack()
+    {
+        Enemy enemy = entity as Enemy;
+        if (enemy == null || enemy.enemyType != EnemyType.Boss)
+            return;
+
+        bossAttackIndex++;
+        bool useCircle = bossAttackIndex % 2 == 0;
+        enemy.attackType = useCircle ? AttackType.Cicle : AttackType.Sector;
+        int bulletCount = useCircle ? 18 : 7;
+        ChangeAttackType(enemy.attackType, enemy, bulletCount);
+
+        Color pulseColor = useCircle
+            ? new Color(1f, 0.2f, 0.12f, 0.5f)
+            : new Color(1f, 0.65f, 0.18f, 0.45f);
+        GameManager.Instance.SpwanEnemyAttackPulse(enemy.transform.position, pulseColor, useCircle ? 5.2f : 3.2f, 0.35f);
+        GameManager.Instance.ShakeMainCamera(useCircle ? 0.14f : 0.1f, useCircle ? 0.16f : 0.11f);
+    }
+
     public override void AttackLiner(Vector3 fireDirection, Vector3 firePos, int currentBulletCount)
     {
         base.AttackLiner(fireDirection, firePos, currentBulletCount);
@@ -111,6 +133,62 @@ public class BarrageWeapon : Weapon
 
     public override void AttackCicle(Vector3 fireDirection, Vector3 firePos, int currentBulletCount)
     {
-        base.AttackCicle(fireDirection, firePos, currentBulletCount);
+        Enemy enemy = entity as Enemy;
+        if (enemy == null || enemy.enemyType != EnemyType.Boss)
+        {
+            base.AttackCicle(fireDirection, firePos, currentBulletCount);
+            return;
+        }
+
+        int outerCount = Mathf.Max(currentBulletCount, 18);
+        int innerCount = Mathf.Max(outerCount / 2, 9);
+
+        for (int i = 0; i < outerCount; i++)
+        {
+            float angle = (360.0f / outerCount) * i;
+            Vector3 dir = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0);
+            GameObject bullet = GameManager.Instance.SpwanBulletSingle(
+                bulletData,
+                dir,
+                firePos,
+                0.65f,
+                entity.EntityTag,
+                entity);
+
+            Bullet bulletComp = bullet.GetComponent<Bullet>();
+            if (bulletComp != null)
+            {
+                bulletComp.PierceLeft = 2;
+                if (i % 3 == 0)
+                {
+                    bulletComp.canTriggerHitStop = true;
+                    bullet.transform.localScale = Vector3.one * 1.2f;
+                }
+            }
+
+            spawnedBullets.Add(bullet);
+        }
+
+        float angleOffset = 360f / outerCount * 0.5f;
+        for (int i = 0; i < innerCount; i++)
+        {
+            float angle = angleOffset + (360.0f / innerCount) * i;
+            Vector3 dir = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0);
+            GameObject bullet = GameManager.Instance.SpwanBulletSingle(
+                bulletData,
+                dir,
+                firePos + dir * 0.45f,
+                0.35f,
+                entity.EntityTag,
+                entity);
+
+            Bullet bulletComp = bullet.GetComponent<Bullet>();
+            if (bulletComp != null)
+            {
+                bulletComp.PierceLeft = 1;
+            }
+
+            spawnedBullets.Add(bullet);
+        }
     }
 }

@@ -29,6 +29,13 @@ public class EliteGunWeapon : Weapon
             return;
         }
 
+        GameManager.Instance.SpwanEnemyAttackPulse(
+            enemy.transform.position,
+            new Color(1f, 0.35f, 0.18f, 0.4f),
+            2.5f,
+            0.28f);
+        GameManager.Instance.ShakeMainCamera(0.06f, 0.07f);
+
         Vector3 mainDir = fireDirection.normalized;
         Vector3 sideDir = Vector3.Cross(mainDir, Vector3.forward).normalized;
 

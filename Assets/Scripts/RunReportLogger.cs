@@ -66,7 +66,11 @@ public static class RunReportLogger
             debugJumpUsed = telemetry.debugJumpUsed,
             debugJumpMode = telemetry.debugJumpMode,
             debugJumpStage = telemetry.debugJumpStage,
-            debugJumpTime = telemetry.debugJumpTime
+            debugJumpTime = telemetry.debugJumpTime,
+            chapterEventCount = telemetry.chapterEventCount,
+            chapterEventTimes = telemetry.chapterEventTimes,
+            chapterEventNames = telemetry.chapterEventNames,
+            chapterEnemyTypes = telemetry.chapterEnemyTypes
         };
 
         string folder = Path.Combine(Application.persistentDataPath, "ShuabaoGameRunReports");
@@ -133,7 +137,11 @@ public static class RunReportLogger
             new FieldNote("debugJumpUsed", "本局是否使用过心流阶段跳转"),
             new FieldNote("debugJumpMode", "心流阶段跳转模式，TimeOnly只跳时间，FlowSnapshot套用阶段快照"),
             new FieldNote("debugJumpStage", "最后一次跳转到的心流阶段"),
-            new FieldNote("debugJumpTime", "最后一次跳转后的游戏时间，单位秒")
+            new FieldNote("debugJumpTime", "最后一次跳转后的游戏时间，单位秒"),
+            new FieldNote("chapterEventCount", "本局触发的战斗章节事件次数"),
+            new FieldNote("chapterEventTimes", "每次战斗章节事件触发时间，单位秒"),
+            new FieldNote("chapterEventNames", "每次战斗章节事件标题"),
+            new FieldNote("chapterEnemyTypes", "每次战斗章节事件生成的特殊敌人类型")
         };
     }
 }
@@ -193,6 +201,10 @@ public class RunReportData
     public string debugJumpMode;
     public string debugJumpStage;
     public float debugJumpTime;
+    public int chapterEventCount;
+    public List<float> chapterEventTimes;
+    public List<string> chapterEventNames;
+    public List<string> chapterEnemyTypes;
 }
 
 [Serializable]
@@ -234,4 +246,8 @@ public class RunTelemetry
     public string debugJumpMode;
     public string debugJumpStage;
     public float debugJumpTime;
+    public int chapterEventCount;
+    public List<float> chapterEventTimes = new List<float>();
+    public List<string> chapterEventNames = new List<string>();
+    public List<string> chapterEnemyTypes = new List<string>();
 }

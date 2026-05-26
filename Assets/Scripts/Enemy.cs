@@ -334,7 +334,8 @@ public class Enemy : Entity
             //GameManager.Instance.player.GetComponent<Player>().ResetWeaponAttackRange();// 重置玩家的武器攻击范围
             GameManager.Instance.cameraEffect.darkIntensity = 0.0f;
         }
-
+        view.gameObject.SetActive(false);// 先隐藏敌人，等特效播放完再销毁
+        yield return new WaitForSeconds(0.2f);
         // 如果是精英怪或血厚怪，生成一个加血道具
         if (enemyType == EnemyType.Elite || enemyType == EnemyType.Thick)
         {
@@ -344,9 +345,13 @@ public class Enemy : Entity
                 GameObject newAddHp = Instantiate(Resources.Load<GameObject>("add_hp"), transform.position, Quaternion.identity);
                 newAddHp.GetComponent<AddHP>().SetAddHP(10, GameManager.Instance.player, true);
             }
+            Instantiate(Resources.Load<GameObject>("bigDeadFX"), transform.position, Quaternion.identity);
+        }
+        else
+        {
+            Instantiate(Resources.Load<GameObject>("deadFX"), transform.position, Quaternion.identity);
         }
 
-        Instantiate(Resources.Load<GameObject>("deadFX"), transform.position, Quaternion.identity);
 
         DataManager.allEnemyDict.Remove(gameObject);// 从敌人字典中移除
         if (GameManager.Instance.GetPlayer().chainedTargets.Contains(gameObject))

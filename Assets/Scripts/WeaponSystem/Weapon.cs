@@ -228,6 +228,7 @@ public class Weapon
 
                         lockedTarget = ey;
 
+                        OnBeforeProcessAttack();
                         ProcessAttack();
 
                         fireTime = 0.0f;
@@ -239,6 +240,10 @@ public class Weapon
                 }
             }
         }
+    }
+
+    protected virtual void OnBeforeProcessAttack()
+    {
     }
 
     public void ChangeAttackType(AttackType attackType, Entity entity,int _currentBulletCount = 3)
