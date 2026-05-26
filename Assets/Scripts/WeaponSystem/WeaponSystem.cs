@@ -27,7 +27,7 @@ public static class WeaponSystem
         for(int i = weapons.Count - 1; i >= 0; i--)
         {
             weapons[i].WeaponUpdate();
-            weapons[i].ChangeAttackType(weapons[i].entity.attackType, weapons[i].entity, weapons[i].entity.CurrentBulletCount);
+            weapons[i].ChangeAttackType(weapons[i].entity.attackType, weapons[i].entity, weapons[i].entity.GetWeaponAttackBulletCount());
         }
     }
 

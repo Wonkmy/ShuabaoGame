@@ -22,6 +22,11 @@ public class Entity : MonoBehaviour
 
     public virtual void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount = 3) { }
 
+    public virtual int GetWeaponAttackBulletCount()
+    {
+        return CurrentBulletCount;
+    }
+
     public Weapon GetCurrentWeapon()
     {
         if(weapon == null)return null;

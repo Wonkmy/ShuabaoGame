@@ -5,10 +5,38 @@ using UnityEngine;
 public class BarrageWeapon : Weapon
 {
     int bossAttackIndex = 0;
+    bool nextBossAttackUseCircle = false;
 
     public override void Init(int weaponType, Entity _entity)
     {
         base.Init(weaponType, _entity);
+    }
+
+    protected override float GetAttackWarningLeadTime()
+    {
+        Enemy enemy = entity as Enemy;
+        return enemy != null && enemy.enemyType == EnemyType.Boss && enemy.IsFinalBoss
+            ? GameManager.Instance.BalanceConfig.bossCombat.warningLeadTime
+            : 0f;
+    }
+
+    protected override void OnBeforeAttackWarning()
+    {
+        Enemy enemy = entity as Enemy;
+        if (enemy == null || enemy.enemyType != EnemyType.Boss || !enemy.IsFinalBoss)
+            return;
+
+        nextBossAttackUseCircle = bossAttackIndex % 2 == 1;
+        int bulletCount = nextBossAttackUseCircle ? 18 + enemy.BossPhase * 2 : 7 + enemy.BossPhase;
+        enemy.attackType = nextBossAttackUseCircle ? AttackType.Cicle : AttackType.Sector;
+        ChangeAttackType(enemy.attackType, enemy, bulletCount);
+        GameManager.Instance.SpwanBossAttackWarning(
+            enemy.transform.position,
+            enemy.FireDirection,
+            nextBossAttackUseCircle,
+            enemy.BossPhase,
+            GetAttackWarningLeadTime());
+        enemy.PlayBossChargeFlash(nextBossAttackUseCircle);
     }
 
     protected override void OnBeforeProcessAttack()
@@ -17,10 +45,10 @@ public class BarrageWeapon : Weapon
         if (enemy == null || enemy.enemyType != EnemyType.Boss)
             return;
 
+        bool useCircle = enemy.IsFinalBoss ? nextBossAttackUseCircle : bossAttackIndex % 2 == 1;
         bossAttackIndex++;
-        bool useCircle = bossAttackIndex % 2 == 0;
         enemy.attackType = useCircle ? AttackType.Cicle : AttackType.Sector;
-        int bulletCount = useCircle ? 18 : 7;
+        int bulletCount = useCircle ? 18 + enemy.BossPhase * 2 : 7 + enemy.BossPhase;
         ChangeAttackType(enemy.attackType, enemy, bulletCount);
 
         Color pulseColor = useCircle
@@ -28,6 +56,15 @@ public class BarrageWeapon : Weapon
             : new Color(1f, 0.65f, 0.18f, 0.45f);
         GameManager.Instance.SpwanEnemyAttackPulse(enemy.transform.position, pulseColor, useCircle ? 5.2f : 3.2f, 0.35f);
         GameManager.Instance.ShakeMainCamera(useCircle ? 0.14f : 0.1f, useCircle ? 0.16f : 0.11f);
+    }
+
+    protected override void OnAfterProcessAttack()
+    {
+        Enemy enemy = entity as Enemy;
+        if (enemy == null || enemy.enemyType != EnemyType.Boss || !enemy.IsFinalBoss)
+            return;
+
+        enemy.StartBossVulnerableWindow(GameManager.Instance.BalanceConfig.bossCombat.vulnerableDuration);
     }
 
     public override void AttackLiner(Vector3 fireDirection, Vector3 firePos, int currentBulletCount)
@@ -55,7 +92,8 @@ public class BarrageWeapon : Weapon
         Vector3 mainDir = fireDirection.normalized;
         Vector3 sideDir = Vector3.Cross(mainDir, Vector3.forward).normalized;
 
-        int baseBulletCount = Mathf.Max(currentBulletCount + 2, 8);
+        int bossPhase = enemy != null && enemy.enemyType == EnemyType.Boss ? enemy.BossPhase : 1;
+        int baseBulletCount = Mathf.Max(currentBulletCount + 2 + bossPhase, 8);
         Vector3[] mainFanDirections = DataManager.GetFanDirections2D(mainDir, baseBulletCount);
 
         float[] laneOffsets = new float[] { -0.55f, -0.25f, 0f, 0.25f, 0.55f };
@@ -100,7 +138,7 @@ public class BarrageWeapon : Weapon
             }
         }
 
-        int extraWaveBulletCount = Mathf.Max(currentBulletCount, 3);
+        int extraWaveBulletCount = Mathf.Max(currentBulletCount + bossPhase, 3);
         Vector3[] extraFanDirections = DataManager.GetFanDirections2D(mainDir, extraWaveBulletCount);
         float frontOffset = 0.9f;
 
@@ -140,8 +178,8 @@ public class BarrageWeapon : Weapon
             return;
         }
 
-        int outerCount = Mathf.Max(currentBulletCount, 18);
-        int innerCount = Mathf.Max(outerCount / 2, 9);
+        int outerCount = Mathf.Max(currentBulletCount + enemy.BossPhase * 2, 18);
+        int innerCount = Mathf.Max(outerCount / 2 + enemy.BossPhase, 9);
 
         for (int i = 0; i < outerCount; i++)
         {

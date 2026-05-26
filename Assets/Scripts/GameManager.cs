@@ -131,6 +131,36 @@ public class GameManager : MonoBehaviour
         RunTelemetry.chapterEnemyTypes.Add(enemyType.ToString());
     }
 
+    public Coroutine StartRuntimeCoroutine(IEnumerator routine)
+    {
+        if (routine == null)
+            return null;
+
+        Coroutine coroutine = null;
+        coroutine = StartCoroutine(TrackRuntimeCoroutine(routine, () => runtimeCoroutines.Remove(coroutine)));
+        runtimeCoroutines.Add(coroutine);
+        return coroutine;
+    }
+
+    IEnumerator TrackRuntimeCoroutine(IEnumerator routine, System.Action onComplete)
+    {
+        yield return routine;
+        onComplete?.Invoke();
+    }
+
+    void StopRuntimeCoroutines()
+    {
+        for (int i = runtimeCoroutines.Count - 1; i >= 0; i--)
+        {
+            if (runtimeCoroutines[i] != null)
+            {
+                StopCoroutine(runtimeCoroutines[i]);
+            }
+        }
+
+        runtimeCoroutines.Clear();
+    }
+
     public void DebugJumpToFlowStage(int stageIndex, FlowJumpMode mode)
     {
         if (!IsGameStarted || player == null)
@@ -275,6 +305,16 @@ public class GameManager : MonoBehaviour
         {
             runtimeDefaultBalanceConfig = ScriptableObject.CreateInstance<GameBalanceConfig>();
         }
+
+        if (balanceConfig != null)
+        {
+            balanceConfig.EnsureNestedConfigs();
+        }
+
+        if (runtimeDefaultBalanceConfig != null)
+        {
+            runtimeDefaultBalanceConfig.EnsureNestedConfigs();
+        }
     }
 
     void ApplyBalanceConfig()
@@ -334,6 +374,7 @@ public class GameManager : MonoBehaviour
     public bool IsGameStarted { get; set; }
     bool runReportWritten = false;
     public RunTelemetry RunTelemetry { get; private set; } = new RunTelemetry();
+    readonly List<Coroutine> runtimeCoroutines = new List<Coroutine>();
 
     // 技能释放相关
     public Button btn_ReleaseSkill;
@@ -624,6 +665,7 @@ public class GameManager : MonoBehaviour
     }
     void RevivalGame()
     {
+        StopRuntimeCoroutines();
         // 玩家满血复活，重置尸潮、难度、预算、游戏时间等所有数据，但不清理敌人和子弹，玩家已有的构筑列表buildDict、HasCritExplosion、HasPierceExplosion、HasLowBulletHighDamage等保持不变
         Player playerConponent = player.GetComponent<Player>();
         playerConponent.FilledTotalHp();
@@ -660,6 +702,7 @@ public class GameManager : MonoBehaviour
     }
     void ResetAllGameDatas()
     {
+        StopRuntimeCoroutines();
         // 清理所有敌人和子弹、数据、字典、玩家已有的构筑列表buildDict、HasCritExplosion、HasPierceExplosion、HasLowBulletHighDamage
         
         WeaponSystem.Clear();
@@ -841,7 +884,7 @@ public class GameManager : MonoBehaviour
             IsSpecialEvent = true;
 
             EnemyType enemyType = enemyTypes[Random.Range(0, enemyTypes.Length)];
-            StartCoroutine(SpawnSpecialEnemy(enemyType));
+            StartRuntimeCoroutine(SpawnSpecialEnemy(enemyType));
 
             cameraEffect.darkIntensity = 0.45f;
 
@@ -959,10 +1002,11 @@ public class GameManager : MonoBehaviour
         {
             ShowLevelUpPanel(true);
         }
-        //if (Input.GetKeyDown(KeyCode.R))
-        //{
-        //    ExecuteNuke();
-        //}
+        if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.B))
+        {
+            finalBossChapterTriggered = true;
+            TriggerChapterEvent(BalanceConfig.chapter.finalBossTitle, EnemyType.Boss);
+        }
         if (Input.GetKeyDown(KeyCode.P))
         {
             // 直接进入特殊事件
@@ -1003,14 +1047,14 @@ public class GameManager : MonoBehaviour
         cameraEffect.darkIntensity = chapterTuning.darkIntensity;
         ShakeMainCamera(chapterTuning.cameraShakeDuration, chapterTuning.cameraShakeStrength);
         RecordChapterEvent(chapterName, enemyType);
-        StartCoroutine(SpawnChapterSpecialEnemy(chapterName, enemyType));
+        StartRuntimeCoroutine(SpawnChapterSpecialEnemy(chapterName, enemyType));
     }
 
     IEnumerator SpawnChapterSpecialEnemy(string chapterName, EnemyType enemyType)
     {
         CombatChapterTuning chapterTuning = BalanceConfig.chapter;
         GameObject title = SpwanWorldTxt(chapterName, chapterTuning.chapterTitleSize);
-        StartCoroutine(ShowFlashWarningTxt(title));
+        StartRuntimeCoroutine(ShowFlashWarningTxt(title));
 
         Vector3 centerPos = GetEnemyGroupCenter();
         GameObject centerObj = new GameObject("ChapterEnemyGroupCenter");
@@ -1021,7 +1065,7 @@ public class GameManager : MonoBehaviour
 
         Destroy(warning);
         Destroy(centerObj);
-        StartCoroutine(SpawnSpecialEnemy(enemyType));
+        StartRuntimeCoroutine(SpawnSpecialEnemy(enemyType, enemyType == EnemyType.Boss));
     }
 
 
@@ -1064,7 +1108,7 @@ public class GameManager : MonoBehaviour
     public void ExecuteUnstoppable()
     {
         player.GetComponent<Player>().IsInvincible = true;
-        StartCoroutine(ResetUnstoppable());
+        StartRuntimeCoroutine(ResetUnstoppable());
     }
     IEnumerator ResetUnstoppable()
     {
@@ -1106,7 +1150,7 @@ public class GameManager : MonoBehaviour
     {
         ShakeMainCamera(0.6f, 0.5f);
 
-        StartCoroutine(NukeEffect());
+        StartRuntimeCoroutine(NukeEffect());
 
         for (int i = DataManager.allEnemyDict.Count - 1; i >= 0; i--)
         {
@@ -1243,7 +1287,7 @@ public class GameManager : MonoBehaviour
     }
 
     // 生成特殊敌人
-    IEnumerator SpawnSpecialEnemy(EnemyType enemyType)
+    IEnumerator SpawnSpecialEnemy(EnemyType enemyType, bool isFinalBoss = false)
     {
         // 如果enemyType是Elite，则生成两只。如果是Boss，则生成一只。
         int count = enemyType == EnemyType.Elite ? 2 : 1;
@@ -1264,6 +1308,7 @@ public class GameManager : MonoBehaviour
             Enemy enemy = newEnemy.GetComponent<Enemy>();
             enemy.target = player.transform;
             enemy.SetEnemy(DataManager.enemyDataDict[(int)enemyType]);
+            enemy.ConfigureFinalBossCombat(isFinalBoss);
             enemy.IsSpecialEnemy = true;
             // 屏幕外随机位置
             Vector3 centerPos2 = GetEnemyGroupCenter();
@@ -1296,7 +1341,7 @@ public class GameManager : MonoBehaviour
 
 
             var shichao = SpwanWorldTxt("尸潮来袭！");
-            StartCoroutine(ShowFlashWarningTxt(shichao));
+            StartRuntimeCoroutine(ShowFlashWarningTxt(shichao));
         }
 
         // 尸潮持续一小段时间
@@ -1313,9 +1358,12 @@ public class GameManager : MonoBehaviour
 
     public IEnumerator ShowFlashWarningTxt(GameObject warningObject)
     {
+        if (warningObject == null)
+            yield break;
+
         warningObject.SetActive(true);
         float timer = 0;
-        while (timer < 2)
+        while (timer < 2 && warningObject != null)
         {
             timer += Time.deltaTime;
             // 每0.5秒闪烁一次
@@ -1329,7 +1377,11 @@ public class GameManager : MonoBehaviour
             }
             yield return null;
         }
-        Destroy(warningObject);
+
+        if (warningObject != null)
+        {
+            Destroy(warningObject);
+        }
     }
 
     // 波次刷怪更新
@@ -1358,7 +1410,7 @@ public class GameManager : MonoBehaviour
         if (isWave)
         {
             // 尸潮保持单方向大群
-            StartCoroutine(SpawnEnemyGroup(0));
+            StartRuntimeCoroutine(SpawnEnemyGroup(0));
 
             return;
         }
@@ -1371,7 +1423,7 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < groupCount; i++)
         {
-            StartCoroutine(SpawnEnemyGroup(i * BalanceConfig.wave.groupSpawnDelay));
+            StartRuntimeCoroutine(SpawnEnemyGroup(i * BalanceConfig.wave.groupSpawnDelay));
         }
     }
 
@@ -1794,6 +1846,273 @@ public class GameManager : MonoBehaviour
         PulseFx fx = pulse.AddComponent<PulseFx>();
         fx.Init(targetScale, duration);
         return pulse;
+    }
+
+    public void SpwanBossAttackWarning(Vector3 pos, Vector3 fireDir, bool circleAttack, int phase, float duration)
+    {
+        if (circleAttack)
+        {
+            float scale = BalanceConfig.bossCombat.GetCircleWarningScale(phase);
+            SpwanEnemyAttackPulse(pos, new Color(1f, 0.1f, 0.05f, 0.42f), scale, duration);
+            StartRuntimeCoroutine(BossCircleWarningFlow(pos, phase, duration));
+            return;
+        }
+
+        float radius = BalanceConfig.bossCombat.GetSectorWarningRadius(phase);
+        float angle = BalanceConfig.bossCombat.GetSectorWarningAngle(phase);
+        GameObject warning = CreateBossSectorWarning(pos, fireDir, angle, radius);
+        StartRuntimeCoroutine(FadeAndDestroyWarning(warning, duration));
+        StartRuntimeCoroutine(BossSectorWarningFlow(pos, fireDir, angle, radius, phase, duration));
+    }
+
+    IEnumerator BossCircleWarningFlow(Vector3 pos, int phase, float duration)
+    {
+        float targetScale = BalanceConfig.bossCombat.GetCircleWarningScale(phase);
+        float interval = phase == 1 ? 0.16f : phase == 2 ? 0.13f : 0.1f;
+        float pulseDuration = Mathf.Max(0.18f, duration * 0.42f);
+        float elapsed = 0f;
+        float nextPulseTime = interval;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            if (elapsed >= nextPulseTime)
+            {
+                Color color = new Color(1f, 0.22f, 0.06f, phase == 1 ? 0.28f : 0.34f);
+                SpwanEnemyAttackPulse(pos, color, targetScale, pulseDuration);
+                nextPulseTime += interval;
+            }
+            yield return null;
+        }
+    }
+
+    IEnumerator BossSectorWarningFlow(Vector3 pos, Vector3 fireDir, float angle, float radius, int phase, float duration)
+    {
+        if (fireDir.sqrMagnitude <= 0.001f)
+            fireDir = Vector3.right;
+
+        int lineCount = phase == 1 ? 7 : phase == 2 ? 8 : 9;
+        LineRenderer[] lines = new LineRenderer[lineCount];
+        GameObject[] heads = new GameObject[lineCount];
+        float[] angleOffsets = new float[lineCount];
+        float[] phaseOffsets = new float[lineCount];
+        float baseAngle = Mathf.Atan2(fireDir.y, fireDir.x) * Mathf.Rad2Deg;
+        float innerRadius = 0.45f;
+        float segmentLength = phase == 1 ? 1.55f : phase == 2 ? 1.8f : 2.05f;
+
+        for (int i = 0; i < lineCount; i++)
+        {
+            float laneT = lineCount == 1 ? 0.5f : i / (float)(lineCount - 1);
+            angleOffsets[i] = Mathf.Lerp(-angle * 0.43f, angle * 0.43f, laneT);
+            phaseOffsets[i] = i * (1f / lineCount);
+            lines[i] = CreateBossWarningFlowLine("BossSectorFlowLine", phase);
+            heads[i] = SpwanSingleCircle(pos);
+            heads[i].name = "BossSectorFlowHead";
+            heads[i].transform.localScale = Vector3.one * (phase == 1 ? 0.16f : phase == 2 ? 0.2f : 0.24f);
+            SpriteRenderer headRenderer = heads[i].GetComponent<SpriteRenderer>();
+            if (headRenderer != null)
+            {
+                headRenderer.sortingOrder = 32;
+                headRenderer.color = new Color(1f, 0.78f, 0.18f, 0.85f);
+            }
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float normalizedTime = Mathf.Clamp01(elapsed / duration);
+
+            for (int i = 0; i < lineCount; i++)
+            {
+                if (lines[i] == null)
+                    continue;
+
+                float flowT = Mathf.Repeat(normalizedTime * 1.95f + phaseOffsets[i], 1f);
+                float easedT = 1f - Mathf.Pow(1f - flowT, 2.2f);
+                float headDistance = Mathf.Lerp(innerRadius + segmentLength, radius, easedT);
+                float tailDistance = Mathf.Max(innerRadius, headDistance - segmentLength);
+                Vector3 dir = Quaternion.Euler(0f, 0f, baseAngle + angleOffsets[i]) * Vector3.right;
+                Vector3 headPos = pos + dir * headDistance;
+
+                lines[i].SetPosition(0, pos + dir * tailDistance);
+                lines[i].SetPosition(1, headPos);
+
+                float alpha = Mathf.Sin(flowT * Mathf.PI);
+                Color start = new Color(1f, 0.1f, 0.02f, alpha * 0.24f);
+                Color end = new Color(1f, 0.86f, 0.12f, alpha * 0.88f);
+                lines[i].startColor = start;
+                lines[i].endColor = end;
+
+                if (heads[i] != null)
+                {
+                    heads[i].transform.position = headPos;
+                    SpriteRenderer headRenderer = heads[i].GetComponent<SpriteRenderer>();
+                    if (headRenderer != null)
+                    {
+                        headRenderer.color = new Color(1f, 0.82f, 0.18f, alpha * 0.92f);
+                    }
+                }
+            }
+
+            yield return null;
+        }
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (lines[i] != null)
+                Destroy(lines[i].gameObject);
+
+            if (heads[i] != null)
+                Destroy(heads[i]);
+        }
+    }
+
+    LineRenderer CreateBossWarningFlowLine(string objName, int phase)
+    {
+        GameObject lineObj = new GameObject(objName);
+        LineRenderer line = lineObj.AddComponent<LineRenderer>();
+        line.positionCount = 2;
+        line.useWorldSpace = true;
+        line.material = new Material(Shader.Find("Sprites/Default"));
+        line.material.color = Color.white;
+        line.textureMode = LineTextureMode.Stretch;
+        line.numCapVertices = 5;
+        line.sortingOrder = 31;
+        line.startWidth = phase == 1 ? 0.14f : phase == 2 ? 0.17f : 0.2f;
+        line.endWidth = phase == 1 ? 0.28f : phase == 2 ? 0.34f : 0.4f;
+        return line;
+    }
+
+    GameObject CreateBossSectorWarning(Vector3 pos, Vector3 fireDir, float angle, float radius)
+    {
+        GameObject obj = new GameObject("BossSectorWarning");
+        obj.transform.position = pos;
+
+        int segments = 24;
+        Vector3[] vertices = new Vector3[segments + 2];
+        int[] triangles = new int[segments * 3];
+        vertices[0] = Vector3.zero;
+
+        float baseAngle = Mathf.Atan2(fireDir.y, fireDir.x) * Mathf.Rad2Deg;
+        float startAngle = baseAngle - angle * 0.5f;
+        for (int i = 0; i <= segments; i++)
+        {
+            float a = startAngle + angle * i / segments;
+            vertices[i + 1] = new Vector3(Mathf.Cos(a * Mathf.Deg2Rad), Mathf.Sin(a * Mathf.Deg2Rad), 0f) * radius;
+        }
+
+        for (int i = 0; i < segments; i++)
+        {
+            int triIndex = i * 3;
+            triangles[triIndex] = 0;
+            triangles[triIndex + 1] = i + 1;
+            triangles[triIndex + 2] = i + 2;
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.RecalculateBounds();
+
+        MeshFilter filter = obj.AddComponent<MeshFilter>();
+        filter.mesh = mesh;
+        MeshRenderer renderer = obj.AddComponent<MeshRenderer>();
+        renderer.material = new Material(Shader.Find("Sprites/Default"));
+        renderer.material.color = new Color(1f, 0.18f, 0.05f, 0.22f);
+        renderer.sortingOrder = 25;
+        return obj;
+    }
+
+    IEnumerator FadeAndDestroyWarning(GameObject warning, float duration)
+    {
+        if (warning == null)
+            yield break;
+
+        MeshRenderer renderer = warning.GetComponent<MeshRenderer>();
+        Material material = renderer != null ? renderer.material : null;
+        float timer = 0f;
+        while (timer < duration && warning != null)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Clamp01(timer / duration);
+            if (material != null)
+            {
+                Color c = material.color;
+                c.a = Mathf.Lerp(0.22f, 0.04f, t);
+                material.color = c;
+            }
+            yield return null;
+        }
+
+        Destroy(warning);
+    }
+
+    public void BeginFinalBossAtmosphere()
+    {
+        if (cameraEffect != null)
+        {
+            cameraEffect.darkIntensity = BalanceConfig.bossCombat.phase1DarkIntensity;
+        }
+
+        if (mainCamera != null)
+        {
+            mainCamera.backgroundColor = new Color(0.07f, 0.02f, 0.04f);
+        }
+    }
+
+    public void SetFinalBossPhaseAtmosphere(int phase)
+    {
+        if (cameraEffect != null)
+        {
+            cameraEffect.darkIntensity = BalanceConfig.bossCombat.GetDarkIntensity(phase);
+        }
+
+        Color phaseColor = phase == 1
+            ? new Color(0.07f, 0.02f, 0.04f)
+            : phase == 2
+                ? new Color(0.12f, 0.025f, 0.035f)
+                : new Color(0.18f, 0.025f, 0.025f);
+
+        if (mainCamera != null)
+        {
+            mainCamera.backgroundColor = phaseColor;
+        }
+    }
+
+    public void EndFinalBossAtmosphere()
+    {
+        if (cameraEffect != null)
+        {
+            cameraEffect.darkIntensity = 0f;
+        }
+
+        if (mainCamera != null)
+        {
+            mainCamera.backgroundColor = new Color(0.08f, 0.09f, 0.11f);
+        }
+    }
+
+    public void PlayFinalBossDeathReward(Vector3 pos)
+    {
+        EnemyDeathEffectTuning tuning = BalanceConfig.deathEffect;
+        ShakeMainCamera(tuning.finalBossRewardShakeDuration, tuning.finalBossRewardShakeStrength);
+        var title = SpwanWorldTxt("最终Boss击破！", 1.25f);
+        StartRuntimeCoroutine(ShowFlashWarningTxt(title));
+
+        for (int i = 0; i < 20; i++)
+        {
+            float angle = i * (360f / 20f);
+            Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0f) * Random.Range(1.2f, 3.8f);
+            SpwanCoin(pos + offset, 5);
+        }
+
+        for (int i = 0; i < 24; i++)
+        {
+            float angle = i * (360f / 24f);
+            Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0f) * Random.Range(1.0f, 4.2f);
+            SpwanExpBall(pos + offset, EnemyType.Boss, 6);
+        }
     }
 
     public List<GameObject> FindCicleAllEnemysByDistance(Vector3 pos, float distance)

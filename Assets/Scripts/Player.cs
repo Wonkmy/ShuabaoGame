@@ -42,6 +42,7 @@ public class Player : Entity
 
     public bool ChainedLightningActive { get; set; }
     public List<GameObject> chainedTargets = new List<GameObject>();
+    int overrideAttackBulletCount = 0;
     // 冲刺相关
     public bool IsDash { get; set; }
     float dashTimer = 0;
@@ -326,10 +327,12 @@ public class Player : Entity
             //}
             if (state)
             {
+                overrideAttackBulletCount = 15;
                 ChangeWeaponAttackType(AttackType.Cicle, 15);
             }
             else
             {
+                overrideAttackBulletCount = 0;
                 ChangeWeaponAttackType(AttackType.Sector,CurrentBulletCount);
             }
         }
@@ -337,7 +340,13 @@ public class Player : Entity
     public override void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount)
     {
         this.attackType = attackType;
-        weapon.ChangeAttackType(this.attackType, this, _currentBulletCount <= 3 ? CurrentBulletCount : _currentBulletCount);
+        int bulletCount = _currentBulletCount <= 3 ? CurrentBulletCount : _currentBulletCount;
+        weapon.ChangeAttackType(this.attackType, this, bulletCount);
+    }
+
+    public override int GetWeaponAttackBulletCount()
+    {
+        return overrideAttackBulletCount > 0 ? overrideAttackBulletCount : CurrentBulletCount;
     }
 
     /// <summary>

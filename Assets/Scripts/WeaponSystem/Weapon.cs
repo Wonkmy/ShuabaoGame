@@ -19,6 +19,7 @@ public class Weapon
     float fireInterval = 0;// 武器的攻击频率。单独拿出来是后面需要动态修改达到成长与爽感
     float attack = 0;// 武器的攻击力。单独拿出来是后面需要动态修改达到成长与爽感
     int bulletPierce = 0;// 武器的子弹穿透力。单独拿出来是后面需要动态修改达到成长与爽感
+    bool attackWarningIssued = false;
     public float attackRange { get; set; }// 武器的攻击范围，超过这个范围就不攻击了
 
     public GameObject lockedTarget;// 锁定的目标实体，敌人
@@ -140,6 +141,11 @@ public class Weapon
         }
     }
 
+    public void SetFireInterval(float v)
+    {
+        fireInterval = Mathf.Max(0.1f, v);
+    }
+
     public float GetFireInterval()
     {
         return fireInterval;
@@ -181,6 +187,7 @@ public class Weapon
             if (lockEntity == null || lockEntity.Dead)
             {
                 lockedTarget = null;
+                attackWarningIssued = false;
             }
         }
         if (entity.GetNearestTarget() == null && lockedTarget == null)
@@ -220,6 +227,16 @@ public class Weapon
 
             if (entity != null && ey != null)
             {
+                float warningLeadTime = GetAttackWarningLeadTime();
+                if (!attackWarningIssued &&
+                    warningLeadTime > 0f &&
+                    fireTime >= Mathf.Max(0f, fireInterval - warningLeadTime) &&
+                    Vector3.Distance(entity.transform.position, ey.transform.position) <= attackRange)
+                {
+                    attackWarningIssued = true;
+                    OnBeforeAttackWarning();
+                }
+
                 if (fireTime >= fireInterval)
                 {
                     if(Vector3.Distance(entity.transform.position, ey.transform.position) <= attackRange)
@@ -230,19 +247,35 @@ public class Weapon
 
                         OnBeforeProcessAttack();
                         ProcessAttack();
+                        OnAfterProcessAttack();
 
                         fireTime = 0.0f;
+                        attackWarningIssued = false;
                     }
                     else
                     {
                         lockedTarget = null;
+                        attackWarningIssued = false;
                     }
                 }
             }
         }
     }
 
+    protected virtual float GetAttackWarningLeadTime()
+    {
+        return 0f;
+    }
+
+    protected virtual void OnBeforeAttackWarning()
+    {
+    }
+
     protected virtual void OnBeforeProcessAttack()
+    {
+    }
+
+    protected virtual void OnAfterProcessAttack()
     {
     }
 

@@ -16,6 +16,9 @@ public class Enemy : Entity
     public bool HasEnterScreen { get; set; }// 是否已经进入屏幕（用于怪物在视野内才能被攻击）
     public bool IsBattleActive { get; set; }
     public Transform hp { get; set; }
+    public int BossPhase { get; set; } = 1;
+    public bool IsFinalBoss { get; private set; }
+    public bool IsBossVulnerable { get; private set; }
 
     float attackRange = 0f;// 攻击范围，也就是敌人停止移动开始攻击的距离
     float findTargetRange = 10f;// 寻找目标的范围
@@ -71,6 +74,21 @@ public class Enemy : Entity
         Dead = false;
     }
 
+    public void ConfigureFinalBossCombat(bool isFinalBoss)
+    {
+        IsFinalBoss = isFinalBoss;
+        if (enemyType != EnemyType.Boss || !IsFinalBoss)
+            return;
+
+        BossCombatController controller = GetComponent<BossCombatController>();
+        if (controller == null)
+        {
+            controller = gameObject.AddComponent<BossCombatController>();
+        }
+
+        controller.Init(this);
+    }
+
     public void EnemyUpdate()
     {
         if (Dead) { return; }
@@ -88,7 +106,7 @@ public class Enemy : Entity
                 if(enemyType == EnemyType.Elite || enemyType == EnemyType.Boss)
                 {
                     var specialEventObj = GameManager.Instance.SpwanWorldTxt($"{enemyType.ToString()}来袭！", 1.0f);
-                    StartCoroutine(GameManager.Instance.ShowFlashWarningTxt(specialEventObj));
+                    GameManager.Instance.StartRuntimeCoroutine(GameManager.Instance.ShowFlashWarningTxt(specialEventObj));
                 }
 
                 HasEnterScreen = true;
@@ -187,6 +205,11 @@ public class Enemy : Entity
 
     public override void TakeDamage(int damage, bool isCrit)
     {
+        if (enemyType == EnemyType.Boss && IsFinalBoss && IsBossVulnerable)
+        {
+            damage = Mathf.RoundToInt(damage * 1.25f);
+        }
+
         currentHp -= damage;
 
         GameManager.Instance.SpwanHitFx(transform.position);//  命中特效
@@ -268,6 +291,99 @@ public class Enemy : Entity
             }
         }  
     }
+
+    public float GetHpProgress()
+    {
+        if (totalHp <= 0)
+            return 0f;
+
+        return Mathf.Clamp01((float)currentHp / totalHp);
+    }
+
+    public void ApplyBossPhase(int phase)
+    {
+        if (enemyType != EnemyType.Boss || !IsFinalBoss)
+            return;
+
+        BossPhase = Mathf.Clamp(phase, 1, 3);
+        if (weapon != null)
+        {
+            weapon.SetFireInterval(GameManager.Instance.BalanceConfig.bossCombat.GetFireInterval(BossPhase));
+        }
+    }
+
+    public void PlayBossChargeFlash(bool circleAttack)
+    {
+        if (enemyType != EnemyType.Boss || !IsFinalBoss)
+            return;
+
+        if (bossChargeCoroutine != null)
+        {
+            StopCoroutine(bossChargeCoroutine);
+        }
+
+        bossChargeCoroutine = StartCoroutine(BossChargeFlash(circleAttack));
+    }
+
+    IEnumerator BossChargeFlash(bool circleAttack)
+    {
+        SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>();
+        if (sr == null)
+            yield break;
+
+        Color startColor = sr.color;
+        Color chargeColor = circleAttack ? new Color(1f, 0.22f, 0.12f, 1f) : new Color(1f, 0.72f, 0.18f, 1f);
+        float timer = 0f;
+        float duration = GameManager.Instance.BalanceConfig.bossCombat.chargeFlashDuration;
+        while (timer < duration && !Dead)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Abs(Mathf.Sin(timer * 18f));
+            sr.color = Color.Lerp(startColor, chargeColor, t);
+            yield return null;
+        }
+
+        if (!Dead)
+        {
+            sr.color = Color.white;
+        }
+
+        bossChargeCoroutine = null;
+    }
+
+    public void StartBossVulnerableWindow(float duration)
+    {
+        if (bossVulnerableCoroutine != null)
+        {
+            StopCoroutine(bossVulnerableCoroutine);
+        }
+
+        bossVulnerableCoroutine = StartCoroutine(BossVulnerableWindow(duration));
+    }
+
+    IEnumerator BossVulnerableWindow(float duration)
+    {
+        if (enemyType != EnemyType.Boss || !IsFinalBoss || Dead)
+            yield break;
+
+        IsBossVulnerable = true;
+        SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>();
+        Color originalColor = sr != null ? sr.color : Color.white;
+        if (sr != null)
+        {
+            sr.color = new Color(0.65f, 0.9f, 1f, 1f);
+        }
+
+        yield return new WaitForSeconds(duration);
+
+        IsBossVulnerable = false;
+        if (sr != null && !Dead)
+        {
+            sr.color = originalColor;
+        }
+
+        bossVulnerableCoroutine = null;
+    }
     private void SpwanExpBall(bool isCrit)
     {
         RewardTuning rewardTuning = GameManager.Instance.BalanceConfig.reward;
@@ -299,28 +415,28 @@ public class Enemy : Entity
 
     IEnumerator DeathEffect()
     {
+        if (bossChargeCoroutine != null)
+        {
+            StopCoroutine(bossChargeCoroutine);
+            bossChargeCoroutine = null;
+        }
+
+        if (bossVulnerableCoroutine != null)
+        {
+            StopCoroutine(bossVulnerableCoroutine);
+            bossVulnerableCoroutine = null;
+        }
+
         WeaponSystem.RemoveWeapon(weapon);// 先移除武器，避免在销毁敌人后还调用武器的Update方法
 
-        float duration = 0.4f;
-        float elapsed = 0f;
-        Vector3 originalScale = transform.localScale;
-        Quaternion originalRotation = transform.rotation;
-        while (elapsed < duration)
+        if (enemyType == EnemyType.Elite || enemyType == EnemyType.Boss)
         {
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-            // 旋转
-            transform.rotation = Quaternion.Euler(0, 0, t * 360) * originalRotation;
-            // 缩小
-            transform.localScale = Vector3.Lerp(originalScale, Vector3.one * 1.25f, t);
-            yield return null;
-            // 再恢复，有一种膨胀后爆炸的感觉
-            transform.localScale = Vector3.Lerp(Vector3.one * 1.25f, Vector3.zero, t);
-            yield return null;
+            yield return StartCoroutine(HeavyDeathCollapse());
         }
-        // 确保最终状态
-        transform.rotation = Quaternion.Euler(0, 0, 360) * originalRotation;
-        transform.localScale = Vector3.zero;
+        else
+        {
+            yield return StartCoroutine(LightDeathCollapse());
+        }
 
         // 增加击杀统计
         GameManager.Instance.RecordEnemyKilled(enemyType);
@@ -334,6 +450,13 @@ public class Enemy : Entity
             //GameManager.Instance.player.GetComponent<Player>().ResetWeaponAttackRange();// 重置玩家的武器攻击范围
             GameManager.Instance.cameraEffect.darkIntensity = 0.0f;
         }
+
+        if (enemyType == EnemyType.Boss && IsFinalBoss)
+        {
+            GameManager.Instance.PlayFinalBossDeathReward(transform.position);
+            GameManager.Instance.EndFinalBossAtmosphere();
+        }
+
         view.gameObject.SetActive(false);// 先隐藏敌人，等特效播放完再销毁
         yield return new WaitForSeconds(0.2f);
         // 如果是精英怪或血厚怪，生成一个加血道具
@@ -361,8 +484,91 @@ public class Enemy : Entity
         Destroy(gameObject);
     }
 
+    IEnumerator LightDeathCollapse()
+    {
+        EnemyDeathEffectTuning tuning = GameManager.Instance.BalanceConfig.deathEffect;
+        float duration = Mathf.Max(0.05f, tuning.normalDeathDuration);
+        float elapsed = 0f;
+        Vector3 originalScale = transform.localScale;
+        Quaternion originalRotation = transform.rotation;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            transform.rotation = Quaternion.Euler(0, 0, t * 360) * originalRotation;
+            transform.localScale = Vector3.Lerp(originalScale, Vector3.one * tuning.normalDeathExpandScale, t);
+            yield return null;
+            transform.localScale = Vector3.Lerp(Vector3.one * tuning.normalDeathExpandScale, Vector3.zero, t);
+            yield return null;
+        }
+
+        transform.rotation = Quaternion.Euler(0, 0, 360) * originalRotation;
+        transform.localScale = Vector3.zero;
+    }
+
+    IEnumerator HeavyDeathCollapse()
+    {
+        EnemyDeathEffectTuning tuning = GameManager.Instance.BalanceConfig.deathEffect;
+        bool isBoss = enemyType == EnemyType.Boss;
+        Vector3 originalScale = transform.localScale;
+        Quaternion originalRotation = transform.rotation;
+        float shakeStrength = isBoss ? tuning.bossShakeStrength : tuning.eliteShakeStrength;
+        float chargeDuration = Mathf.Max(0.05f, isBoss ? tuning.bossChargeDuration : tuning.eliteChargeDuration);
+        float collapseDuration = Mathf.Max(0.05f, isBoss ? tuning.bossCollapseDuration : tuning.eliteCollapseDuration);
+
+        GameManager.Instance.ShakeMainCamera(
+            isBoss ? tuning.bossChargeShakeDuration : tuning.eliteChargeShakeDuration,
+            isBoss ? tuning.bossChargeShakeStrength : tuning.eliteChargeShakeStrength);
+
+        float elapsed = 0f;
+        while (elapsed < chargeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / chargeDuration;
+            float pulse = Mathf.Sin(t * Mathf.PI);
+            Vector3 shake = new Vector3(Random.Range(-shakeStrength, shakeStrength), Random.Range(-shakeStrength, shakeStrength), 0f) * (1f - t);
+            transform.position += shake * Time.deltaTime;
+            transform.localScale = Vector3.Lerp(originalScale, originalScale * tuning.heavyChargeExpandScale, pulse);
+            transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * Mathf.PI * 4f) * 8f) * originalRotation;
+            yield return null;
+        }
+
+        GameManager.Instance.ShakeMainCamera(
+            isBoss ? tuning.bossCollapseShakeDuration : tuning.eliteCollapseShakeDuration,
+            isBoss ? tuning.bossCollapseShakeStrength : tuning.eliteCollapseShakeStrength);
+
+        elapsed = 0f;
+        Vector3 wideScale = new Vector3(originalScale.x * tuning.heavyWideScaleX, originalScale.y * tuning.heavyWideScaleY, originalScale.z);
+        while (elapsed < collapseDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / collapseDuration;
+            float eased = 1f - Mathf.Pow(1f - t, 3f);
+            Vector3 squash = Vector3.Lerp(wideScale, Vector3.zero, eased);
+            squash.y *= Mathf.Lerp(1f, tuning.heavyFinalScaleY, t);
+            transform.localScale = squash;
+            transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(0f, isBoss ? tuning.bossCollapseRotateAngle : tuning.eliteCollapseRotateAngle, eased)) * originalRotation;
+
+            if (elapsed > collapseDuration * 0.48f && elapsed - Time.deltaTime <= collapseDuration * 0.48f)
+            {
+                GameManager.Instance.SpwanEnemyAttackPulse(
+                    transform.position,
+                    new Color(1f, 0.24f, 0.08f, 0.42f),
+                    isBoss ? tuning.bossDeathPulseScale : tuning.eliteDeathPulseScale,
+                    tuning.heavyDeathPulseDuration);
+            }
+
+            yield return null;
+        }
+
+        transform.rotation = originalRotation;
+        transform.localScale = Vector3.zero;
+    }
+
     // 受击脉冲
     Coroutine hitPunchCoroutine;
+    Coroutine bossChargeCoroutine;
+    Coroutine bossVulnerableCoroutine;
 
     public void PlayHitPunch(Vector3 hitDir)
     {

@@ -19,6 +19,12 @@ public class GameBalanceConfig : ScriptableObject
     [Header("战斗章节事件配置")]
     public CombatChapterTuning chapter = new CombatChapterTuning();
 
+    [Header("最终Boss战节奏、阶段和预警表现")]
+    public BossCombatTuning bossCombat = new BossCombatTuning();
+
+    [Header("敌人死亡效果时长、震屏和重量感")]
+    public EnemyDeathEffectTuning deathEffect = new EnemyDeathEffectTuning();
+
     [Header("经验、金币、宝箱奖励")]
     public RewardTuning reward = new RewardTuning();
 
@@ -36,6 +42,29 @@ public class GameBalanceConfig : ScriptableObject
         new TimelineSegment { startTime = 90f, endTime = 180f, label = "Build Check", goal = "Elite pressure and combo payoff", expectedEnemies = "Thick/SelfExplosion/Elite", pressure = "High" },
         new TimelineSegment { startTime = 180f, endTime = 9999f, label = "Endless Scaling", goal = "Boss and wave endurance", expectedEnemies = "All", pressure = "Rising" },
     };
+
+    void OnEnable()
+    {
+        EnsureNestedConfigs();
+    }
+
+    public void EnsureNestedConfigs()
+    {
+        if (chapter == null)
+        {
+            chapter = new CombatChapterTuning();
+        }
+
+        if (bossCombat == null)
+        {
+            bossCombat = new BossCombatTuning();
+        }
+
+        if (deathEffect == null)
+        {
+            deathEffect = new EnemyDeathEffectTuning();
+        }
+    }
 
     public TimelineSegment GetTimelineSegment(float gameTime)
     {
@@ -269,6 +298,195 @@ public class CombatChapterTuning
 
     [Header("章节触发时震屏强度")]
     public float cameraShakeStrength = 0.18f;
+}
+
+[Serializable]
+public class BossCombatTuning
+{
+    [Header("最终Boss第2阶段触发血量比例")]
+    [Range(0.01f, 0.99f)] public float phase2HpPercent = 0.7f;
+
+    [Header("最终Boss第3阶段触发血量比例")]
+    [Range(0.01f, 0.99f)] public float phase3HpPercent = 0.4f;
+
+    [Header("最终Boss第1阶段攻击间隔")]
+    public float phase1FireInterval = 1.25f;
+
+    [Header("最终Boss第2阶段攻击间隔")]
+    public float phase2FireInterval = 1.0f;
+
+    [Header("最终Boss第3阶段攻击间隔")]
+    public float phase3FireInterval = 0.82f;
+
+    [Header("最终Boss攻击前预警提前时间")]
+    public float warningLeadTime = 0.65f;
+
+    [Header("最终Boss每次攻击后的虚弱窗口时长")]
+    public float vulnerableDuration = 0.85f;
+
+    [Header("最终Boss攻击前蓄力闪烁时长")]
+    public float chargeFlashDuration = 0.58f;
+
+    [Header("最终Boss阶段切换震屏时长")]
+    public float phaseChangeShakeDuration = 0.35f;
+
+    [Header("最终Boss第2阶段切换震屏强度")]
+    public float phase2ShakeStrength = 0.22f;
+
+    [Header("最终Boss第3阶段切换震屏强度")]
+    public float phase3ShakeStrength = 0.32f;
+
+    [Header("最终Boss第2阶段标题字号")]
+    public float phase2TitleSize = 1.05f;
+
+    [Header("最终Boss第3阶段标题字号")]
+    public float phase3TitleSize = 1.22f;
+
+    [Header("最终Boss第1阶段暗场强度")]
+    [Range(0f, 1f)] public float phase1DarkIntensity = 0.58f;
+
+    [Header("最终Boss第2阶段暗场强度")]
+    [Range(0f, 1f)] public float phase2DarkIntensity = 0.66f;
+
+    [Header("最终Boss第3阶段暗场强度")]
+    [Range(0f, 1f)] public float phase3DarkIntensity = 0.78f;
+
+    [Header("最终Boss环形预警第1阶段范围")]
+    public float circleWarningScalePhase1 = 4.8f;
+
+    [Header("最终Boss环形预警第2阶段范围")]
+    public float circleWarningScalePhase2 = 5.8f;
+
+    [Header("最终Boss环形预警第3阶段范围")]
+    public float circleWarningScalePhase3 = 6.8f;
+
+    [Header("最终Boss扇形预警第1阶段半径")]
+    public float sectorWarningRadiusPhase1 = 6.5f;
+
+    [Header("最终Boss扇形预警第2阶段半径")]
+    public float sectorWarningRadiusPhase2 = 7.5f;
+
+    [Header("最终Boss扇形预警第3阶段半径")]
+    public float sectorWarningRadiusPhase3 = 8.5f;
+
+    [Header("最终Boss扇形预警第1阶段角度")]
+    public float sectorWarningAnglePhase1 = 54f;
+
+    [Header("最终Boss扇形预警第2阶段角度")]
+    public float sectorWarningAnglePhase2 = 66f;
+
+    [Header("最终Boss扇形预警第3阶段角度")]
+    public float sectorWarningAnglePhase3 = 78f;
+
+    public float GetFireInterval(int phase)
+    {
+        return phase == 1 ? phase1FireInterval : phase == 2 ? phase2FireInterval : phase3FireInterval;
+    }
+
+    public float GetDarkIntensity(int phase)
+    {
+        return phase == 1 ? phase1DarkIntensity : phase == 2 ? phase2DarkIntensity : phase3DarkIntensity;
+    }
+
+    public float GetCircleWarningScale(int phase)
+    {
+        return phase == 1 ? circleWarningScalePhase1 : phase == 2 ? circleWarningScalePhase2 : circleWarningScalePhase3;
+    }
+
+    public float GetSectorWarningRadius(int phase)
+    {
+        return phase == 1 ? sectorWarningRadiusPhase1 : phase == 2 ? sectorWarningRadiusPhase2 : sectorWarningRadiusPhase3;
+    }
+
+    public float GetSectorWarningAngle(int phase)
+    {
+        return phase == 1 ? sectorWarningAnglePhase1 : phase == 2 ? sectorWarningAnglePhase2 : sectorWarningAnglePhase3;
+    }
+}
+
+[Serializable]
+public class EnemyDeathEffectTuning
+{
+    [Header("普通怪死亡收缩时长")]
+    public float normalDeathDuration = 0.4f;
+
+    [Header("普通怪死亡膨胀倍率")]
+    public float normalDeathExpandScale = 1.25f;
+
+    [Header("精英怪死亡蓄力时长")]
+    public float eliteChargeDuration = 0.18f;
+
+    [Header("Boss死亡蓄力时长")]
+    public float bossChargeDuration = 0.28f;
+
+    [Header("精英怪死亡坍缩时长")]
+    public float eliteCollapseDuration = 0.32f;
+
+    [Header("Boss死亡坍缩时长")]
+    public float bossCollapseDuration = 0.46f;
+
+    [Header("精英怪死亡自身抖动强度")]
+    public float eliteShakeStrength = 0.09f;
+
+    [Header("Boss死亡自身抖动强度")]
+    public float bossShakeStrength = 0.18f;
+
+    [Header("精英怪死亡蓄力震屏时长")]
+    public float eliteChargeShakeDuration = 0.12f;
+
+    [Header("Boss死亡蓄力震屏时长")]
+    public float bossChargeShakeDuration = 0.22f;
+
+    [Header("精英怪死亡蓄力震屏强度")]
+    public float eliteChargeShakeStrength = 0.12f;
+
+    [Header("Boss死亡蓄力震屏强度")]
+    public float bossChargeShakeStrength = 0.24f;
+
+    [Header("精英怪死亡爆发震屏时长")]
+    public float eliteCollapseShakeDuration = 0.18f;
+
+    [Header("Boss死亡爆发震屏时长")]
+    public float bossCollapseShakeDuration = 0.34f;
+
+    [Header("精英怪死亡爆发震屏强度")]
+    public float eliteCollapseShakeStrength = 0.18f;
+
+    [Header("Boss死亡爆发震屏强度")]
+    public float bossCollapseShakeStrength = 0.34f;
+
+    [Header("精英和Boss死亡蓄力膨胀倍率")]
+    public float heavyChargeExpandScale = 1.18f;
+
+    [Header("精英和Boss死亡横向压扁倍率")]
+    public float heavyWideScaleX = 1.28f;
+
+    [Header("精英和Boss死亡纵向压扁倍率")]
+    public float heavyWideScaleY = 0.74f;
+
+    [Header("精英和Boss死亡坍缩末段纵向倍率")]
+    public float heavyFinalScaleY = 0.35f;
+
+    [Header("精英怪死亡旋转角度")]
+    public float eliteCollapseRotateAngle = 22f;
+
+    [Header("Boss死亡旋转角度")]
+    public float bossCollapseRotateAngle = 38f;
+
+    [Header("精英怪死亡冲击波范围")]
+    public float eliteDeathPulseScale = 3.2f;
+
+    [Header("Boss死亡冲击波范围")]
+    public float bossDeathPulseScale = 5.2f;
+
+    [Header("精英和Boss死亡冲击波时长")]
+    public float heavyDeathPulseDuration = 0.35f;
+
+    [Header("最终Boss死亡奖励喷发震屏时长")]
+    public float finalBossRewardShakeDuration = 0.55f;
+
+    [Header("最终Boss死亡奖励喷发震屏强度")]
+    public float finalBossRewardShakeStrength = 0.45f;
 }
 
 [Serializable]
