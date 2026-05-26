@@ -981,7 +981,7 @@ public class GameManager : MonoBehaviour
             isWave = false;
             waveTimer = 15;
         }
-        if (Input.GetKeyDown(KeyCode.B))
+        if (Input.GetKeyDown(KeyCode.G))
         {
             player.GetComponent<Player>().IsInvincible = true;
         }
@@ -1355,8 +1355,11 @@ public class GameManager : MonoBehaviour
             difficulty = Mathf.Max(1, difficulty * 0.5f); // 尸潮结束后暂时降低难度，给玩家喘息的机会
         }
     }
-
-    public IEnumerator ShowFlashWarningTxt(GameObject warningObject)
+    public void ShowFlashWarningTxtCom(GameObject warningObject, bool needDestoy)
+    {
+        StartCoroutine(ShowFlashWarningTxt(warningObject, needDestoy));
+    }
+    public IEnumerator ShowFlashWarningTxt(GameObject warningObject,bool needDestoy = true)
     {
         if (warningObject == null)
             yield break;
@@ -1378,7 +1381,7 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
 
-        if (warningObject != null)
+        if (warningObject != null && needDestoy)
         {
             Destroy(warningObject);
         }
@@ -1746,6 +1749,7 @@ public class GameManager : MonoBehaviour
     public GameObject SpwanChest(Vector3 pos)
     {
         GameObject newChest = SpwanSingleCircle(pos);
+        newChest.transform.localScale = Vector3.one * 0.8f;
         newChest.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("sprites/chest");
         newChest.AddComponent<ChestBall>().SetChestValue(player);
         RecordChestSpawned();

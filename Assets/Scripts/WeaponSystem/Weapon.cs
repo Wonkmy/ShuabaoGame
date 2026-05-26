@@ -312,10 +312,21 @@ public class Weapon
         GameObject newExpBall = GameManager.Instance.SpwanMuzzleflash(attackData.firePos);
         newExpBall.transform.rotation = Quaternion.FromToRotation(Vector3.up, attackData.fireDirection);
 
-        if (player != null && player.IsEnhancedShotActive)
+        if (player != null)
         {
-            newExpBall.transform.localScale *= 1.35f;
-            GameManager.Instance.ShakeMainCamera(0.06f, 0.08f);
+            if (player.IsEnhancedShotActive)
+            {
+                newExpBall.transform.localScale *= 1.35f;
+                GameManager.Instance.ShakeMainCamera(0.06f, 0.08f);
+            }
+            else
+            {
+                float vv = Random.value;
+                if (vv < 0.3f)
+                {
+                    GameManager.Instance.ShakeMainCamera(0.02f, 0.04f);
+                }
+            }
         }
 
         switch (weaponAttackType)

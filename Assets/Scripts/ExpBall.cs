@@ -26,6 +26,8 @@ public class ExpBall : MonoBehaviour
             float t = 1f - Mathf.Clamp01(distance / 6f);
             float speed = Mathf.Lerp(8f, 32f, t);
             transform.position = Vector3.MoveTowards(transform.position, _target.transform.position, speed * Time.deltaTime);
+            // 经验球不断缩小为0
+            transform.localScale = Vector3.Lerp(transform.localScale, Vector3.zero, Time.deltaTime * 5f);
 
             if (Vector3.Distance(transform.position, _target.transform.position) < 0.1f)
             {

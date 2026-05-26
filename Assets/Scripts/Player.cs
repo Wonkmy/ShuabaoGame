@@ -40,6 +40,7 @@ public class Player : Entity
     // 是否是无敌状态，测试用.
     public bool IsInvincible { get; set; }
 
+    public GameObject InwaveMask { get; set; }
     public bool ChainedLightningActive { get; set; }
     public List<GameObject> chainedTargets = new List<GameObject>();
     int overrideAttackBulletCount = 0;
@@ -58,7 +59,7 @@ public class Player : Entity
     public float EnhancedShotDamageMultiplier { get; set; } = 1.8f;
     public int EnhancedShotBonusPierce { get; set; } = 2;
     public float EnhancedShotScaleMultiplier { get; set; } = 1.2f;
-    public bool IsEnhancedShotActive { get; private set; }
+    public bool IsEnhancedShotActive { get; private set; }// 开火计数器
     public int FireCastCount { get; private set; }
     /// <summary>
     /// 飞机类型，决定了飞机的技能
@@ -97,6 +98,8 @@ public class Player : Entity
         fire = transform.Find("Fire");
         FirePos = fire.Find("view/firePos");
         view = transform.Find("Fire/view").GetComponent<SpriteRenderer>();
+        InwaveMask = view.transform.Find("inwave").gameObject;
+        InwaveMask.SetActive(false);
 
         CurrentBulletCount = 3;
         FireDirection = Vector3.up;
@@ -313,30 +316,23 @@ public class Player : Entity
         }
         else
         {
-            //if (state)
-            //{
-            //    CurrentBulletCount += 10;
-            //}
-            //else
-            //{
-            //    CurrentBulletCount -= 10;
-            //    if (CurrentBulletCount < 3)
-            //    {
-            //        CurrentBulletCount = 3;
-            //    }
-            //}
             if (state)
             {
                 overrideAttackBulletCount = 15;
+                InwaveMask.SetActive(true);
+                GameManager.Instance.ShowFlashWarningTxtCom(InwaveMask,false);
                 ChangeWeaponAttackType(AttackType.Cicle, 15);
             }
             else
             {
                 overrideAttackBulletCount = 0;
+                InwaveMask.SetActive(false);
                 ChangeWeaponAttackType(AttackType.Sector,CurrentBulletCount);
             }
         }
     }
+
+
     public override void ChangeWeaponAttackType(AttackType attackType, int _currentBulletCount)
     {
         this.attackType = attackType;
