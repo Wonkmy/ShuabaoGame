@@ -257,14 +257,7 @@ public class GameManager : MonoBehaviour
         if (!found)
             return;
 
-        ExecuteUpgrade(data);
-        Player playerC = player.GetComponent<Player>();
-        if (!playerC.buildDict.ContainsKey(data.tag))
-        {
-            playerC.buildDict.Add(data.tag, 0);
-        }
-
-        playerC.buildDict[data.tag]++;
+        ApplyUpgrade(data);
     }
 
     void ApplyDifficultyFromCurrentTime()
@@ -1526,9 +1519,39 @@ public class GameManager : MonoBehaviour
 
     public void ExecuteUpgrade(UpgradeData data)
     {
-        Player p = player.GetComponent<Player>();
-        RecordUpgradeSelected(data);
+        ApplyUpgrade(data);
+    }
 
+    public void ApplyUpgrade(UpgradeData data)
+    {
+        Player p = player.GetComponent<Player>();
+        if (p == null)
+            return;
+
+        RecordUpgradeSelected(data);// 记录玩家选择的升级数据，供结算界面展示和后续分析使用
+        AddBuildStack(p, data.tag);// 根据升级数据中的tag给玩家添加构筑层数
+        ApplyUpgradeStats(p, data);// 根据升级类型给玩家应用具体的属性加成
+        ApplyUpgradeFlags(p, data);// 根据升级类型给玩家应用特定的状态标记
+        PlayUpgradeFeedback(p, data, BalanceConfig.upgradeEffects.GetFeedbackType(data.type));// 根据升级类型播放对应的视觉和音效表现
+        p.CheckBuildCombo();// 检查玩家当前的构筑层数是否达成某些特定的组合效果
+    }
+
+    void AddBuildStack(Player p, string tag)
+    {
+        if (string.IsNullOrEmpty(tag))
+            return;
+
+        if (!p.buildDict.ContainsKey(tag))
+        {
+            p.buildDict.Add(tag, 0);
+        }
+
+        p.buildDict[tag]++;
+    }
+
+    void ApplyUpgradeStats(Player p, UpgradeData data)
+    {
+        UpgradeEffectTuning effectTuning = BalanceConfig.upgradeEffects;
         switch (data.type)
         {
             // 子弹数量
@@ -1537,7 +1560,7 @@ public class GameManager : MonoBehaviour
                 p.CurrentBulletCount += (int)data.value;
 
                 // 最大限制
-                p.CurrentBulletCount = Mathf.Clamp(p.CurrentBulletCount, 1, 10);
+                p.CurrentBulletCount = Mathf.Clamp(p.CurrentBulletCount, effectTuning.minBulletCount, effectTuning.maxBulletCount);
 
                 break;
 
@@ -1545,8 +1568,8 @@ public class GameManager : MonoBehaviour
             case UpgradeType.HeavyBullet:
 
                 p.GetCurrentWeapon().ChangeAttack((int)data.value);
-                p.EnhancedShotDamageMultiplier += 0.08f;
-                p.GetCurrentWeapon().ChangeBulletScale(0.1f);
+                p.EnhancedShotDamageMultiplier += effectTuning.heavyBulletEnhancedShotDamageAdd;
+                p.GetCurrentWeapon().ChangeBulletScale(effectTuning.heavyBulletScaleAdd);
                 break;
 
             // 穿透
@@ -1559,7 +1582,7 @@ public class GameManager : MonoBehaviour
             case UpgradeType.AtkRatio:
 
                 p.playerData.Atk += data.value;
-                p.EnhancedShotDamageMultiplier += 0.12f;
+                p.EnhancedShotDamageMultiplier += effectTuning.attackRatioEnhancedShotDamageAdd;
 
                 break;
 
@@ -1569,56 +1592,36 @@ public class GameManager : MonoBehaviour
                 p.moveSpeed += data.value;
 
                 // 高移速低伤害
-                p.playerData.Atk -= 0.2f;
+                p.playerData.Atk -= effectTuning.moveFastAttackPenalty;
 
                 break;
 
             // 重装炮台
             case UpgradeType.HeavyMode:
 
-                p.playerData.Atk += 1.5f;
+                p.playerData.Atk += effectTuning.heavyModeAttackAdd;
 
-                p.moveSpeed -= 1f;
+                p.moveSpeed -= effectTuning.heavyModeMoveSpeedPenalty;
 
                 // 提升攻速
-                p.GetCurrentWeapon().ChangeFireInterval(-0.05f);
+                p.GetCurrentWeapon().ChangeFireInterval(-effectTuning.heavyModeFireIntervalReduce);
                 // 提升防御。
-                p.AddDefence(2);
-                break;
-
-            // 暴击爆炸
-            case UpgradeType.CritExplosion:
-
-                p.HasCritExplosion = true;
-
-                break;
-
-            // 穿透爆炸
-            case UpgradeType.PierceExplosion:
-
-                p.HasPierceExplosion = true;
-
+                p.AddDefence(effectTuning.heavyModeDefenceAdd);
                 break;
 
             // 精准重炮
             case UpgradeType.LowBulletHighDamage:
 
-                p.HasLowBulletHighDamage = true;
-                p.GetCurrentWeapon().ChangeAttack(2);
-                p.GetCurrentWeapon().ChangeBulletScale(0.25f);
-                p.EnhancedShotDamageMultiplier += 0.35f;
-                ShakeMainCamera(0.12f, 0.12f);
-                break;
-
-            // 传奇裂变
-            case UpgradeType.LegendSplit:
-                p.HasLegendSplit = true;
+                p.GetCurrentWeapon().ChangeAttack(effectTuning.lowBulletHighDamageAttackAdd);
+                p.GetCurrentWeapon().ChangeBulletScale(effectTuning.lowBulletHighDamageBulletScaleAdd);
+                p.EnhancedShotDamageMultiplier += effectTuning.lowBulletHighDamageEnhancedShotDamageAdd;
+                ShakeMainCamera(effectTuning.lowBulletHighDamageShakeDuration, effectTuning.lowBulletHighDamageShakeStrength);
                 break;
 
             // 无限火力
             case UpgradeType.LegendFire:
 
-                p.GetCurrentWeapon().ChangeFireInterval(-0.15f);
+                p.GetCurrentWeapon().ChangeFireInterval(-effectTuning.legendFireIntervalReduce);
 
                 break;
 
@@ -1636,16 +1639,45 @@ public class GameManager : MonoBehaviour
 
             case UpgradeType.EnhancedShot:
 
-                p.EnhancedShotInterval = Mathf.Max(3, p.EnhancedShotInterval - 1);
+                p.EnhancedShotInterval = Mathf.Max(effectTuning.enhancedShotMinInterval, p.EnhancedShotInterval - effectTuning.enhancedShotIntervalReduce);
                 p.EnhancedShotDamageMultiplier += data.value;
-                p.EnhancedShotBonusPierce = Mathf.Min(5, p.EnhancedShotBonusPierce + 1);
-                p.EnhancedShotScaleMultiplier += 0.08f;
+                p.EnhancedShotBonusPierce = Mathf.Min(effectTuning.enhancedShotMaxBonusPierce, p.EnhancedShotBonusPierce + effectTuning.enhancedShotBonusPierceAdd);
+                p.EnhancedShotScaleMultiplier += effectTuning.enhancedShotScaleAdd;
 
                 break;
 
             default:
                 break;
         }
+    }
+
+    void ApplyUpgradeFlags(Player p, UpgradeData data)
+    {
+        switch (data.type)
+        {
+            case UpgradeType.CritExplosion:
+                p.HasCritExplosion = true;
+                break;
+
+            case UpgradeType.PierceExplosion:
+                p.HasPierceExplosion = true;
+                break;
+
+            case UpgradeType.LowBulletHighDamage:
+                p.HasLowBulletHighDamage = true;
+                break;
+
+            case UpgradeType.LegendSplit:
+                p.HasLegendSplit = true;
+                break;
+        }
+    }
+
+    void PlayUpgradeFeedback(Player p, UpgradeData data, UpgradeFeedbackType feedbackType)
+    {
+        // 视觉/音效表现层统一从这里接入：
+        // BulletCount/HeavyBullet/Pierce/Power/MoveSpeed/FireRate/Crit/Explosion/Legendary/EnhancedShot。
+        // 当前这版只整理结构，不生成新的特效或音效。
     }
 
     void GenEnemy(Vector3 spawnPos)

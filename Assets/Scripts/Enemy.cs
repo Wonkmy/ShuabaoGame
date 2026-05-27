@@ -3,6 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum EnemyMoveIntent
+{
+    Chase,
+    Strafe,
+    HoldRange,
+    Reposition
+}
+
 public class Enemy : Entity
 {
     int baseHp = 0;
@@ -19,9 +27,15 @@ public class Enemy : Entity
     public int BossPhase { get; set; } = 1;
     public bool IsFinalBoss { get; private set; }
     public bool IsBossVulnerable { get; private set; }
+    public Vector3 EstimatedVelocity { get; private set; }
 
     float attackRange = 0f;// 攻击范围，也就是敌人停止移动开始攻击的距离
     float findTargetRange = 10f;// 寻找目标的范围
+    EnemyMoveIntent moveIntent = EnemyMoveIntent.Chase;
+    float movementThinkTimer = 0f;
+    float strafeSign = 1f;
+    Vector3 repositionDestination;
+
     public void SetEnemy(EnemyData enemyData)
     {
         view = GetComponentInChildren<SpriteRenderer>();
@@ -72,6 +86,7 @@ public class Enemy : Entity
         }
         CanMove = true;
         Dead = false;
+        ResetMovementBrain();
     }
 
     public void ConfigureFinalBossCombat(bool isFinalBoss)
@@ -134,7 +149,7 @@ public class Enemy : Entity
     {
         if (target != null && CanMove)
         {
-            transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
+            MoveToPosition(Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime));
             if (Vector3.Distance(transform.position, target.position) <= 0.1f)
             {
                 // 造成伤害
@@ -156,13 +171,230 @@ public class Enemy : Entity
     {
         if (GameManager.Instance.IsBlackHole && enemyType != EnemyType.Boss)
         {
-            transform.position = Vector3.MoveTowards(transform.position, GameManager.Instance.BlackHolePos, 8f * Time.deltaTime);
+            MoveToPosition(Vector3.MoveTowards(transform.position, GameManager.Instance.BlackHolePos, 8f * Time.deltaTime));
             return;
         }
-        if (target != null && CanMove && Vector3.Distance(transform.position, target.position) > findTargetRange)
+
+        if (target == null || !CanMove)
+            return;
+
+        EnemyMovementTuning tuning = GameManager.Instance.BalanceConfig.enemyMovement;
+        if (tuning == null || !tuning.enableMovementBrain)
         {
-            transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
+            if (Vector3.Distance(transform.position, target.position) > findTargetRange)
+            {
+                MoveToPosition(Vector3.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime));
+            }
+            return;
         }
+
+        UpdateMovementBrain(tuning);
+        Vector3 moveDirection = GetMovementDirection(tuning);
+        if (moveDirection.sqrMagnitude <= 0.001f)
+            return;
+
+        float speedMultiplier = tuning.GetMoveSpeedMultiplier(enemyType);
+        MoveToPosition(transform.position + moveDirection.normalized * moveSpeed * speedMultiplier * Time.deltaTime);
+    }
+
+    void MoveToPosition(Vector3 nextPosition)
+    {
+        if (Time.deltaTime > 0f)
+        {
+            EstimatedVelocity = (nextPosition - transform.position) / Time.deltaTime;
+        }
+        transform.position = nextPosition;
+    }
+
+    void ResetMovementBrain()
+    {
+        moveIntent = EnemyMoveIntent.Chase;
+        movementThinkTimer = Random.Range(0.05f, 0.35f);
+        strafeSign = Random.value > 0.5f ? 1f : -1f;
+        repositionDestination = transform.position;
+    }
+
+    void UpdateMovementBrain(EnemyMovementTuning tuning)
+    {
+        movementThinkTimer -= Time.deltaTime;
+        if (movementThinkTimer > 0f)
+            return;
+
+        movementThinkTimer = tuning.GetThinkInterval(enemyType, BossPhase);
+        if (Random.value < 0.28f)
+        {
+            strafeSign *= -1f;
+        }
+
+        float distance = Vector3.Distance(transform.position, target.position);
+        float desiredRange = GetDesiredMovementRange(tuning);
+
+        if (enemyType == EnemyType.Thick)
+        {
+            ChooseThickMoveIntent(distance, desiredRange, tuning);
+        }
+        else if (enemyType == EnemyType.Elite)
+        {
+            ChooseEliteMoveIntent(distance, desiredRange, tuning);
+        }
+        else if (enemyType == EnemyType.Boss)
+        {
+            ChooseBossMoveIntent(distance, desiredRange, tuning);
+        }
+        else
+        {
+            ChooseNormalMoveIntent(distance, desiredRange);
+        }
+    }
+
+    void ChooseNormalMoveIntent(float distance, float desiredRange)
+    {
+        moveIntent = distance > desiredRange ? EnemyMoveIntent.Chase : EnemyMoveIntent.Strafe;
+    }
+
+    void ChooseThickMoveIntent(float distance, float desiredRange, EnemyMovementTuning tuning)
+    {
+        float tolerance = desiredRange * tuning.rangeToleranceRatio;
+        if (distance > desiredRange + tolerance)
+        {
+            moveIntent = EnemyMoveIntent.Chase;
+        }
+        else if (distance < desiredRange - tolerance)
+        {
+            moveIntent = EnemyMoveIntent.HoldRange;
+        }
+        else
+        {
+            moveIntent = Random.value > 0.35f ? EnemyMoveIntent.Strafe : EnemyMoveIntent.HoldRange;
+        }
+    }
+
+    void ChooseEliteMoveIntent(float distance, float desiredRange, EnemyMovementTuning tuning)
+    {
+        if (distance > desiredRange * 1.22f)
+        {
+            moveIntent = EnemyMoveIntent.Chase;
+            return;
+        }
+
+        if (Random.value < tuning.eliteRepositionChance)
+        {
+            PickRepositionDestination(desiredRange, 40f, 85f);
+            moveIntent = EnemyMoveIntent.Reposition;
+        }
+        else
+        {
+            moveIntent = Random.value > 0.25f ? EnemyMoveIntent.Strafe : EnemyMoveIntent.HoldRange;
+        }
+    }
+
+    void ChooseBossMoveIntent(float distance, float desiredRange, EnemyMovementTuning tuning)
+    {
+        if (distance < desiredRange * tuning.bossBackoffRangeRatio)
+        {
+            PickRepositionDestination(desiredRange, 95f, 145f);
+            moveIntent = EnemyMoveIntent.Reposition;
+            return;
+        }
+
+        if (distance > desiredRange * 1.28f)
+        {
+            moveIntent = EnemyMoveIntent.Chase;
+            return;
+        }
+
+        float phaseRepositionChance = Mathf.Clamp01(tuning.bossRepositionChance + (BossPhase - 1) * 0.08f);
+        if (Random.value < phaseRepositionChance)
+        {
+            PickRepositionDestination(desiredRange, 55f, 105f);
+            moveIntent = EnemyMoveIntent.Reposition;
+        }
+        else
+        {
+            moveIntent = Random.value > 0.35f ? EnemyMoveIntent.Strafe : EnemyMoveIntent.HoldRange;
+        }
+    }
+
+    Vector3 GetMovementDirection(EnemyMovementTuning tuning)
+    {
+        Vector3 toTarget = target.position - transform.position;
+        toTarget.z = 0f;
+        if (toTarget.sqrMagnitude <= 0.001f)
+            return Vector3.zero;
+
+        float distance = toTarget.magnitude;
+        Vector3 toward = toTarget / distance;
+        Vector3 away = -toward;
+        Vector3 tangent = new Vector3(-toward.y, toward.x, 0f) * strafeSign;
+        float desiredRange = GetDesiredMovementRange(tuning);
+
+        if (moveIntent == EnemyMoveIntent.Chase)
+        {
+            float drift = enemyType == EnemyType.Thick ? tuning.thickStrafeWeight * 0.35f : tuning.normalDriftWeight;
+            return toward + tangent * drift;
+        }
+
+        if (moveIntent == EnemyMoveIntent.Reposition)
+        {
+            Vector3 toDestination = repositionDestination - transform.position;
+            toDestination.z = 0f;
+            if (toDestination.sqrMagnitude < 0.25f)
+            {
+                moveIntent = EnemyMoveIntent.Strafe;
+                return tangent;
+            }
+            return toDestination.normalized;
+        }
+
+        float correction = GetRangeCorrection(distance, desiredRange, tuning.rangeToleranceRatio);
+        if (moveIntent == EnemyMoveIntent.HoldRange)
+        {
+            return tangent * 0.22f + toward * correction;
+        }
+
+        float strafeWeight = GetStrafeWeight(tuning);
+        return tangent * strafeWeight + toward * correction;
+    }
+
+    float GetRangeCorrection(float distance, float desiredRange, float toleranceRatio)
+    {
+        float tolerance = desiredRange * toleranceRatio;
+        if (distance > desiredRange + tolerance)
+            return 0.65f;
+        if (distance < desiredRange - tolerance)
+            return -0.75f;
+        return 0f;
+    }
+
+    float GetStrafeWeight(EnemyMovementTuning tuning)
+    {
+        if (enemyType == EnemyType.Thick)
+            return tuning.thickStrafeWeight;
+        if (enemyType == EnemyType.Elite)
+            return tuning.eliteStrafeWeight;
+        if (enemyType == EnemyType.Boss)
+            return tuning.bossStrafeWeight + Mathf.Max(0, BossPhase - 1) * 0.08f;
+        return tuning.normalDriftWeight;
+    }
+
+    float GetDesiredMovementRange(EnemyMovementTuning tuning)
+    {
+        float baseRange = Mathf.Max(1.5f, attackRange);
+        return Mathf.Max(1.2f, baseRange * tuning.GetDesiredRangeRatio(enemyType));
+    }
+
+    void PickRepositionDestination(float desiredRange, float minAngle, float maxAngle)
+    {
+        Vector3 fromTarget = transform.position - target.position;
+        fromTarget.z = 0f;
+        if (fromTarget.sqrMagnitude <= 0.001f)
+        {
+            fromTarget = Vector3.right;
+        }
+
+        float angle = Random.Range(minAngle, maxAngle) * strafeSign;
+        Vector3 dir = Quaternion.Euler(0f, 0f, angle) * fromTarget.normalized;
+        repositionDestination = target.position + dir * desiredRange;
     }
 
     IEnumerator ResetTimeScale()

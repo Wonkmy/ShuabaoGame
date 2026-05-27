@@ -24,8 +24,6 @@ public class ChooseOnePanel : MonoBehaviour,IDisposable
 
     public void Init()
     {
-        Player player = GameManager.Instance.player.GetComponent<Player>();
-
         List<UpgradeData> options = GameManager.Instance.GetUpgradeOptions(3);
 
         for (int i = 0; i < optionButtons.Count; i++)
@@ -47,18 +45,7 @@ public class ChooseOnePanel : MonoBehaviour,IDisposable
             optionButtons[i].onClick.AddListener(() =>
             {
                 // 执行升级
-                GameManager.Instance.ExecuteUpgrade(data);
-
-                // 增加流派层数
-                if (!player.buildDict.ContainsKey(data.tag))
-                {
-                    player.buildDict.Add(data.tag, 0);
-                }
-
-                player.buildDict[data.tag]++;
-
-                // 检查流派
-                player.CheckBuildCombo();
+                GameManager.Instance.ApplyUpgrade(data);
 
                 // 关闭界面
                 GameManager.Instance.ShowLevelUpPanel(false);

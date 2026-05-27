@@ -223,7 +223,8 @@ public class Weapon
                 }
             }
 
-            entity.RotateToDetination(ey.transform.position);
+            Vector3 aimPosition = ShouldRotateToPredictedPoint() ? GetAimPosition(ey) : ey.transform.position;
+            entity.RotateToDetination(aimPosition);
 
             if (entity != null && ey != null)
             {
@@ -245,6 +246,7 @@ public class Weapon
 
                         lockedTarget = ey;
 
+                        RefreshAttackData(ey);
                         OnBeforeProcessAttack();
                         ProcessAttack();
                         OnAfterProcessAttack();
@@ -292,6 +294,66 @@ public class Weapon
             };
         }
     }
+
+    void RefreshAttackData(GameObject target)
+    {
+        if (entity == null || entity.gameObject == null)
+            return;
+
+        Vector3 aimPosition = target != null ? GetAimPosition(target) : entity.transform.position + entity.FireDirection;
+        Vector3 firePos = weaponAttackType == AttackType.Cicle ? entity.transform.position : entity.FirePos.position;
+        Vector3 fireDirection = aimPosition - firePos;
+        if (fireDirection.sqrMagnitude <= 0.0001f)
+        {
+            fireDirection = entity.FireDirection;
+        }
+
+        entity.FireDirection = fireDirection.normalized;
+        attackData = new AttackData
+        {
+            firePos = firePos,
+            fireDirection = entity.FireDirection,
+            currentBulletCount = entity.GetWeaponAttackBulletCount()
+        };
+    }
+
+    Vector3 GetAimPosition(GameObject target)
+    {
+        if (target == null)
+            return entity.transform.position + entity.FireDirection;
+
+        if (entity == null || entity.EntityTag != "player")
+            return target.transform.position;
+
+        PlayerTargetingTuning targeting = GameManager.Instance.BalanceConfig.playerTargeting;
+        if (targeting == null || !targeting.enablePredictiveAim)
+            return target.transform.position;
+
+        Enemy enemy = target.GetComponent<Enemy>();
+        if (enemy == null)
+            return target.transform.position;
+
+        Vector3 targetVelocity = enemy.EstimatedVelocity;
+        targetVelocity.z = 0f;
+        if (targetVelocity.magnitude < targeting.minTargetSpeedForLead)
+            return target.transform.position;
+
+        Vector3 firePos = weaponAttackType == AttackType.Cicle ? entity.transform.position : entity.FirePos.position;
+        float bulletSpeed = Mathf.Max(0.1f, bulletData.moveSpeed);
+        float distance = Vector3.Distance(firePos, target.transform.position);
+        float leadTime = Mathf.Clamp(distance / bulletSpeed, targeting.minLeadTime, targeting.maxLeadTime);
+        return target.transform.position + targetVelocity * leadTime * targeting.targetVelocityWeight;
+    }
+
+    bool ShouldRotateToPredictedPoint()
+    {
+        if (entity == null || entity.EntityTag != "player")
+            return false;
+
+        PlayerTargetingTuning targeting = GameManager.Instance.BalanceConfig.playerTargeting;
+        return targeting != null && targeting.enablePredictiveAim && targeting.rotateToPredictedPoint;
+    }
+
     void ProcessAttack()
     {
         Player player = null;

@@ -25,11 +25,20 @@ public class GameBalanceConfig : ScriptableObject
     [Header("敌人死亡效果时长、震屏和重量感")]
     public EnemyDeathEffectTuning deathEffect = new EnemyDeathEffectTuning();
 
+    [Header("敌人移动思考与不同敌人移动气质")]
+    public EnemyMovementTuning enemyMovement = new EnemyMovementTuning();
+
+    [Header("玩家索敌与移动目标提前量瞄准")]
+    public PlayerTargetingTuning playerTargeting = new PlayerTargetingTuning();
+
     [Header("经验、金币、宝箱奖励")]
     public RewardTuning reward = new RewardTuning();
 
     [Header("升级词条出现规则")]
     public UpgradeRuleTuning upgradeRules = new UpgradeRuleTuning();
+
+    [Header("升级词条实际生效数值和反馈类型")]
+    public UpgradeEffectTuning upgradeEffects = new UpgradeEffectTuning();
 
     [Header("调试工具开关与快捷键")]
     public DebugTuning debug = new DebugTuning();
@@ -63,6 +72,21 @@ public class GameBalanceConfig : ScriptableObject
         if (deathEffect == null)
         {
             deathEffect = new EnemyDeathEffectTuning();
+        }
+
+        if (enemyMovement == null)
+        {
+            enemyMovement = new EnemyMovementTuning();
+        }
+
+        if (playerTargeting == null)
+        {
+            playerTargeting = new PlayerTargetingTuning();
+        }
+
+        if (upgradeEffects == null)
+        {
+            upgradeEffects = new UpgradeEffectTuning();
         }
     }
 
@@ -490,6 +514,155 @@ public class EnemyDeathEffectTuning
 }
 
 [Serializable]
+public class EnemyMovementTuning
+{
+    [Header("是否启用敌人移动思考")]
+    public bool enableMovementBrain = true;
+
+    [Header("普通怪最短重新思考间隔")]
+    public float normalThinkIntervalMin = 0.75f;
+
+    [Header("普通怪最长重新思考间隔")]
+    public float normalThinkIntervalMax = 1.25f;
+
+    [Header("普通怪追击时横向偏移强度")]
+    [Range(0f, 1f)] public float normalDriftWeight = 0.18f;
+
+    [Header("血厚怪最短重新思考间隔")]
+    public float thickThinkIntervalMin = 0.9f;
+
+    [Header("血厚怪最长重新思考间隔")]
+    public float thickThinkIntervalMax = 1.45f;
+
+    [Header("血厚怪期望保持的攻击距离倍率")]
+    public float thickDesiredRangeRatio = 0.82f;
+
+    [Header("血厚怪横向压迫移动强度")]
+    [Range(0f, 2f)] public float thickStrafeWeight = 0.42f;
+
+    [Header("血厚怪移动速度倍率")]
+    public float thickMoveSpeedMultiplier = 0.92f;
+
+    [Header("精英怪最短重新思考间隔")]
+    public float eliteThinkIntervalMin = 0.55f;
+
+    [Header("精英怪最长重新思考间隔")]
+    public float eliteThinkIntervalMax = 1.0f;
+
+    [Header("精英怪期望保持的攻击距离倍率")]
+    public float eliteDesiredRangeRatio = 0.78f;
+
+    [Header("精英怪横向绕行强度")]
+    [Range(0f, 2f)] public float eliteStrafeWeight = 0.9f;
+
+    [Header("精英怪重新换位概率")]
+    [Range(0f, 1f)] public float eliteRepositionChance = 0.36f;
+
+    [Header("精英怪移动速度倍率")]
+    public float eliteMoveSpeedMultiplier = 1.04f;
+
+    [Header("Boss最短重新思考间隔")]
+    public float bossThinkIntervalMin = 0.7f;
+
+    [Header("Boss最长重新思考间隔")]
+    public float bossThinkIntervalMax = 1.15f;
+
+    [Header("Boss期望保持的攻击距离倍率")]
+    public float bossDesiredRangeRatio = 0.88f;
+
+    [Header("Boss横向巡航强度")]
+    [Range(0f, 2f)] public float bossStrafeWeight = 0.58f;
+
+    [Header("Boss重新换位概率")]
+    [Range(0f, 1f)] public float bossRepositionChance = 0.28f;
+
+    [Header("Boss过近时开始后撤的距离倍率")]
+    public float bossBackoffRangeRatio = 0.68f;
+
+    [Header("Boss移动速度倍率")]
+    public float bossMoveSpeedMultiplier = 0.78f;
+
+    [Header("每升一个Boss阶段增加的思考频率")]
+    public float bossPhaseThinkSpeedBonus = 0.12f;
+
+    [Header("保持距离时允许的距离误差倍率")]
+    public float rangeToleranceRatio = 0.12f;
+
+    public float GetThinkInterval(EnemyType enemyType, int bossPhase)
+    {
+        float min;
+        float max;
+        if (enemyType == EnemyType.Thick)
+        {
+            min = thickThinkIntervalMin;
+            max = thickThinkIntervalMax;
+        }
+        else if (enemyType == EnemyType.Elite)
+        {
+            min = eliteThinkIntervalMin;
+            max = eliteThinkIntervalMax;
+        }
+        else if (enemyType == EnemyType.Boss)
+        {
+            float phaseBonus = Mathf.Max(0f, bossPhase - 1) * bossPhaseThinkSpeedBonus;
+            min = Mathf.Max(0.2f, bossThinkIntervalMin - phaseBonus);
+            max = Mathf.Max(min, bossThinkIntervalMax - phaseBonus);
+        }
+        else
+        {
+            min = normalThinkIntervalMin;
+            max = normalThinkIntervalMax;
+        }
+
+        return UnityEngine.Random.Range(Mathf.Max(0.1f, min), Mathf.Max(min, max));
+    }
+
+    public float GetDesiredRangeRatio(EnemyType enemyType)
+    {
+        if (enemyType == EnemyType.Thick)
+            return thickDesiredRangeRatio;
+        if (enemyType == EnemyType.Elite)
+            return eliteDesiredRangeRatio;
+        if (enemyType == EnemyType.Boss)
+            return bossDesiredRangeRatio;
+        return 0.9f;
+    }
+
+    public float GetMoveSpeedMultiplier(EnemyType enemyType)
+    {
+        if (enemyType == EnemyType.Thick)
+            return thickMoveSpeedMultiplier;
+        if (enemyType == EnemyType.Elite)
+            return eliteMoveSpeedMultiplier;
+        if (enemyType == EnemyType.Boss)
+            return bossMoveSpeedMultiplier;
+        return 1f;
+    }
+}
+
+[Serializable]
+public class PlayerTargetingTuning
+{
+    [Header("是否启用玩家子弹提前量瞄准")]
+    public bool enablePredictiveAim = true;
+
+    [Header("目标移动速度参与预测的权重")]
+    [Range(0f, 1.5f)] public float targetVelocityWeight = 0.82f;
+
+    [Header("最大提前预测时间")]
+    public float maxLeadTime = 0.45f;
+
+    [Header("最小提前预测时间，低于该值不做提前量")]
+    public float minLeadTime = 0.03f;
+
+    [Header("目标速度低于该值时不做提前量")]
+    public float minTargetSpeedForLead = 0.15f;
+
+    [Header("是否让玩家飞机朝预测点转向")]
+    public bool rotateToPredictedPoint = true;
+}
+
+[Serializable]
 public class RewardTuning
 {
     [Header("尸潮敌人死亡生成金币数量")]
@@ -572,6 +745,121 @@ public class UpgradeRuleTuning
 
     [Header("无限火力出现所需子弹层数")]
     public int legendFireMinBulletStacks = 5;
+}
+
+public enum UpgradeFeedbackType
+{
+    None,
+    BulletCount,
+    HeavyBullet,
+    Pierce,
+    Power,
+    MoveSpeed,
+    FireRate,
+    Crit,
+    Explosion,
+    Legendary,
+    EnhancedShot
+}
+
+[Serializable]
+public class UpgradeEffectTuning
+{
+    [Header("子弹数量升级后的最小子弹数")]
+    public int minBulletCount = 1;
+
+    [Header("子弹数量升级后的最大子弹数")]
+    public int maxBulletCount = 10;
+
+    [Header("重型弹头额外强化齐射伤害倍率")]
+    public float heavyBulletEnhancedShotDamageAdd = 0.08f;
+
+    [Header("重型弹头额外子弹缩放")]
+    public float heavyBulletScaleAdd = 0.1f;
+
+    [Header("聚能核心额外强化齐射伤害倍率")]
+    public float attackRatioEnhancedShotDamageAdd = 0.12f;
+
+    [Header("游击模式攻击力惩罚")]
+    public float moveFastAttackPenalty = 0.2f;
+
+    [Header("重装炮台攻击力增加")]
+    public float heavyModeAttackAdd = 1.5f;
+
+    [Header("重装炮台移速减少")]
+    public float heavyModeMoveSpeedPenalty = 1f;
+
+    [Header("重装炮台开火间隔减少")]
+    public float heavyModeFireIntervalReduce = 0.05f;
+
+    [Header("重装炮台防御增加")]
+    public int heavyModeDefenceAdd = 2;
+
+    [Header("精准重炮攻击力增加")]
+    public int lowBulletHighDamageAttackAdd = 2;
+
+    [Header("精准重炮子弹缩放增加")]
+    public float lowBulletHighDamageBulletScaleAdd = 0.25f;
+
+    [Header("精准重炮强化齐射伤害倍率增加")]
+    public float lowBulletHighDamageEnhancedShotDamageAdd = 0.35f;
+
+    [Header("精准重炮选择时震屏时长")]
+    public float lowBulletHighDamageShakeDuration = 0.12f;
+
+    [Header("精准重炮选择时震屏强度")]
+    public float lowBulletHighDamageShakeStrength = 0.12f;
+
+    [Header("无限火力开火间隔减少")]
+    public float legendFireIntervalReduce = 0.15f;
+
+    [Header("强化齐射触发间隔最小值")]
+    public int enhancedShotMinInterval = 3;
+
+    [Header("强化齐射每次升级减少的触发间隔")]
+    public int enhancedShotIntervalReduce = 1;
+
+    [Header("强化齐射额外穿透上限")]
+    public int enhancedShotMaxBonusPierce = 5;
+
+    [Header("强化齐射每次升级增加的额外穿透")]
+    public int enhancedShotBonusPierceAdd = 1;
+
+    [Header("强化齐射每次升级增加的子弹缩放")]
+    public float enhancedShotScaleAdd = 0.08f;
+
+    public UpgradeFeedbackType GetFeedbackType(UpgradeType type)
+    {
+        switch (type)
+        {
+            case UpgradeType.BulletCount:
+                return UpgradeFeedbackType.BulletCount;
+            case UpgradeType.HeavyBullet:
+            case UpgradeType.LowBulletHighDamage:
+                return UpgradeFeedbackType.HeavyBullet;
+            case UpgradeType.Pierce:
+                return UpgradeFeedbackType.Pierce;
+            case UpgradeType.AtkRatio:
+            case UpgradeType.HeavyMode:
+                return UpgradeFeedbackType.Power;
+            case UpgradeType.MoveFast:
+                return UpgradeFeedbackType.MoveSpeed;
+            case UpgradeType.CritChance:
+                return UpgradeFeedbackType.Crit;
+            case UpgradeType.CritExplosion:
+            case UpgradeType.PierceExplosion:
+                return UpgradeFeedbackType.Explosion;
+            case UpgradeType.FireRate:
+            case UpgradeType.LegendFire:
+                return UpgradeFeedbackType.FireRate;
+            case UpgradeType.LegendSplit:
+                return UpgradeFeedbackType.Legendary;
+            case UpgradeType.EnhancedShot:
+                return UpgradeFeedbackType.EnhancedShot;
+            default:
+                return UpgradeFeedbackType.None;
+        }
+    }
 }
 
 [Serializable]
