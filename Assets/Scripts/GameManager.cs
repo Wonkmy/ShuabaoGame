@@ -1556,96 +1556,64 @@ public class GameManager : MonoBehaviour
         {
             // 子弹数量
             case UpgradeType.BulletCount:
-
                 p.CurrentBulletCount += (int)data.value;
-
                 // 最大限制
                 p.CurrentBulletCount = Mathf.Clamp(p.CurrentBulletCount, effectTuning.minBulletCount, effectTuning.maxBulletCount);
-
                 break;
 
             // 重型弹头
             case UpgradeType.HeavyBullet:
-
                 p.GetCurrentWeapon().ChangeAttack((int)data.value);
                 p.EnhancedShotDamageMultiplier += effectTuning.heavyBulletEnhancedShotDamageAdd;
                 p.GetCurrentWeapon().ChangeBulletScale(effectTuning.heavyBulletScaleAdd);
                 break;
-
             // 穿透
             case UpgradeType.Pierce:
-
                 p.GetCurrentWeapon().ChangeBulletPierce((int)data.value);
                 break;
-
             // 攻击倍率
             case UpgradeType.AtkRatio:
-
                 p.playerData.Atk += data.value;
                 p.EnhancedShotDamageMultiplier += effectTuning.attackRatioEnhancedShotDamageAdd;
-
                 break;
-
             // 游击模式
             case UpgradeType.MoveFast:
-
                 p.moveSpeed += data.value;
-
                 // 高移速低伤害
                 p.playerData.Atk -= effectTuning.moveFastAttackPenalty;
-
                 break;
-
             // 重装炮台
             case UpgradeType.HeavyMode:
-
                 p.playerData.Atk += effectTuning.heavyModeAttackAdd;
-
                 p.moveSpeed -= effectTuning.heavyModeMoveSpeedPenalty;
-
                 // 提升攻速
                 p.GetCurrentWeapon().ChangeFireInterval(-effectTuning.heavyModeFireIntervalReduce);
                 // 提升防御。
                 p.AddDefence(effectTuning.heavyModeDefenceAdd);
                 break;
-
             // 精准重炮
             case UpgradeType.LowBulletHighDamage:
-
                 p.GetCurrentWeapon().ChangeAttack(effectTuning.lowBulletHighDamageAttackAdd);
                 p.GetCurrentWeapon().ChangeBulletScale(effectTuning.lowBulletHighDamageBulletScaleAdd);
                 p.EnhancedShotDamageMultiplier += effectTuning.lowBulletHighDamageEnhancedShotDamageAdd;
                 ShakeMainCamera(effectTuning.lowBulletHighDamageShakeDuration, effectTuning.lowBulletHighDamageShakeStrength);
                 break;
-
             // 无限火力
             case UpgradeType.LegendFire:
-
                 p.GetCurrentWeapon().ChangeFireInterval(-effectTuning.legendFireIntervalReduce);
-
                 break;
-
             case UpgradeType.CritChance:
-
                 p.GetCurrentWeapon().ChangeCritical(data.value);
-
                 break;
-
             case UpgradeType.FireRate:
-
                 p.GetCurrentWeapon().ChangeFireInterval(-Mathf.Abs(data.value));
-
                 break;
-
             case UpgradeType.EnhancedShot:
-
                 p.EnhancedShotInterval = Mathf.Max(effectTuning.enhancedShotMinInterval, p.EnhancedShotInterval - effectTuning.enhancedShotIntervalReduce);
                 p.EnhancedShotDamageMultiplier += data.value;
                 p.EnhancedShotBonusPierce = Mathf.Min(effectTuning.enhancedShotMaxBonusPierce, p.EnhancedShotBonusPierce + effectTuning.enhancedShotBonusPierceAdd);
                 p.EnhancedShotScaleMultiplier += effectTuning.enhancedShotScaleAdd;
-
                 break;
-
             default:
                 break;
         }
