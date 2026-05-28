@@ -110,7 +110,6 @@ public class Weapon
     public void ChangeAttack(int v)
     {
         attack += v;
-        bulletSclae += 0.2f;
     }
 
     public void ChangeCritical(float v)
@@ -120,7 +119,7 @@ public class Weapon
 
     public void ChangeBulletScale(float v)
     {
-        if (bulletSclae >= 4.5f) return;
+        if (bulletSclae >= 3.5f) return;
         bulletSclae = bulletSclae + v;
     }
 

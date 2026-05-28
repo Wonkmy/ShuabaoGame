@@ -16,6 +16,8 @@ public class CultivatePanel : MonoBehaviour,IDisposable
     Dictionary<AirplaneType,Button> playerTypeChooseButtons = new Dictionary<AirplaneType, Button>();
 
     public void Init() {
+        closeButton.onClick.RemoveAllListeners();
+
         upgradeButtons["Attack"] = upgradeButtonsList[0];
         upgradeButtons["HP"] = upgradeButtonsList[1];
         upgradeButtons["MoveSpeed"] = upgradeButtonsList[2];
