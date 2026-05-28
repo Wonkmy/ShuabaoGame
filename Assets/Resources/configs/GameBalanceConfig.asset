@@ -13,24 +13,24 @@ MonoBehaviour:
   m_Name: GameBalanceConfig
   m_EditorClassIdentifier: 
   player:
-    startHp: 520
-    startAttack: 5
+    startHp: 500
+    startAttack: 7
     startMoveSpeed: 5.4
-    startDefence: 15
+    startDefence: 20
     firstLevelExp: 34
-    expGrowth: 1.34
+    expGrowth: 1.44
   wave:
-    spawnWaveIntervalBase: 5.5
-    normalGroupMin: 1
-    normalGroupMax: 2
-    normalEnemyMin: 2
-    normalEnemyMax: 5
-    waveEnemyMultiplier: 2
+    spawnWaveIntervalBase: 5
+    normalGroupMin: 2
+    normalGroupMax: 3
+    normalEnemyMin: 3
+    normalEnemyMax: 6
+    waveEnemyMultiplier: 3
     waveAppearInterval: 35
     waveDuration: 7
     maxEnemyCount: 36
-    initialEnemyCountPerGroup: 4
-    groupSpawnDelay: 0.25
+    initialEnemyCountPerGroup: 5
+    groupSpawnDelay: 0.2
   dynamicDifficulty:
     initialDifficulty: 2
     difficultyBase: 1.5
@@ -42,9 +42,9 @@ MonoBehaviour:
     spawnIntervalPowerScale: 0.018
     minSpawnInterval: 2.2
     maxSpawnInterval: 6
-    enemyCountBase: 3
+    enemyCountBase: 5
     enemyCountPowerDivisor: 25
-    minEnemyCountPerGroup: 3
+    minEnemyCountPerGroup: 4
     maxEnemyCountPerGroup: 16
     groupCountBase: 1
     groupCountPowerDivisor: 40
@@ -52,11 +52,11 @@ MonoBehaviour:
     maxGroupCount: 5
     powerFactorBase: 50
     powerFactorTimeScale: 0.8
-    maxEnemyHpFactor: 4
-    maxEnemyAtkFactor: 2
+    maxEnemyHpFactor: 6
+    maxEnemyAtkFactor: 3
     levelScorePerLevel: 6
-    killScoreDivisor: 15
-    buildScorePerTag: 8
+    killScoreDivisor: 20
+    buildScorePerTag: 9
     attackScorePerPoint: 6
     scoreOnlyAttackAboveStart: 1
   specialEvent:
@@ -85,6 +85,92 @@ MonoBehaviour:
     darkIntensity: 0.5
     cameraShakeDuration: 0.25
     cameraShakeStrength: 0.18
+  bossCombat:
+    phase2HpPercent: 0.7
+    phase3HpPercent: 0.4
+    phase1FireInterval: 1.25
+    phase2FireInterval: 1
+    phase3FireInterval: 0.82
+    warningLeadTime: 0.65
+    vulnerableDuration: 0.85
+    chargeFlashDuration: 0.58
+    phaseChangeShakeDuration: 0.35
+    phase2ShakeStrength: 0.22
+    phase3ShakeStrength: 0.32
+    phase2TitleSize: 1.05
+    phase3TitleSize: 1.22
+    phase1DarkIntensity: 0.58
+    phase2DarkIntensity: 0.66
+    phase3DarkIntensity: 0.78
+    circleWarningScalePhase1: 4.8
+    circleWarningScalePhase2: 5.8
+    circleWarningScalePhase3: 6.8
+    sectorWarningRadiusPhase1: 6.5
+    sectorWarningRadiusPhase2: 7.5
+    sectorWarningRadiusPhase3: 8.5
+    sectorWarningAnglePhase1: 54
+    sectorWarningAnglePhase2: 66
+    sectorWarningAnglePhase3: 78
+  deathEffect:
+    normalDeathDuration: 0.4
+    normalDeathExpandScale: 1.25
+    eliteChargeDuration: 0.18
+    bossChargeDuration: 0.28
+    eliteCollapseDuration: 0.32
+    bossCollapseDuration: 0.46
+    eliteShakeStrength: 0.09
+    bossShakeStrength: 0.18
+    eliteChargeShakeDuration: 0.12
+    bossChargeShakeDuration: 0.22
+    eliteChargeShakeStrength: 0.12
+    bossChargeShakeStrength: 0.24
+    eliteCollapseShakeDuration: 0.18
+    bossCollapseShakeDuration: 0.34
+    eliteCollapseShakeStrength: 0.18
+    bossCollapseShakeStrength: 0.34
+    heavyChargeExpandScale: 1.18
+    heavyWideScaleX: 1.28
+    heavyWideScaleY: 0.74
+    heavyFinalScaleY: 0.35
+    eliteCollapseRotateAngle: 22
+    bossCollapseRotateAngle: 38
+    eliteDeathPulseScale: 3.2
+    bossDeathPulseScale: 5.2
+    heavyDeathPulseDuration: 0.35
+    finalBossRewardShakeDuration: 0.55
+    finalBossRewardShakeStrength: 0.45
+  enemyMovement:
+    enableMovementBrain: 0
+    normalThinkIntervalMin: 0.75
+    normalThinkIntervalMax: 1.25
+    normalDriftWeight: 0.18
+    thickThinkIntervalMin: 0.9
+    thickThinkIntervalMax: 1.45
+    thickDesiredRangeRatio: 0.82
+    thickStrafeWeight: 0.42
+    thickMoveSpeedMultiplier: 0.92
+    eliteThinkIntervalMin: 0.55
+    eliteThinkIntervalMax: 1
+    eliteDesiredRangeRatio: 0.78
+    eliteStrafeWeight: 0.9
+    eliteRepositionChance: 0.36
+    eliteMoveSpeedMultiplier: 1.04
+    bossThinkIntervalMin: 0.7
+    bossThinkIntervalMax: 1.15
+    bossDesiredRangeRatio: 0.88
+    bossStrafeWeight: 0.58
+    bossRepositionChance: 0.28
+    bossBackoffRangeRatio: 0.68
+    bossMoveSpeedMultiplier: 0.78
+    bossPhaseThinkSpeedBonus: 0.12
+    rangeToleranceRatio: 0.12
+  playerTargeting:
+    enablePredictiveAim: 1
+    targetVelocityWeight: 0.82
+    maxLeadTime: 0.45
+    minLeadTime: 0.03
+    minTargetSpeedForLead: 0.15
+    rotateToPredictedPoint: 1
   reward:
     waveCoinCount: 2
     waveCoinValue: 1
@@ -124,6 +210,28 @@ MonoBehaviour:
     pierceExplosionMinPierceStacks: 2
     legendFireMinFireStacks: 2
     legendFireMinBulletStacks: 5
+  upgradeEffects:
+    minBulletCount: 1
+    maxBulletCount: 10
+    heavyBulletEnhancedShotDamageAdd: 0.08
+    heavyBulletScaleAdd: 0.03
+    attackRatioEnhancedShotDamageAdd: 0.12
+    moveFastAttackPenalty: 0.2
+    heavyModeAttackAdd: 1.5
+    heavyModeMoveSpeedPenalty: 1
+    heavyModeFireIntervalReduce: 0.05
+    heavyModeDefenceAdd: 2
+    lowBulletHighDamageAttackAdd: 2
+    lowBulletHighDamageBulletScaleAdd: 0.05
+    lowBulletHighDamageEnhancedShotDamageAdd: 0.25
+    lowBulletHighDamageShakeDuration: 0.12
+    lowBulletHighDamageShakeStrength: 0.12
+    legendFireIntervalReduce: 0.15
+    enhancedShotMinInterval: 3
+    enhancedShotIntervalReduce: 1
+    enhancedShotMaxBonusPierce: 5
+    enhancedShotBonusPierceAdd: 1
+    enhancedShotScaleAdd: 0.08
   debug:
     showDebugHud: 1
     writeRunReport: 1

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class AddHP : MonoBehaviour
@@ -26,19 +27,26 @@ public class AddHP : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        if (Vector3.Distance(transform.position, _target.transform.position) < 1f)
+        float distance = Vector3.Distance(transform.position, _target.transform.position);
+        if (distance <= 3)
         {
-            if(_isFilledHp)
+            float t = 1f - Mathf.Clamp01(distance / 3f);
+            float speed = Mathf.Lerp(8f, 32f, t);
+            transform.position = Vector3.MoveTowards(transform.position, _target.transform.position, speed * Time.deltaTime);
+            if (Vector3.Distance(transform.position, _target.transform.position) < 1f)
             {
-                _player.FilledTotalHp();
-            }
-            else
-            {
-                _player.AddHP(_AddHpValue);
-            }
+                if (_isFilledHp)
+                {
+                    _player.FilledTotalHp();
+                }
+                else
+                {
+                    _player.AddHP(_AddHpValue);
+                }
 
-            DataManager.allExpBall.Remove(gameObject);
-            Destroy(gameObject);
-        }
+                DataManager.allExpBall.Remove(gameObject);
+                Destroy(gameObject);
+            }
+        } 
     }
 }

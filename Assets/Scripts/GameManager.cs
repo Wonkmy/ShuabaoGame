@@ -510,7 +510,7 @@ public class GameManager : MonoBehaviour
         NextLoadStep();
         yield return new WaitForSeconds(0.025f);
         gameLoadingSlider.gameObject.SetActive(false);
-        StartCoroutine(Init()); // 初始化游戏
+        Init(); // 初始化游戏
     }
     void UpdateLoading(float progress)
     {
@@ -535,11 +535,13 @@ public class GameManager : MonoBehaviour
         playerExpSlider = expobj.transform;
         playerHpSlider = hpobj.transform;
     }
-    IEnumerator Init()
+    void Init()
     {
-        yield return new WaitForSeconds(0.6f);
         ShowCultivatePanel(true);
-        yield return new WaitUntil(()=> CultivatePanelActive() == false);
+    }
+
+    public void StartGame()
+    {
         btn_ReleaseSkill.gameObject.SetActive(true);
         coolDownMask.fillAmount = 0;
         GameOver = false;
@@ -556,10 +558,8 @@ public class GameManager : MonoBehaviour
         cameraEffect = mainCamera.GetComponent<CameraEffect>();
         cameraOriginPos = mainCamera.transform.localPosition;
         ConfigureSpaceBackground();
-        yield return new WaitForSeconds(0.1f);
         // 生成玩家
         GenPlayer();
-        yield return new WaitForSeconds(0.1f);
         // 显示经验和血条
         playerExpSlider.gameObject.SetActive(true);
         playerHpSlider.gameObject.SetActive(true);
@@ -579,7 +579,6 @@ public class GameManager : MonoBehaviour
         btn_ReleaseSkill.onClick.AddListener(() => {
             UseSkill();
         });
-        yield return new WaitForSeconds(0.1f);
         // 播放BGM
         AudioManager.instance.PlayBGM("main");
     }
@@ -590,7 +589,6 @@ public class GameManager : MonoBehaviour
     }
     public void ShowLevelUpPanel(bool show)
     {
-        levelPanel.SetActive(show);
         if(show == true)
         {
             levelPanel.GetComponent<ChooseOnePanel>().Init();
@@ -599,14 +597,12 @@ public class GameManager : MonoBehaviour
         {
             levelPanel.GetComponent<ChooseOnePanel>().Dispose();
         }
-            
+        levelPanel.SetActive(show);
         Time.timeScale = show == true ? 0 : 1;
     }
 
     public void ShowGameOverPanel(bool show)
     {
-        gameOverPanel.SetActive(show);
-        
         if (show == true)
         {
             Player playerC = player.GetComponent<Player>();
@@ -621,6 +617,7 @@ public class GameManager : MonoBehaviour
         {
             gameOverPanel.GetComponent<GameOverPanel>().Dispose();
         }
+        gameOverPanel.SetActive(show);
     }
 
     void TryWriteRunReport(Player playerC)
@@ -633,11 +630,10 @@ public class GameManager : MonoBehaviour
     }
     public bool CultivatePanelActive()
     {
-        return cultivatePanel.activeSelf || cultivatePanel == null;
+        return cultivatePanel.activeSelf;
     }
     public void ShowCultivatePanel(bool show)
     {
-        cultivatePanel.SetActive(show);
         if (show == true)
         {
             cultivatePanel.GetComponent<CultivatePanel>().Init();
@@ -645,7 +641,9 @@ public class GameManager : MonoBehaviour
         else
         {
             cultivatePanel.GetComponent<CultivatePanel>().Dispose();
+            StartGame();
         }
+        cultivatePanel.SetActive(show);
     }
 
     public Player GetPlayer()
@@ -700,8 +698,8 @@ public class GameManager : MonoBehaviour
         
         WeaponSystem.Clear();
             // 重置尸潮、难度、预算、游戏时间等所有数据
-            isWave = false;
-            difficulty = BalanceConfig.dynamicDifficulty.initialDifficulty;
+        isWave = false;
+        difficulty = BalanceConfig.dynamicDifficulty.initialDifficulty;
         gameTime = 0;
         HitStopDuration = 0;
         HitStopIntensity = 0;
@@ -711,8 +709,8 @@ public class GameManager : MonoBehaviour
         spawnWaveTimer = 0;
         // 波次间隔
         spawnWaveInterval = spawnWaveIntervalBase;
-            // 每组怪物数量
-            enemyCountPerGroup = BalanceConfig.wave.initialEnemyCountPerGroup;
+        // 每组怪物数量
+        enemyCountPerGroup = BalanceConfig.wave.initialEnemyCountPerGroup;
         // 当前波次组数量
         currentWaveGroupCount = 1;
         // 特殊事件相关
@@ -736,9 +734,10 @@ public class GameManager : MonoBehaviour
     }
     public void RestartGame()
     {
-        ResetAllGameDatas();
         ShowGameOverPanel(false);
-        StartCoroutine(Init()); 
+        ResetAllGameDatas();
+
+        Init(); 
     }
     public void Revival()
     {
@@ -1738,6 +1737,7 @@ public class GameManager : MonoBehaviour
         if(belongWho.EntityTag == "player")
         {
             newBullet_Liner.transform.Find("fx").localScale += new Vector3(bulletScale, bulletScale, 0);
+            bullet.currentScale = newBullet_Liner.transform.Find("fx").localScale.x;
         }
         else
         {

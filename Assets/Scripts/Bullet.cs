@@ -27,6 +27,8 @@ public class Bullet : MonoBehaviour
     public float SplitShotDamageMultiplier { get; set; }
 
     public Vector3 originalLocalScale = Vector3.one;
+
+    public float currentScale { get; set; }
     void Awake()
     {
         originalLocalScale = transform.Find("fx").localScale;
@@ -35,6 +37,7 @@ public class Bullet : MonoBehaviour
     public void SetFxScaleToDefalut()
     {
         transform.Find("fx").localScale = originalLocalScale;
+        BelongWho.GetCurrentWeapon().spawnedBullets.Remove(gameObject);
     }
     public void SetBulletPrefabId(string id)
     {
@@ -221,8 +224,8 @@ public class Bullet : MonoBehaviour
             }
 
             float distance = Vector3.Distance(transform.position, DataManager.allEnemyDict[i].transform.position);
-
-            if (distance < 0.7f)
+            float destinationDis = 0.7f + 0.7f * currentScale;
+            if (distance < destinationDis)// 这个数值要根据子弹大小调整大小的
             {
                 if (entity.EntityTag == "enemy")
                 {

@@ -31,7 +31,7 @@ public class Player : Entity
     // 是否形成无限火力流
     public bool HasFireBuild;
 
-    public int KilledCount { get;private set; }
+    public int KilledCount { get; private set; }
     public bool HasLegendSplit { get; set; }
     public bool HasCritExplosion { get; set; }
     public bool HasPierceExplosion { get; set; }
@@ -68,7 +68,7 @@ public class Player : Entity
 
     // 速度、阻尼、惯性相关
     Vector3 velocity;// 当前速度
-    [SerializeField]private float acceleration = 10;// 加速度
+    [SerializeField] private float acceleration = 10;// 加速度
     [SerializeField] private float drag = 8f;// 阻力
 
     [SerializeField] private float moveRotateSpeed = 8f;
@@ -248,14 +248,14 @@ public class Player : Entity
     }
     public void PlayerUpdate()
     {
-        if(Dead) { return; }
+        if (Dead) { return; }
 
         UpdateDash();
         Move();
         //DashSliderFollow();
         Rotate();
 
-        if(weapon != null && weapon.lockedTarget != null)
+        if (weapon != null && weapon.lockedTarget != null)
         {
             if (ChainedLightningActive)
             {
@@ -273,7 +273,7 @@ public class Player : Entity
         }
         else
         {
-            if(ChainedLightningActive)
+            if (ChainedLightningActive)
             {
                 LightningManager.Instance.ClearChain();
                 chainedTargets.Clear();
@@ -301,12 +301,12 @@ public class Player : Entity
 
         GameManager.Instance.dash_slider.GetComponent<RectTransform>().anchoredPosition = localPoint;
     }
-    
+
     public void ChangeWhenInWave(bool state)
     {
-        if(weapon.weaponData.type == WeaponType.Laser)
+        if (weapon.weaponData.type == WeaponType.Laser)
         {
-            if(state == false)
+            if (state == false)
             {
                 LightningManager.Instance.ClearChain();
                 chainedTargets.Clear();
@@ -320,14 +320,14 @@ public class Player : Entity
             {
                 overrideAttackBulletCount = 15;
                 InwaveMask.SetActive(true);
-                GameManager.Instance.ShowFlashWarningTxtCom(InwaveMask,false);
+                GameManager.Instance.ShowFlashWarningTxtCom(InwaveMask, false);
                 ChangeWeaponAttackType(AttackType.Cicle, 15);
             }
             else
             {
                 overrideAttackBulletCount = 0;
                 InwaveMask.SetActive(false);
-                ChangeWeaponAttackType(AttackType.Sector,CurrentBulletCount);
+                ChangeWeaponAttackType(AttackType.Sector, CurrentBulletCount);
             }
         }
     }
@@ -567,9 +567,9 @@ public class Player : Entity
         }
     }
 
-    public override void TakeDamage(int damage,bool isCrit)
+    public override void TakeDamage(int damage, bool isCrit)
     {
-        if (IsInvincible) return;
+        if (IsInvincible || IsDash) return;// 无敌状态或冲刺状态不受伤害
 
         // 计算实际伤害。需要考虑玩家的防御力，公式为：实际伤害 = 伤害 * (100 / (100 + 防御力))
         int actualDamage = Mathf.RoundToInt(damage * (100f / (100f + playerDefence)));
