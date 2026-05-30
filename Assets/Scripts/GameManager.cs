@@ -1741,7 +1741,8 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            newBullet_Liner.transform.localScale += new Vector3(bulletScale, bulletScale, 0);
+            newBullet_Liner.transform.Find("fx").localScale += new Vector3(bulletScale, bulletScale, 0);
+            bullet.currentScale = newBullet_Liner.transform.Find("fx").localScale.x;
         }
         bullet.CanMove = true;
         return newBullet_Liner;

@@ -125,12 +125,10 @@ public class BarrageWeapon : Weapon
                     {
                         bulletComp.canTriggerHitStop = true;
                         bulletComp.PierceLeft = 3;
-                        bullet.transform.localScale = Vector3.one * 1.35f;
                     }
                     else if (isCenterLane || isCenterBullet)
                     {
                         bulletComp.PierceLeft = 2;
-                        bullet.transform.localScale = Vector3.one * 1.15f;
                     }
                 }
 
@@ -161,7 +159,6 @@ public class BarrageWeapon : Weapon
                 {
                     bulletComp.canTriggerHitStop = true;
                     bulletComp.PierceLeft = 3;
-                    bullet.transform.localScale = Vector3.one * 1.25f;
                 }
             }
 
@@ -200,7 +197,6 @@ public class BarrageWeapon : Weapon
                 if (i % 3 == 0)
                 {
                     bulletComp.canTriggerHitStop = true;
-                    bullet.transform.localScale = Vector3.one * 1.2f;
                 }
             }
 
