@@ -79,12 +79,10 @@ public class EliteGunWeapon : Weapon
                     {
                         bulletComp.canTriggerHitStop = true;
                         bulletComp.PierceLeft = 3;
-                        bullet.transform.localScale = Vector3.one * 1.35f;
                     }
                     else if (isCenterLane || isCenterBullet)
                     {
                         bulletComp.PierceLeft = 2;
-                        bullet.transform.localScale = Vector3.one * 1.15f;
                     }
                 }
 
@@ -115,7 +113,6 @@ public class EliteGunWeapon : Weapon
                 {
                     bulletComp.canTriggerHitStop = true;
                     bulletComp.PierceLeft = 2;
-                    bullet.transform.localScale = Vector3.one * 1.2f;
                 }
             }
 

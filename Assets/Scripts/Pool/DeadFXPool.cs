@@ -34,7 +34,6 @@ public class DeadFXPool : MonoBehaviour, IPool
             obj.name = fxId;
             obj.GetComponent<DeadFX>().SetFXId(fxId);
             obj.transform.SetParent(fxRoot);
-            DataManager.allDeadFx.Add(obj);
         }
 
         return obj;

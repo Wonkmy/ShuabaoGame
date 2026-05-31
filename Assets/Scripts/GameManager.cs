@@ -737,7 +737,7 @@ public class GameManager : MonoBehaviour
     {
         ShowGameOverPanel(false);
         ResetAllGameDatas();
-
+        ResetCameraEffect();// 重置相机效果，确保复活后没有残留的震屏、命中顿帧、特殊事件效果等
         Init(); 
     }
     public void Revival()
@@ -1042,7 +1042,12 @@ public class GameManager : MonoBehaviour
         RecordChapterEvent(chapterName, enemyType);
         StartRuntimeCoroutine(SpawnChapterSpecialEnemy(chapterName, enemyType));
     }
-
+    
+    void ResetCameraEffect()
+    {
+        cameraEffect.darkIntensity = 0f;
+        cameraEffect.intensity = 0f;
+    }
     IEnumerator SpawnChapterSpecialEnemy(string chapterName, EnemyType enemyType)
     {
         CombatChapterTuning chapterTuning = BalanceConfig.chapter;
@@ -2200,6 +2205,8 @@ public class GameManager : MonoBehaviour
 
             // 只创建一次材质
             liner.material = new Material(Shader.Find("Sprites/Default"));
+            // 设置层级
+            liner.sortingOrder = -666;
 
             liner.startColor = new Color(0.16f, 0.17f, 0.2f);
             liner.endColor = new Color(0.16f, 0.17f, 0.2f);

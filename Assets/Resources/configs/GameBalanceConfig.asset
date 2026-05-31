@@ -50,10 +50,10 @@ MonoBehaviour:
     groupCountPowerDivisor: 40
     minGroupCount: 1
     maxGroupCount: 5
-    powerFactorBase: 50
-    powerFactorTimeScale: 0.8
-    maxEnemyHpFactor: 6
-    maxEnemyAtkFactor: 3
+    powerFactorBase: 200
+    powerFactorTimeScale: 1.8
+    maxEnemyHpFactor: 7
+    maxEnemyAtkFactor: 5
     levelScorePerLevel: 6
     killScoreDivisor: 20
     buildScorePerTag: 9
@@ -115,15 +115,15 @@ MonoBehaviour:
     normalDeathDuration: 0.4
     normalDeathExpandScale: 1.25
     eliteChargeDuration: 0.38
-    bossChargeDuration: 0.48
+    bossChargeDuration: 0.51
     eliteCollapseDuration: 0.5
-    bossCollapseDuration: 0.75
+    bossCollapseDuration: 0.55
     eliteShakeStrength: 0.15
-    bossShakeStrength: 0.33
+    bossShakeStrength: 0.13
     eliteChargeShakeDuration: 0.12
     bossChargeShakeDuration: 0.22
     eliteChargeShakeStrength: 0.12
-    bossChargeShakeStrength: 0.35
+    bossChargeShakeStrength: 0.45
     eliteCollapseShakeDuration: 0.18
     bossCollapseShakeDuration: 0.44
     eliteCollapseShakeStrength: 0.28

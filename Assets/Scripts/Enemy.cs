@@ -705,7 +705,6 @@ public class Enemy : Entity
             if (bigDeaddFX != null)
             {
                 bigDeaddFX.transform.position = transform.position;
-                DataManager.allDeadFx.Add(bigDeaddFX);
             }
         }
         else
@@ -715,7 +714,6 @@ public class Enemy : Entity
             if (deadFX != null)
             {
                 deadFX.transform.position = transform.position;
-                DataManager.allDeadFx.Add(deadFX);
             }
         }
 

@@ -12,7 +12,6 @@ public class DataManager
     public static List<GameObject> allEnemyDict = new List<GameObject>();// 敌人实体字典
     public static List<GameObject> allDamageText =  new List<GameObject>();// 伤害文本字典
     public static List<GameObject> allExpBall = new List<GameObject>();// 经验球字典
-    public static List<GameObject> allDeadFx = new List<GameObject>();// 死亡特效字典
     public static Dictionary<AirplaneType, AirplaneInfo> playerSkillTypeCDDict = new Dictionary<AirplaneType, AirplaneInfo>();// 玩家技能冷却时间字典
 
     public static GameData myGameData;
@@ -250,18 +249,9 @@ public class DataManager
                 Object.Destroy(expBall);
             }
         }
-        // 销毁所有死亡特效
-        foreach (var deadFx in DataManager.allDeadFx)
-        {
-            if (deadFx)
-            {
-                Object.Destroy(deadFx);
-            }
-        }
         allEnemyDict.Clear();
         allDamageText.Clear();
         allExpBall.Clear();
-        allDeadFx.Clear();
     }
 
     public static Vector3[] GetFanDirections2D(Vector3 centerDir, int count)
