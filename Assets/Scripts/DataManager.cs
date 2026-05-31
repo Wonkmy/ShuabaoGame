@@ -12,6 +12,7 @@ public class DataManager
     public static List<GameObject> allEnemyDict = new List<GameObject>();// 敌人实体字典
     public static List<GameObject> allDamageText =  new List<GameObject>();// 伤害文本字典
     public static List<GameObject> allExpBall = new List<GameObject>();// 经验球字典
+    public static List<GameObject> allDeadFx = new List<GameObject>();// 死亡特效字典
     public static Dictionary<AirplaneType, AirplaneInfo> playerSkillTypeCDDict = new Dictionary<AirplaneType, AirplaneInfo>();// 玩家技能冷却时间字典
 
     public static GameData myGameData;
@@ -22,12 +23,6 @@ public class DataManager
         LoadWeaponConfig();
         LoadUpgradeCsv();
         ConfigSkillCD();
-
-        // 预热BulletPoll，提前加载子弹预制体
-        foreach (var b in bulletsDataDict)
-        {
-            BulletPool.Instance.Prewarm(b.Value.prefabString, 50);
-        }
 
         string dataStr = PlayerPrefs.GetString("gamedata");
         myGameData = new GameData();
@@ -50,6 +45,25 @@ public class DataManager
             myGameData.PermanentCrit = 0;
             myGameData.playerType = AirplaneType.Normal;
         }
+    }
+
+    /// <summary>
+    /// 预热对象池，提前加载需要频繁使用的预制体，避免游戏过程中出现卡顿
+    /// </summary>
+    public static void PrewarmPools()
+    {
+        // 预热BulletPoll，提前加载子弹预制体
+        foreach (var b in bulletsDataDict)
+        {
+            BulletPool.Instance.Prewarm(b.Value.prefabString, 50);
+        }
+
+        // 预热ExpBallPool，提前加载经验球预制体
+        ExpBallPool.Instance.Prewarm("expBall", 50);
+
+        // 预热DeadFXPool，提前加载死亡特效预制体
+        DeadFXPool.Instance.Prewarm("deadFX", 50);
+        DeadFXPool.Instance.Prewarm("bigDeadFX", 50);
     }
 
     static void ConfigSkillCD()
@@ -236,9 +250,18 @@ public class DataManager
                 Object.Destroy(expBall);
             }
         }
+        // 销毁所有死亡特效
+        foreach (var deadFx in DataManager.allDeadFx)
+        {
+            if (deadFx)
+            {
+                Object.Destroy(deadFx);
+            }
+        }
         allEnemyDict.Clear();
         allDamageText.Clear();
         allExpBall.Clear();
+        allDeadFx.Clear();
     }
 
     public static Vector3[] GetFanDirections2D(Vector3 centerDir, int count)

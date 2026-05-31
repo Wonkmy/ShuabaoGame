@@ -1,0 +1,1304 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GameBalanceConfig 可视化配置工具</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #10130f;
+      --panel: #171b15;
+      --panel2: #20261d;
+      --line: #6f5731;
+      --text: #e6d6ad;
+      --muted: #aaa28d;
+      --accent: #d69b43;
+      --danger: #c64d4d;
+      --ok: #77bd79;
+      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 18px;
+      border-bottom: 1px solid #2f3628;
+      background: #0c0f0c;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin: 0 16px 0 0;
+      color: #f0d58f;
+      font-weight: 500;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: #211a11;
+      color: var(--text);
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button:hover { border-color: var(--accent); }
+    button.primary { background: #3a2813; color: #ffd98c; }
+    button.danger { border-color: #884242; color: #ffc6c6; }
+    button.small { padding: 5px 8px; font-size: 12px; }
+
+    main {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      min-height: calc(100vh - 60px);
+    }
+
+    aside {
+      border-right: 1px solid #2f3628;
+      background: #111510;
+      padding: 14px;
+    }
+
+    .tab {
+      width: 100%;
+      margin-bottom: 8px;
+      text-align: left;
+      background: #171b15;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      background: #2a2113;
+      border-color: var(--accent);
+      color: #ffd98c;
+    }
+
+    .content {
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status.ok { color: var(--ok); }
+    .status.bad { color: #ff8d8d; }
+
+    .node {
+      border: 1px solid #303827;
+      background: var(--panel);
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+
+    .array-item {
+      border-color: #47391f;
+      background: var(--panel2);
+      margin: 0 0 12px;
+      padding: 10px;
+    }
+
+    .node-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: #f0d58f;
+      font-size: 14px;
+    }
+
+    .card-head {
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+
+    .card-main { min-width: 0; }
+    .card-name {
+      color: #f0d58f;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card-sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card-body {
+      margin-top: 10px;
+      border-top: 1px solid #303827;
+      padding-top: 10px;
+    }
+
+    .collapsed .card-body { display: none; }
+
+    .field {
+      display: block;
+      margin: 7px 0;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 13px;
+      display: block;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid #3c4533;
+      background: #080a08;
+      color: #eee4cb;
+      padding: 8px;
+      border-radius: 4px;
+      font: 14px Consolas, "Microsoft YaHei", monospace;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 8px;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      accent-color: var(--accent);
+    }
+
+    .number-slider {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) 110px 92px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .number-slider input[type="number"] {
+      min-width: 0;
+    }
+
+    .step-box {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      gap: 4px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .array-number-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    @media (max-width: 760px) {
+      .number-slider {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .raw { min-height: 520px; white-space: pre; }
+
+    .empty {
+      padding: 40px;
+      color: var(--muted);
+      border: 1px dashed #3c4533;
+      text-align: center;
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 12px;
+      align-items: start;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>GameBalanceConfig 配置工具</h1>
+    <button id="pickFileBtn" class="primary">选择 GameBalanceConfig.asset</button>
+    <button id="saveBtn" class="primary">转换并写回文件</button>
+    <button id="downloadBtn">导出 asset</button>
+    <span id="status" class="status">请选择 Assets/Resources/configs/GameBalanceConfig.asset。</span>
+  </header>
+
+  <main>
+    <aside id="tabs"></aside>
+    <section class="content">
+      <div class="toolbar">
+        <button id="addItemBtn">数组新增一项</button>
+        <button id="collapseAllBtn">全部收起</button>
+        <button id="expandAllBtn">全部展开</button>
+        <button id="rawBtn">表单/源码切换</button>
+      </div>
+      <div id="editor" class="empty">还没有加载配置文件。</div>
+    </section>
+  </main>
+
+  <script>
+    const metaKeys = new Set([
+      "m_ObjectHideFlags",
+      "m_CorrespondingSourceObject",
+      "m_PrefabInstance",
+      "m_PrefabAsset",
+      "m_GameObject",
+      "m_Enabled",
+      "m_EditorHideFlags",
+      "m_Script",
+      "m_Name",
+      "m_EditorClassIdentifier"
+    ]);
+
+    const fieldHints = {
+      player: "玩家初始数值与升级节奏",
+      wave: "普通刷怪与尸潮节奏",
+      dynamicDifficulty: "动态难度计算参数",
+      specialEvent: "特殊事件触发节奏",
+      chapter: "战斗章节事件配置",
+      bossCombat: "最终Boss战节奏、阶段和预警表现",
+      deathEffect: "敌人死亡效果时长、震屏和重量感",
+      enemyMovement: "敌人移动思考与不同敌人移动气质",
+      playerTargeting: "玩家索敌与移动目标提前量瞄准",
+      reward: "经验、金币、宝箱奖励",
+      upgradeRules: "升级词条出现规则",
+      upgradeEffects: "升级词条实际生效数值和反馈类型",
+      debug: "调试工具开关与快捷键",
+      timeline: "心流时间轴阶段配置",
+      startHp: "玩家初始生命值",
+      startAttack: "玩家初始攻击力",
+      startMoveSpeed: "玩家初始移动速度",
+      startDefence: "玩家初始防御力",
+      firstLevelExp: "首次升级所需经验",
+      expGrowth: "每次升级后的经验需求成长倍率",
+      spawnWaveIntervalBase: "基础刷怪间隔，单位秒",
+      normalGroupMin: "普通刷怪每轮最少组数",
+      normalGroupMax: "普通刷怪每轮最多组数",
+      normalEnemyMin: "普通刷怪每组最少敌人数",
+      normalEnemyMax: "普通刷怪每组最多敌人数",
+      waveEnemyMultiplier: "尸潮期间每组敌人数倍率",
+      waveAppearInterval: "尸潮出现间隔，单位秒",
+      waveDuration: "尸潮持续时间，单位秒",
+      maxEnemyCount: "场上最大敌人数量",
+      initialEnemyCountPerGroup: "开局每组敌人数量",
+      groupSpawnDelay: "同一轮多组刷怪之间的延迟，单位秒",
+      initialDifficulty: "开局基础难度",
+      difficultyBase: "时间难度基础值",
+      difficultyStepSeconds: "时间难度每隔多少秒提升一级",
+      minDifficulty: "时间难度最小值",
+      maxDifficulty: "时间难度最大值",
+      updateInterval: "动态难度刷新间隔，单位秒",
+      spawnIntervalBase: "战力评分为0时的刷怪间隔",
+      spawnIntervalPowerScale: "玩家战力每点对刷怪间隔的缩短量",
+      minSpawnInterval: "动态刷怪间隔最小值",
+      maxSpawnInterval: "动态刷怪间隔最大值",
+      enemyCountBase: "每组敌人数量基础值",
+      enemyCountPowerDivisor: "玩家战力每多少点增加每组敌人数量",
+      minEnemyCountPerGroup: "每组敌人数量最小值",
+      maxEnemyCountPerGroup: "每组敌人数量最大值",
+      groupCountBase: "每轮刷怪组数基础值",
+      groupCountPowerDivisor: "玩家战力每多少点增加每轮刷怪组数",
+      minGroupCount: "每轮刷怪组数最小值",
+      maxGroupCount: "每轮刷怪组数最大值",
+      powerFactorBase: "敌人强度成长计算的玩家战力基准",
+      powerFactorTimeScale: "敌人强度成长随游戏时间放缓的系数",
+      maxEnemyHpFactor: "敌人血量倍率最大值",
+      maxEnemyAtkFactor: "敌人攻击倍率最大值",
+      levelScorePerLevel: "玩家每升一级增加的战力评分",
+      killScoreDivisor: "每多少击杀增加1点战力评分",
+      buildScorePerTag: "每个构筑标签增加的战力评分",
+      attackScorePerPoint: "每点攻击力增加的战力评分",
+      scoreOnlyAttackAboveStart: "攻击评分是否只计算超过初始攻击力的部分",
+      firstSpecialEventInterval: "首次特殊事件触发时间，单位秒",
+      enemyPressureScore: "敌人数量压力评分",
+      lowHpPressureScore: "低血量压力评分",
+      wavePressureBonus: "尸潮期间额外压力评分",
+      specialEventPressureBonus: "特殊事件期间额外压力评分",
+      highPressureThreshold: "高压力阈值",
+      midPressureThreshold: "中压力阈值",
+      lowPressureThreshold: "低压力阈值",
+      highPressureInterval: "高压力下下一次特殊事件间隔",
+      midPressureInterval: "中压力下下一次特殊事件间隔",
+      lowPressureInterval: "低压力下下一次特殊事件间隔",
+      calmInterval: "平稳状态下下一次特殊事件间隔",
+      enableChapterEvents: "是否启用战斗章节事件",
+      miniBossTimes: "小Boss章节触发时间，单位秒",
+      finalBossTime: "最终Boss章节触发时间，单位秒",
+      miniBossTitle: "小Boss章节标题",
+      finalBossTitle: "最终Boss章节标题",
+      chapterTitleSize: "章节标题字号",
+      warningDelay: "章节出场前警告等待时间",
+      darkIntensity: "章节触发时镜头暗化强度",
+      cameraShakeDuration: "章节触发时震屏时长",
+      cameraShakeStrength: "章节触发时震屏强度",
+      phase2HpPercent: "最终Boss第2阶段触发血量比例",
+      phase3HpPercent: "最终Boss第3阶段触发血量比例",
+      phase1FireInterval: "最终Boss第1阶段攻击间隔",
+      phase2FireInterval: "最终Boss第2阶段攻击间隔",
+      phase3FireInterval: "最终Boss第3阶段攻击间隔",
+      warningLeadTime: "最终Boss攻击前预警提前时间",
+      vulnerableDuration: "最终Boss每次攻击后的虚弱窗口时长",
+      chargeFlashDuration: "最终Boss攻击前蓄力闪烁时长",
+      phaseChangeShakeDuration: "最终Boss阶段切换震屏时长",
+      phase2ShakeStrength: "最终Boss第2阶段切换震屏强度",
+      phase3ShakeStrength: "最终Boss第3阶段切换震屏强度",
+      phase2TitleSize: "最终Boss第2阶段标题字号",
+      phase3TitleSize: "最终Boss第3阶段标题字号",
+      phase1DarkIntensity: "最终Boss第1阶段暗场强度",
+      phase2DarkIntensity: "最终Boss第2阶段暗场强度",
+      phase3DarkIntensity: "最终Boss第3阶段暗场强度",
+      circleWarningScalePhase1: "最终Boss环形预警第1阶段范围",
+      circleWarningScalePhase2: "最终Boss环形预警第2阶段范围",
+      circleWarningScalePhase3: "最终Boss环形预警第3阶段范围",
+      sectorWarningRadiusPhase1: "最终Boss扇形预警第1阶段半径",
+      sectorWarningRadiusPhase2: "最终Boss扇形预警第2阶段半径",
+      sectorWarningRadiusPhase3: "最终Boss扇形预警第3阶段半径",
+      sectorWarningAnglePhase1: "最终Boss扇形预警第1阶段角度",
+      sectorWarningAnglePhase2: "最终Boss扇形预警第2阶段角度",
+      sectorWarningAnglePhase3: "最终Boss扇形预警第3阶段角度",
+      normalDeathDuration: "普通怪死亡收缩时长",
+      normalDeathExpandScale: "普通怪死亡膨胀倍率",
+      eliteChargeDuration: "精英怪死亡蓄力时长",
+      bossChargeDuration: "Boss死亡蓄力时长",
+      eliteCollapseDuration: "精英怪死亡坍缩时长",
+      bossCollapseDuration: "Boss死亡坍缩时长",
+      eliteShakeStrength: "精英怪死亡自身抖动强度",
+      bossShakeStrength: "Boss死亡自身抖动强度",
+      eliteChargeShakeDuration: "精英怪死亡蓄力震屏时长",
+      bossChargeShakeDuration: "Boss死亡蓄力震屏时长",
+      eliteChargeShakeStrength: "精英怪死亡蓄力震屏强度",
+      bossChargeShakeStrength: "Boss死亡蓄力震屏强度",
+      eliteCollapseShakeDuration: "精英怪死亡爆发震屏时长",
+      bossCollapseShakeDuration: "Boss死亡爆发震屏时长",
+      eliteCollapseShakeStrength: "精英怪死亡爆发震屏强度",
+      bossCollapseShakeStrength: "Boss死亡爆发震屏强度",
+      heavyChargeExpandScale: "精英和Boss死亡蓄力膨胀倍率",
+      heavyWideScaleX: "精英和Boss死亡横向压扁倍率",
+      heavyWideScaleY: "精英和Boss死亡纵向压扁倍率",
+      heavyFinalScaleY: "精英和Boss死亡坍缩末段纵向倍率",
+      eliteCollapseRotateAngle: "精英怪死亡旋转角度",
+      bossCollapseRotateAngle: "Boss死亡旋转角度",
+      eliteDeathPulseScale: "精英怪死亡冲击波范围",
+      bossDeathPulseScale: "Boss死亡冲击波范围",
+      heavyDeathPulseDuration: "精英和Boss死亡冲击波时长",
+      finalBossRewardShakeDuration: "最终Boss死亡奖励喷发震屏时长",
+      finalBossRewardShakeStrength: "最终Boss死亡奖励喷发震屏强度",
+      enableMovementBrain: "是否启用敌人移动思考",
+      normalThinkIntervalMin: "普通怪最短重新思考间隔",
+      normalThinkIntervalMax: "普通怪最长重新思考间隔",
+      normalDriftWeight: "普通怪追击时横向偏移强度",
+      thickThinkIntervalMin: "血厚怪最短重新思考间隔",
+      thickThinkIntervalMax: "血厚怪最长重新思考间隔",
+      thickDesiredRangeRatio: "血厚怪期望保持的攻击距离倍率",
+      thickStrafeWeight: "血厚怪横向压迫移动强度",
+      thickMoveSpeedMultiplier: "血厚怪移动速度倍率",
+      eliteThinkIntervalMin: "精英怪最短重新思考间隔",
+      eliteThinkIntervalMax: "精英怪最长重新思考间隔",
+      eliteDesiredRangeRatio: "精英怪期望保持的攻击距离倍率",
+      eliteStrafeWeight: "精英怪横向绕行强度",
+      eliteRepositionChance: "精英怪重新换位概率",
+      eliteMoveSpeedMultiplier: "精英怪移动速度倍率",
+      bossThinkIntervalMin: "Boss最短重新思考间隔",
+      bossThinkIntervalMax: "Boss最长重新思考间隔",
+      bossDesiredRangeRatio: "Boss期望保持的攻击距离倍率",
+      bossStrafeWeight: "Boss横向巡航强度",
+      bossRepositionChance: "Boss重新换位概率",
+      bossBackoffRangeRatio: "Boss过近时开始后撤的距离倍率",
+      bossMoveSpeedMultiplier: "Boss移动速度倍率",
+      bossPhaseThinkSpeedBonus: "每升一个Boss阶段增加的思考频率",
+      rangeToleranceRatio: "保持距离时允许的距离误差倍率",
+      enablePredictiveAim: "是否启用玩家子弹提前量瞄准",
+      targetVelocityWeight: "目标移动速度参与预测的权重",
+      maxLeadTime: "最大提前预测时间",
+      minLeadTime: "最小提前预测时间，低于该值不做提前量",
+      minTargetSpeedForLead: "目标速度低于该值时不做提前量",
+      rotateToPredictedPoint: "是否让玩家飞机朝预测点转向",
+      waveCoinCount: "尸潮敌人死亡生成金币数量",
+      waveCoinValue: "尸潮敌人金币单个价值",
+      eliteBossChestChance: "精英和Boss掉落宝箱概率",
+      eliteCoinCount: "精英怪金币掉落数量",
+      eliteCoinValue: "精英怪金币单个价值",
+      bossCoinCount: "Boss金币掉落数量",
+      bossCoinValue: "Boss金币单个价值",
+      critExpMultiplier: "暴击击杀经验倍率",
+      enemyRewards: "不同敌人类型的经验奖励配置",
+      enemyType: "敌人类型",
+      baseExp: "基础经验值",
+      expBallCount: "经验球生成数量",
+      spreadRadius: "多个经验球的扩散半径",
+      critExplosionMinCritStacks: "暴击爆炸出现所需暴击层数",
+      pierceExplosionMinPierceStacks: "穿透爆炸出现所需穿透层数",
+      legendFireMinFireStacks: "无限火力出现所需火力层数",
+      legendFireMinBulletStacks: "无限火力出现所需子弹层数",
+      minBulletCount: "子弹数量升级后的最小子弹数",
+      maxBulletCount: "子弹数量升级后的最大子弹数",
+      heavyBulletEnhancedShotDamageAdd: "重型弹头额外强化齐射伤害倍率",
+      heavyBulletScaleAdd: "重型弹头额外子弹缩放",
+      attackRatioEnhancedShotDamageAdd: "聚能核心额外强化齐射伤害倍率",
+      moveFastAttackPenalty: "游击模式攻击力惩罚",
+      heavyModeAttackAdd: "重装炮台攻击力增加",
+      heavyModeMoveSpeedPenalty: "重装炮台移速减少",
+      heavyModeFireIntervalReduce: "重装炮台开火间隔减少",
+      heavyModeDefenceAdd: "重装炮台防御增加",
+      lowBulletHighDamageAttackAdd: "精准重炮攻击力增加",
+      lowBulletHighDamageBulletScaleAdd: "精准重炮子弹缩放增加",
+      lowBulletHighDamageEnhancedShotDamageAdd: "精准重炮强化齐射伤害倍率增加",
+      lowBulletHighDamageShakeDuration: "精准重炮选择时震屏时长",
+      lowBulletHighDamageShakeStrength: "精准重炮选择时震屏强度",
+      legendFireIntervalReduce: "无限火力开火间隔减少",
+      enhancedShotMinInterval: "强化齐射触发间隔最小值",
+      enhancedShotIntervalReduce: "强化齐射每次升级减少的触发间隔",
+      enhancedShotMaxBonusPierce: "强化齐射额外穿透上限",
+      enhancedShotBonusPierceAdd: "强化齐射每次升级增加的额外穿透",
+      enhancedShotScaleAdd: "强化齐射每次升级增加的子弹缩放",
+      showDebugHud: "是否显示调参HUD",
+      writeRunReport: "是否生成跑局报告",
+      toggleHudKey: "调参HUD显示隐藏快捷键",
+      enableFlowStageJump: "是否启用心流阶段跳转",
+      flowStageKeys: "心流阶段跳转快捷键列表",
+      flowStageSnapshots: "心流阶段快照配置",
+      startTime: "阶段开始时间，单位秒",
+      endTime: "阶段结束时间，单位秒",
+      label: "阶段名称",
+      goal: "阶段体验目标",
+      expectedEnemies: "该阶段预期出现的敌人类型",
+      pressure: "该阶段预期压力等级",
+      stageIndex: "对应的心流阶段索引",
+      targetTime: "跳转后的游戏时间，单位秒",
+      playerLevel: "快照模式下设置的玩家等级",
+      expRatio: "快照模式下当前等级经验进度",
+      hpRatio: "快照模式下玩家血量比例",
+      upgradeIds: "快照模式下自动套用的升级词条ID",
+      secondsBeforeSpecialEvent: "快照模式下距离下一次特殊事件的剩余时间"
+    };
+
+    let fileHandle = null;
+    let parsed = null;
+    let currentSection = "";
+    let rawMode = false;
+    const collapsedCards = new Set();
+
+    const tabs = document.getElementById("tabs");
+    const editor = document.getElementById("editor");
+    const statusText = document.getElementById("status");
+
+    document.getElementById("pickFileBtn").addEventListener("click", pickAssetFile);
+    document.getElementById("saveBtn").addEventListener("click", saveAssetFile);
+    document.getElementById("downloadBtn").addEventListener("click", downloadAssetFile);
+    document.getElementById("addItemBtn").addEventListener("click", addArrayItem);
+    document.getElementById("collapseAllBtn").addEventListener("click", collapseAll);
+    document.getElementById("expandAllBtn").addEventListener("click", expandAll);
+    document.getElementById("rawBtn").addEventListener("click", () => {
+      rawMode = !rawMode;
+      renderCurrent();
+    });
+
+    renderTabs();
+
+    function setStatus(text, type = "") {
+      statusText.textContent = text;
+      statusText.className = `status ${type}`;
+    }
+
+    async function pickAssetFile() {
+      if (!window.showOpenFilePicker) {
+        setStatus("当前浏览器不支持直接写回本地文件，请使用 Chrome 或 Edge。", "bad");
+        return;
+      }
+
+      const handles = await window.showOpenFilePicker({
+        id: "game-balance-config",
+        multiple: false,
+        types: [{ description: "Unity asset", accept: { "text/plain": [".asset"] } }]
+      });
+
+      fileHandle = handles[0];
+      const file = await fileHandle.getFile();
+      const text = await file.text();
+      parsed = parseUnityAsset(text);
+      currentSection = parsed.sections[0] || "";
+      rawMode = false;
+      collapsedCards.clear();
+      renderTabs();
+      renderCurrent();
+      setStatus(`${file.name} 已加载。表单修改会进入内存，点击转换并写回文件后覆盖。`, "ok");
+    }
+
+    function parseUnityAsset(text) {
+      const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      const lines = normalized.split("\n");
+      const monoIndex = lines.findIndex(line => line.trim() === "MonoBehaviour:");
+      if (monoIndex < 0) throw new Error("没有找到 MonoBehaviour 节点。");
+
+      const result = parseMap(lines, monoIndex + 1, 2);
+      const data = result.value;
+      const sections = Object.keys(data).filter(key => !metaKeys.has(key));
+
+      return {
+        lines,
+        prefix: lines.slice(0, monoIndex + 1),
+        data,
+        sections,
+        raw: normalized,
+        invalid: false
+      };
+    }
+
+    function parseMap(lines, index, indent) {
+      const obj = {};
+      let i = index;
+
+      while (i < lines.length) {
+        if (!lines[i].trim()) {
+          i++;
+          continue;
+        }
+
+        const currentIndent = getIndent(lines[i]);
+        if (currentIndent < indent) break;
+        if (currentIndent > indent) break;
+
+        const trimmed = lines[i].trim();
+        if (trimmed.startsWith("- ")) break;
+
+        const split = splitKeyValue(trimmed);
+        if (!split) {
+          i++;
+          continue;
+        }
+
+        const { key, value } = split;
+        if (value === "") {
+          const next = findNextContent(lines, i + 1);
+          if (next >= 0 && getIndent(lines[next]) === indent && lines[next].trim().startsWith("- ")) {
+            const parsedChild = parseAny(lines, next, indent);
+            obj[key] = parsedChild.value;
+            i = parsedChild.index;
+          } else if (next < 0 || getIndent(lines[next]) <= indent) {
+            obj[key] = "";
+            i++;
+          } else {
+            const parsedChild = parseAny(lines, next, getIndent(lines[next]));
+            obj[key] = parsedChild.value;
+            i = parsedChild.index;
+          }
+        } else {
+          obj[key] = parseScalar(value);
+          i++;
+        }
+      }
+
+      return { value: obj, index: i };
+    }
+
+    function parseArray(lines, index, indent) {
+      const arr = [];
+      let i = index;
+
+      while (i < lines.length) {
+        if (!lines[i].trim()) {
+          i++;
+          continue;
+        }
+
+        const currentIndent = getIndent(lines[i]);
+        if (currentIndent !== indent) break;
+
+        const trimmed = lines[i].trim();
+        if (!trimmed.startsWith("- ")) break;
+
+        const rest = trimmed.slice(2);
+        if (rest === "") {
+          const next = findNextContent(lines, i + 1);
+          if (next < 0 || getIndent(lines[next]) <= indent) {
+            arr.push("");
+            i++;
+          } else {
+            const child = parseAny(lines, next, getIndent(lines[next]));
+            arr.push(child.value);
+            i = child.index;
+          }
+          continue;
+        }
+
+        const inline = splitKeyValue(rest);
+        if (inline) {
+          const item = {};
+          item[inline.key] = inline.value === "" ? "" : parseScalar(inline.value);
+          i++;
+
+          while (i < lines.length) {
+            if (!lines[i].trim()) {
+              i++;
+              continue;
+            }
+
+            const childIndent = getIndent(lines[i]);
+            if (childIndent <= indent) break;
+
+            const childSplit = splitKeyValue(lines[i].trim());
+            if (!childSplit) break;
+            if (childSplit.value === "") {
+              const next = findNextContent(lines, i + 1);
+              if (next < 0 || getIndent(lines[next]) <= childIndent) {
+                item[childSplit.key] = "";
+                i++;
+              } else {
+                const child = parseAny(lines, next, getIndent(lines[next]));
+                item[childSplit.key] = child.value;
+                i = child.index;
+              }
+            } else {
+              item[childSplit.key] = parseScalar(childSplit.value);
+              i++;
+            }
+          }
+
+          arr.push(item);
+        } else {
+          arr.push(parseScalar(rest));
+          i++;
+        }
+      }
+
+      return { value: arr, index: i };
+    }
+
+    function parseAny(lines, index, indent) {
+      const trimmed = lines[index].trim();
+      if (trimmed.startsWith("- ")) return parseArray(lines, index, indent);
+      return parseMap(lines, index, indent);
+    }
+
+    function splitKeyValue(text) {
+      const colon = text.indexOf(":");
+      if (colon < 0) return null;
+      return {
+        key: text.slice(0, colon).trim(),
+        value: text.slice(colon + 1).trim()
+      };
+    }
+
+    function getIndent(line) {
+      const match = line.match(/^ */);
+      return match ? match[0].length : 0;
+    }
+
+    function findNextContent(lines, start) {
+      for (let i = start; i < lines.length; i++) {
+        if (lines[i].trim()) return i;
+      }
+      return -1;
+    }
+
+    function parseScalar(value) {
+      if (value === "") return "";
+      if (value.startsWith("{") && value.endsWith("}")) return parseInlineObject(value);
+      if (value.startsWith('"') && value.endsWith('"')) {
+        try { return JSON.parse(value); } catch { return value.slice(1, -1); }
+      }
+      if (/^-?\d+(\.\d+)?$/.test(value)) return Number(value);
+      if (value === "true") return true;
+      if (value === "false") return false;
+      return value;
+    }
+
+    function parseInlineObject(value) {
+      const obj = {};
+      const body = value.slice(1, -1).trim();
+      if (!body) return obj;
+
+      for (const part of body.split(",")) {
+        const split = splitKeyValue(part.trim());
+        if (split) obj[split.key] = parseScalar(split.value);
+      }
+      return obj;
+    }
+
+    function renderTabs() {
+      tabs.innerHTML = "";
+      if (!parsed) {
+        const hint = document.createElement("div");
+        hint.className = "hint";
+        hint.textContent = "加载 GameBalanceConfig.asset 后，这里会按 player、wave、reward、timeline 等分组显示。";
+        tabs.appendChild(hint);
+        return;
+      }
+
+      for (const name of parsed.sections) {
+        const btn = document.createElement("button");
+        btn.className = `tab ${name === currentSection ? "active" : ""}`;
+        btn.textContent = displayName(name);
+        btn.title = displayName(name);
+        btn.addEventListener("click", () => {
+          syncRawIfNeeded();
+          currentSection = name;
+          rawMode = false;
+          renderTabs();
+          renderCurrent();
+        });
+        tabs.appendChild(btn);
+      }
+    }
+
+    function renderCurrent() {
+      if (!parsed || !currentSection) {
+        editor.className = "empty";
+        editor.textContent = "还没有加载配置文件。";
+        return;
+      }
+
+      editor.className = "";
+      if (rawMode || parsed.invalid) {
+        renderRaw();
+        return;
+      }
+
+      editor.innerHTML = "";
+      const top = document.createElement("div");
+      top.className = "topline";
+      top.innerHTML = `<strong>${escapeHtml(displayName(currentSection))}</strong><span class="status">这里的值会序列化回 Unity YAML，保留 MonoBehaviour 头部和脚本引用。</span>`;
+      editor.appendChild(top);
+      editor.appendChild(renderNode(parsed.data[currentSection], [currentSection], currentSection));
+    }
+
+    function renderRaw() {
+      editor.innerHTML = "";
+      const title = document.createElement("div");
+      title.className = "topline";
+      title.innerHTML = `<strong>GameBalanceConfig.asset</strong><span class="status ${parsed.invalid ? "bad" : ""}">${parsed.invalid ? "源码解析失败，请修正 YAML 子集格式。" : "源码编辑模式"}</span>`;
+
+      const area = document.createElement("textarea");
+      area.className = "raw";
+      area.value = parsed.raw;
+      area.addEventListener("input", () => {
+        parsed.raw = area.value;
+        try {
+          const reparsed = parseUnityAsset(parsed.raw);
+          parsed.data = reparsed.data;
+          parsed.sections = reparsed.sections;
+          parsed.prefix = reparsed.prefix;
+          parsed.invalid = false;
+          if (!parsed.sections.includes(currentSection)) currentSection = parsed.sections[0] || "";
+          renderTabs();
+        } catch {
+          parsed.invalid = true;
+        }
+      });
+
+      editor.appendChild(title);
+      editor.appendChild(area);
+    }
+
+    function renderNode(value, path, name) {
+      if (Array.isArray(value)) return renderArray(value, path, name);
+      if (value && typeof value === "object") return renderObject(value, path, name);
+      return renderPrimitive(value, path, name);
+    }
+
+    function renderObject(obj, path, name) {
+      const box = document.createElement("div");
+      box.className = "node";
+      const title = document.createElement("div");
+      title.className = "node-title";
+      title.innerHTML = `<span>${escapeHtml(displayName(name))}</span>`;
+      box.appendChild(title);
+
+      for (const key of Object.keys(obj)) {
+        const row = document.createElement("div");
+        row.className = "field";
+        const label = document.createElement("label");
+        label.textContent = displayName(key);
+        label.title = fieldHints[key] || key;
+        row.appendChild(label);
+        row.appendChild(renderNode(obj[key], path.concat(key), key));
+        box.appendChild(row);
+      }
+
+      return box;
+    }
+
+    function renderArray(arr, path, name) {
+      const box = document.createElement("div");
+      box.className = "node";
+      const title = document.createElement("div");
+      title.className = "node-title";
+      title.innerHTML = `<span>${escapeHtml(displayName(name))} [${arr.length}]</span>`;
+      box.appendChild(title);
+
+      if (arr.every(x => typeof x === "number")) {
+        const list = document.createElement("div");
+        list.className = "array-number-list";
+        arr.forEach((item, index) => {
+          const row = document.createElement("div");
+          row.className = "field";
+          const label = document.createElement("label");
+          label.textContent = `${displayName(name)} #${index + 1}`;
+          row.appendChild(label);
+          row.appendChild(renderPrimitive(item, path.concat(index), name));
+          list.appendChild(row);
+        });
+        box.appendChild(list);
+        return box;
+      }
+
+      if (arr.every(x => typeof x !== "object" || x === null)) {
+        const area = document.createElement("textarea");
+        area.value = arr.join("\n");
+        area.addEventListener("input", () => {
+          const sample = arr.find(x => x !== "");
+          const lines = area.value.split("\n").filter((_, index, all) => index < all.length - 1 || all[index] !== "");
+          setPath(path, lines.map(line => typeof sample === "number" ? Number(line || 0) : line));
+        });
+        box.appendChild(area);
+        return box;
+      }
+
+      const grid = document.createElement("div");
+      grid.className = "card-grid";
+
+      arr.forEach((item, index) => {
+        const itemBox = document.createElement("div");
+        const cardKey = `${path.join(".")}.${index}`;
+        itemBox.className = `node array-item ${collapsedCards.has(cardKey) ? "collapsed" : ""}`;
+
+        const itemTitle = document.createElement("div");
+        itemTitle.className = "node-title card-head";
+        const summary = buildItemSummary(item, index);
+
+        const main = document.createElement("div");
+        main.className = "card-main";
+        main.innerHTML = `<div class="card-name">${escapeHtml(summary.title)}</div><div class="card-sub">${escapeHtml(summary.sub)}</div>`;
+
+        const actions = document.createElement("div");
+        const toggle = document.createElement("button");
+        toggle.className = "small";
+        toggle.textContent = collapsedCards.has(cardKey) ? "展开" : "收起";
+        toggle.addEventListener("click", event => {
+          event.stopPropagation();
+          toggleCard(cardKey);
+        });
+
+        const copy = document.createElement("button");
+        copy.className = "small";
+        copy.textContent = "复制";
+        copy.addEventListener("click", event => {
+          event.stopPropagation();
+          arr.splice(index + 1, 0, structuredClone(item));
+          refreshRaw();
+          renderCurrent();
+        });
+
+        const remove = document.createElement("button");
+        remove.className = "small danger";
+        remove.textContent = "删除";
+        remove.addEventListener("click", event => {
+          event.stopPropagation();
+          arr.splice(index, 1);
+          refreshRaw();
+          renderCurrent();
+        });
+
+        actions.append(toggle, copy, remove);
+        itemTitle.addEventListener("click", () => toggleCard(cardKey));
+        itemTitle.appendChild(main);
+        itemTitle.appendChild(actions);
+        itemBox.appendChild(itemTitle);
+
+        const body = document.createElement("div");
+        body.className = "card-body";
+        body.appendChild(renderNode(item, path.concat(index), `${name}.${index}`));
+        itemBox.appendChild(body);
+        grid.appendChild(itemBox);
+      });
+
+      box.appendChild(grid);
+      return box;
+    }
+
+    function buildItemSummary(item, index) {
+      if (!item || typeof item !== "object") return { title: `第 ${index + 1} 项`, sub: String(item ?? "") };
+
+      const title = item.label || item.enemyType !== undefined && `enemyType: ${item.enemyType}` || item.stageIndex !== undefined && `stageIndex: ${item.stageIndex}` || `第 ${index + 1} 项`;
+      const subParts = [];
+      for (const key of ["startTime", "endTime", "targetTime", "playerLevel", "baseExp", "pressure", "goal"]) {
+        if (item[key] !== undefined && item[key] !== "") subParts.push(`${key}: ${item[key]}`);
+      }
+      return { title, sub: subParts.join("  |  ") || `第 ${index + 1} 项` };
+    }
+
+    function renderPrimitive(value, path, name) {
+      if (isBooleanLikeField(name, value)) {
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = value === true || value === 1;
+        input.addEventListener("change", () => setPath(path, input.checked ? 1 : 0));
+        return input;
+      }
+
+      if (typeof value === "number") return renderNumberSlider(value, path, name);
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = value ?? "";
+      input.addEventListener("input", () => {
+        setPath(path, input.value);
+      });
+      return input;
+    }
+
+    function renderNumberSlider(value, path, name) {
+      const isInt = Number.isInteger(value);
+      const range = getSliderRange(name, value, isInt);
+      const stepDefault = isInt ? 1 : getFloatStep(name, value);
+      const wrap = document.createElement("div");
+      wrap.className = "number-slider";
+
+      const slider = document.createElement("input");
+      slider.type = "range";
+      slider.min = range.min;
+      slider.max = range.max;
+      slider.step = stepDefault;
+      slider.value = clampNumber(value, range.min, range.max);
+
+      const number = document.createElement("input");
+      number.type = "number";
+      number.min = range.min;
+      number.max = range.max;
+      number.step = stepDefault;
+      number.value = value;
+
+      const stepWrap = document.createElement("span");
+      stepWrap.className = "step-box";
+      const stepLabel = document.createElement("span");
+      stepLabel.textContent = "step";
+      const stepInput = document.createElement("input");
+      stepInput.type = "number";
+      stepInput.min = isInt ? 1 : 0.0001;
+      stepInput.step = isInt ? 1 : 0.0001;
+      stepInput.value = stepDefault;
+      stepWrap.append(stepLabel, stepInput);
+
+      const commit = nextValue => {
+        let next = Number(nextValue || 0);
+        if (isInt) next = Math.round(next);
+        setPath(path, next);
+        slider.value = clampNumber(next, Number(slider.min), Number(slider.max));
+        number.value = next;
+      };
+
+      slider.addEventListener("input", () => commit(slider.value));
+      number.addEventListener("input", () => {
+        const next = Number(number.value || 0);
+        if (next < Number(slider.min)) slider.min = String(next);
+        if (next > Number(slider.max)) slider.max = String(next);
+        commit(number.value);
+      });
+      stepInput.addEventListener("input", () => {
+        let nextStep = Number(stepInput.value || stepDefault);
+        if (!Number.isFinite(nextStep) || nextStep <= 0) nextStep = stepDefault;
+        if (isInt) nextStep = Math.max(1, Math.round(nextStep));
+        slider.step = nextStep;
+        number.step = nextStep;
+      });
+
+      wrap.append(slider, number, stepWrap);
+      return wrap;
+    }
+
+    function getSliderRange(name, value, isInt) {
+      const key = String(name).toLowerCase();
+      let min = value < 0 ? niceFloor(value * 2, isInt) : 0;
+      let max;
+      const compactFloat = /(percent|chance|ratio|intensity|weight|multiplier)/i.test(name);
+
+      if (compactFloat) {
+        max = value <= 1 ? 1 : value <= 2 ? 2 : niceCeil(value * 2, isInt);
+      } else if (/(duration|interval|delay|time|lead|seconds)/i.test(name)) {
+        max = value >= 1000 ? niceCeil(value, isInt) : niceCeil(Math.max(value * 2, isInt ? 10 : 10), isInt);
+      } else if (/(angle|rotate)/i.test(name)) {
+        max = Math.max(180, niceCeil(value * 2, isInt));
+      } else if (/(key|code)/i.test(name)) {
+        max = Math.max(400, niceCeil(value * 1.25, true));
+      } else if (isInt) {
+        max = niceCeil(Math.max(value * 2, 10), true);
+      } else {
+        max = niceCeil(Math.max(value * 2, 10), false);
+      }
+
+      if (!compactFloat && /(scale|radius|range|speed|attack|defence|damage|score|count|level|exp|hp|coin|bullet|enemy|group|stack|pierce|power|strength)/i.test(name)) {
+        max = Math.max(max, niceCeil(Math.max(value * 2, isInt ? 10 : 10), isInt));
+      }
+
+      if (key.includes("enemytype")) max = 10;
+      if (max <= min) max = min + (isInt ? 1 : 1);
+      return { min, max };
+    }
+
+    function getFloatStep(name, value) {
+      if (/(percent|chance|ratio|intensity|weight)/i.test(name)) return 0.01;
+      if (Math.abs(value) >= 100) return 1;
+      if (Math.abs(value) >= 10) return 0.1;
+      return 0.01;
+    }
+
+    function niceCeil(value, isInt) {
+      if (!Number.isFinite(value) || value <= 0) return isInt ? 10 : 1;
+      if (!isInt && value <= 2) return Number(value.toFixed(2));
+      const magnitude = Math.pow(10, Math.floor(Math.log10(value)));
+      const normalized = value / magnitude;
+      const nice = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+      return Math.ceil(nice * magnitude);
+    }
+
+    function niceFloor(value, isInt) {
+      if (!Number.isFinite(value) || value >= 0) return 0;
+      return isInt ? Math.floor(value) : Number(value.toFixed(2));
+    }
+
+    function clampNumber(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function isBooleanLikeField(name, value) {
+      if (!(value === 0 || value === 1 || typeof value === "boolean")) return false;
+      return /^(enable|show|write|rotate|scoreOnly)/i.test(name);
+    }
+
+    function setPath(path, value) {
+      let target = parsed.data;
+      for (let i = 0; i < path.length - 1; i++) target = target[path[i]];
+      target[path[path.length - 1]] = value;
+      refreshRaw();
+    }
+
+    function addArrayItem() {
+      if (!parsed || !currentSection) return;
+
+      const current = parsed.data[currentSection];
+      if (!Array.isArray(current)) {
+        setStatus("当前分组根节点不是数组，不能直接新增。请在数组内部使用复制按钮。", "bad");
+        return;
+      }
+
+      current.push(structuredClone(current[0] ?? {}));
+      refreshRaw();
+      renderCurrent();
+      setStatus(`${currentSection} 已新增一项，写回文件后生效。`, "ok");
+    }
+
+    function toggleCard(cardKey) {
+      if (collapsedCards.has(cardKey)) collapsedCards.delete(cardKey);
+      else collapsedCards.add(cardKey);
+      renderCurrent();
+    }
+
+    function collapseAll() {
+      const current = parsed?.data?.[currentSection];
+      if (!Array.isArray(current)) return;
+      current.forEach((_, index) => collapsedCards.add(`${currentSection}.${index}`));
+      renderCurrent();
+    }
+
+    function expandAll() {
+      const prefix = `${currentSection}.`;
+      for (const key of Array.from(collapsedCards)) {
+        if (key.startsWith(prefix)) collapsedCards.delete(key);
+      }
+      renderCurrent();
+    }
+
+    function syncRawIfNeeded() {
+      if (!parsed) return;
+      const area = editor.querySelector("textarea.raw");
+      if (!area) return;
+
+      parsed.raw = area.value;
+      const reparsed = parseUnityAsset(parsed.raw);
+      parsed.data = reparsed.data;
+      parsed.sections = reparsed.sections;
+      parsed.prefix = reparsed.prefix;
+      parsed.invalid = false;
+    }
+
+    async function saveAssetFile() {
+      try {
+        if (!fileHandle) {
+          setStatus("请先选择 GameBalanceConfig.asset。", "bad");
+          return;
+        }
+        syncRawIfNeeded();
+        if (parsed.invalid) throw new Error("当前 YAML 解析失败，不能写回。");
+        const writable = await fileHandle.createWritable();
+        await writable.write(serializeUnityAsset());
+        await writable.close();
+        setStatus("GameBalanceConfig.asset 已转换并写回。", "ok");
+      } catch (error) {
+        setStatus(error.message, "bad");
+      }
+    }
+
+    function downloadAssetFile() {
+      if (!parsed) {
+        setStatus("请先加载配置文件。", "bad");
+        return;
+      }
+
+      const blob = new Blob([serializeUnityAsset()], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "GameBalanceConfig.asset";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function refreshRaw() {
+      parsed.raw = serializeUnityAsset();
+      parsed.invalid = false;
+    }
+
+    function serializeUnityAsset() {
+      if (!parsed) return "";
+      const lines = parsed.prefix.slice();
+      writeMap(lines, parsed.data, 2);
+      return `${lines.join("\n")}\n`;
+    }
+
+    function writeMap(lines, obj, indent) {
+      for (const key of Object.keys(obj)) {
+        writeValue(lines, key, obj[key], indent);
+      }
+    }
+
+    function writeValue(lines, key, value, indent) {
+      const pad = " ".repeat(indent);
+      if (Array.isArray(value)) {
+        lines.push(`${pad}${key}:`);
+        writeArray(lines, value, indent);
+      } else if (value && typeof value === "object") {
+        if (isUnityInlineObject(value)) {
+          lines.push(`${pad}${key}: ${serializeInlineObject(value)}`);
+        } else {
+          lines.push(`${pad}${key}:`);
+          writeMap(lines, value, indent + 2);
+        }
+      } else {
+        lines.push(`${pad}${key}: ${formatScalar(value)}`);
+      }
+    }
+
+    function writeArray(lines, arr, indent) {
+      const pad = " ".repeat(indent);
+      for (const item of arr) {
+        if (Array.isArray(item)) {
+          lines.push(`${pad}-`);
+          writeArray(lines, item, indent + 2);
+        } else if (item && typeof item === "object") {
+          const keys = Object.keys(item);
+          if (keys.length === 0) {
+            lines.push(`${pad}- {}`);
+          } else {
+            const first = keys[0];
+            const firstValue = item[first];
+            lines.push(`${pad}- ${first}: ${formatScalar(firstValue)}`);
+            for (const key of keys.slice(1)) writeValue(lines, key, item[key], indent + 2);
+          }
+        } else {
+          lines.push(`${pad}- ${formatScalar(item)}`);
+        }
+      }
+    }
+
+    function isUnityInlineObject(value) {
+      const keys = Object.keys(value);
+      return keys.length > 0 && keys.every(key => ["fileID", "guid", "type"].includes(key));
+    }
+
+    function serializeInlineObject(value) {
+      return `{${Object.keys(value).map(key => `${key}: ${formatScalar(value[key])}`).join(", ")}}`;
+    }
+
+    function formatScalar(value) {
+      if (value === null || value === undefined) return "";
+      if (typeof value === "number") return Number.isFinite(value) ? String(value) : "0";
+      if (typeof value === "boolean") return value ? "1" : "0";
+
+      const text = String(value);
+      if (text === "") return "";
+      if (/[\u0080-\uFFFF]/.test(text) || /[:#\[\]{},"\n\r\t]/.test(text) || /^\s|\s$/.test(text)) {
+        return JSON.stringify(text).replace(/[^\x00-\x7F]/g, char => {
+          const code = char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0");
+          return `\\u${code}`;
+        });
+      }
+      return text;
+    }
+
+    function displayName(name) {
+      const hint = fieldHints[name];
+      return hint ? `${name}（${hint}）` : name;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+  </script>
+</body>
+</html>

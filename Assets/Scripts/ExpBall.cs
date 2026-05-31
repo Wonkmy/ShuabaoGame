@@ -6,6 +6,7 @@ public class ExpBall : MonoBehaviour
 {
     int _expValue;
     GameObject _target;
+    public string ExpBallId => "expBall";
     public void SetExpValue(int expValue,GameObject target)
     {
         _expValue = expValue;
@@ -17,7 +18,7 @@ public class ExpBall : MonoBehaviour
         if (_target == null)
         {
             DataManager.allExpBall.Remove(gameObject);
-            Destroy(gameObject);
+            ExpBallPool.Instance.Release(ExpBallId, gameObject);
             return;
         }
         float distance = Vector3.Distance(transform.position, _target.transform.position);
@@ -36,7 +37,8 @@ public class ExpBall : MonoBehaviour
                 DataManager.allExpBall.Remove(gameObject);
                 GameManager.Instance.playerExpSlider.localScale = Vector3.one * 1.2f;
                 GameManager.Instance.playerExpSlider.localScale = Vector3.Lerp(GameManager.Instance.playerExpSlider.localScale, Vector3.one, 0.5f);
-                Destroy(gameObject);
+                //Destroy(gameObject);
+                ExpBallPool.Instance.Release(ExpBallId, gameObject);
             }
         }
     }

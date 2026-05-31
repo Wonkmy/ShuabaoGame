@@ -305,7 +305,6 @@ public class Bullet : MonoBehaviour
         entity.TakeDamage(Mathf.FloorToInt(finalDamage), isCrit);
 
         enemy.PlayHitPunch(moveDir);
-        TriggerHitStop(0.018f, 0.03f);
 
         if (player.HasLegendSplit && !IsSplitShot)
         {

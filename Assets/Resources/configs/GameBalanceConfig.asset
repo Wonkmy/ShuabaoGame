@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GameBalanceConfig
   m_EditorClassIdentifier: 
   player:
-    startHp: 500
+    startHp: 800
     startAttack: 7
     startMoveSpeed: 5.4
     startDefence: 20
@@ -114,31 +114,31 @@ MonoBehaviour:
   deathEffect:
     normalDeathDuration: 0.4
     normalDeathExpandScale: 1.25
-    eliteChargeDuration: 0.18
-    bossChargeDuration: 0.28
-    eliteCollapseDuration: 0.32
-    bossCollapseDuration: 0.46
-    eliteShakeStrength: 0.09
-    bossShakeStrength: 0.18
+    eliteChargeDuration: 0.38
+    bossChargeDuration: 0.48
+    eliteCollapseDuration: 0.5
+    bossCollapseDuration: 0.75
+    eliteShakeStrength: 0.15
+    bossShakeStrength: 0.33
     eliteChargeShakeDuration: 0.12
     bossChargeShakeDuration: 0.22
     eliteChargeShakeStrength: 0.12
-    bossChargeShakeStrength: 0.24
+    bossChargeShakeStrength: 0.35
     eliteCollapseShakeDuration: 0.18
-    bossCollapseShakeDuration: 0.34
-    eliteCollapseShakeStrength: 0.18
-    bossCollapseShakeStrength: 0.34
-    heavyChargeExpandScale: 1.18
-    heavyWideScaleX: 1.28
-    heavyWideScaleY: 0.74
-    heavyFinalScaleY: 0.35
-    eliteCollapseRotateAngle: 22
-    bossCollapseRotateAngle: 38
-    eliteDeathPulseScale: 3.2
-    bossDeathPulseScale: 5.2
-    heavyDeathPulseDuration: 0.35
-    finalBossRewardShakeDuration: 0.55
-    finalBossRewardShakeStrength: 0.45
+    bossCollapseShakeDuration: 0.44
+    eliteCollapseShakeStrength: 0.28
+    bossCollapseShakeStrength: 0.45
+    heavyChargeExpandScale: 2.3
+    heavyWideScaleX: 1.5
+    heavyWideScaleY: 1.2
+    heavyFinalScaleY: 0.55
+    eliteCollapseRotateAngle: 34
+    bossCollapseRotateAngle: 45
+    eliteDeathPulseScale: 3.8
+    bossDeathPulseScale: 6.5
+    heavyDeathPulseDuration: 0.55
+    finalBossRewardShakeDuration: 0.75
+    finalBossRewardShakeStrength: 0.65
   enemyMovement:
     enableMovementBrain: 0
     normalThinkIntervalMin: 0.75
@@ -165,7 +165,7 @@ MonoBehaviour:
     bossPhaseThinkSpeedBonus: 0.12
     rangeToleranceRatio: 0.12
   playerTargeting:
-    enablePredictiveAim: 1
+    enablePredictiveAim: 0
     targetVelocityWeight: 0.82
     maxLeadTime: 0.45
     minLeadTime: 0.03
@@ -233,8 +233,8 @@ MonoBehaviour:
     enhancedShotBonusPierceAdd: 1
     enhancedShotScaleAdd: 0.08
   debug:
-    showDebugHud: 1
-    writeRunReport: 1
+    showDebugHud: 0
+    writeRunReport: 0
     toggleHudKey: 293
     enableFlowStageJump: 1
     flowStageKeys: 1a0100001b0100001c0100001d010000
@@ -251,21 +251,21 @@ MonoBehaviour:
       playerLevel: 2
       expRatio: 0.15
       hpRatio: 1
-      upgradeIds: 01000000
+      upgradeIds: 
       secondsBeforeSpecialEvent: 45
     - stageIndex: 2
       targetTime: 95
       playerLevel: 4
       expRatio: 0.25
       hpRatio: 0.85
-      upgradeIds: 010000000600000007000000
+      upgradeIds: fe00000006000000
       secondsBeforeSpecialEvent: 25
     - stageIndex: 3
       targetTime: 185
       playerLevel: 7
       expRatio: 0.35
       hpRatio: 0.75
-      upgradeIds: 010000000400000006000000070000000300000005000000
+      upgradeIds: fe00000004000000
       secondsBeforeSpecialEvent: 18
   timeline:
   - startTime: 0

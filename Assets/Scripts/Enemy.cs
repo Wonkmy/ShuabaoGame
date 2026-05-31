@@ -444,7 +444,7 @@ public class Enemy : Entity
 
         currentHp -= damage;
 
-        GameManager.Instance.SpwanHitFx(transform.position);//  命中特效
+        //GameManager.Instance.SpwanHitFx(transform.position);//  命中特效
 
         hp.Find("slider").localScale = new Vector3((float)currentHp / (float)totalHp, 1, 1);
         GetComponentInChildren<SpriteRenderer>().color = Color.red;
@@ -695,16 +695,28 @@ public class Enemy : Entity
         if (enemyType == EnemyType.Elite || enemyType == EnemyType.Thick)
         {
             float r = Random.Range(0f, 1f);
-            if(r < 0.333f)
+            if(r < 0.168f)
             {
                 GameObject newAddHp = Instantiate(Resources.Load<GameObject>("add_hp"), transform.position, Quaternion.identity);
                 newAddHp.GetComponent<AddHP>().SetAddHP(10, GameManager.Instance.player, true);
             }
-            Instantiate(Resources.Load<GameObject>("bigDeadFX"), transform.position, Quaternion.identity);
+            //Instantiate(Resources.Load<GameObject>("bigDeadFX"), transform.position, Quaternion.identity);
+            GameObject bigDeaddFX = DeadFXPool.Instance.Get("bigDeadFX");
+            if (bigDeaddFX != null)
+            {
+                bigDeaddFX.transform.position = transform.position;
+                DataManager.allDeadFx.Add(bigDeaddFX);
+            }
         }
         else
         {
-            Instantiate(Resources.Load<GameObject>("deadFX"), transform.position, Quaternion.identity);
+            //Instantiate(Resources.Load<GameObject>("deadFX"), transform.position, Quaternion.identity);
+            GameObject deadFX = DeadFXPool.Instance.Get("deadFX");
+            if (deadFX != null)
+            {
+                deadFX.transform.position = transform.position;
+                DataManager.allDeadFx.Add(deadFX);
+            }
         }
 
 

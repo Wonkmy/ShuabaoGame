@@ -537,6 +537,7 @@ public class GameManager : MonoBehaviour
     }
     void Init()
     {
+        DataManager.PrewarmPools();
         ShowCultivatePanel(true);
     }
 
@@ -1767,7 +1768,8 @@ public class GameManager : MonoBehaviour
     }
     public GameObject SpwanExpBall(Vector3 pos,EnemyType enemyType, int expValue)
     {
-        GameObject newExpBall = SpwanSingleExpBall(pos);
+        //GameObject newExpBall = SpwanSingleExpBall(pos);
+        GameObject newExpBall = ExpBallPool.Instance.Get("expBall");
         float baseScale = 0.46f;
         switch(enemyType)
         {
@@ -1784,6 +1786,7 @@ public class GameManager : MonoBehaviour
                 baseScale = 0.68f;
                 break;
         }
+        newExpBall.transform.localPosition = pos;
         newExpBall.transform.localScale = Vector3.one * baseScale;
         newExpBall.AddComponent<ExpBall>().SetExpValue(expValue, player);
         DataManager.allExpBall.Add(newExpBall);
