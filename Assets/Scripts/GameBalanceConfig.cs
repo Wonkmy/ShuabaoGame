@@ -4,6 +4,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "GameBalanceConfig", menuName = "ShuabaoGame/Game Balance Config")]
 public class GameBalanceConfig : ScriptableObject
 {
+    [Header("第一层：常用调参，只调这些就能改变整体体验")]
+    public DesignerTuning designer = new DesignerTuning();
+
     [Header("玩家初始数值与升级节奏")]
     public PlayerTuning player = new PlayerTuning();
 
@@ -59,6 +62,11 @@ public class GameBalanceConfig : ScriptableObject
 
     public void EnsureNestedConfigs()
     {
+        if (designer == null)
+        {
+            designer = new DesignerTuning();
+        }
+
         if (chapter == null)
         {
             chapter = new CombatChapterTuning();
@@ -88,6 +96,11 @@ public class GameBalanceConfig : ScriptableObject
         {
             upgradeEffects = new UpgradeEffectTuning();
         }
+
+        if (upgradeEffects.advanced == null)
+        {
+            upgradeEffects.advanced = new UpgradeEffectAdvancedTuning();
+        }
     }
 
     public TimelineSegment GetTimelineSegment(float gameTime)
@@ -104,6 +117,25 @@ public class GameBalanceConfig : ScriptableObject
 
         return timeline.Length > 0 ? timeline[timeline.Length - 1] : null;
     }
+}
+
+[Serializable]
+public class DesignerTuning
+{
+    [Header("升级词条整体强度，影响升级带来的数值变化")]
+    [Range(0.5f, 2f)] public float upgradeImpact = 1f;
+
+    [Header("奖励爽感，影响金币、经验球数量和喷发规模")]
+    [Range(0.5f, 2f)] public float rewardJuice = 1f;
+
+    [Header("敌人死亡厚重感，影响死亡时长、震屏和冲击波")]
+    [Range(0.5f, 2f)] public float deathWeight = 1f;
+
+    [Header("Boss压迫感，影响Boss攻击节奏、震屏和预警范围")]
+    [Range(0.5f, 2f)] public float bossPressure = 1f;
+
+    [Header("最终Boss耐打程度，影响最终Boss额外血量")]
+    [Range(0.5f, 2.5f)] public float finalBossDurability = 1f;
 }
 
 [Serializable]
@@ -303,10 +335,10 @@ public class CombatChapterTuning
     public float finalBossTime = 300f;
 
     [Header("小Boss章节标题")]
-    public string miniBossTitle = "小型Boss战";
+    public string miniBossTitle = "小型Boss来袭";
 
     [Header("最终Boss章节标题")]
-    public string finalBossTitle = "最终Boss战";
+    public string finalBossTitle = "最终Boss来袭";
 
     [Header("章节标题字号")]
     public float chapterTitleSize = 1.25f;
@@ -314,7 +346,7 @@ public class CombatChapterTuning
     [Header("章节出场前警告等待时间")]
     public float warningDelay = 1.0f;
 
-    [Header("章节触发时镜头暗化强度")]
+    [Header("章节触发时震屏时长")]
     [Range(0f, 1f)] public float darkIntensity = 0.5f;
 
     [Header("章节触发时震屏时长")]
@@ -327,84 +359,259 @@ public class CombatChapterTuning
 [Serializable]
 public class BossCombatTuning
 {
-    [Header("最终Boss第2阶段触发血量比例")]
+    [Header("最终Boss第1阶段攻击间隔")]
     [Range(0.01f, 0.99f)] public float phase2HpPercent = 0.7f;
 
-    [Header("最终Boss第3阶段触发血量比例")]
+    [HideInInspector]
+    [Header("最终Boss第1阶段攻击间隔")]
     [Range(0.01f, 0.99f)] public float phase3HpPercent = 0.4f;
 
+    [HideInInspector]
     [Header("最终Boss第1阶段攻击间隔")]
     public float phase1FireInterval = 1.25f;
 
+    [HideInInspector]
     [Header("最终Boss第2阶段攻击间隔")]
     public float phase2FireInterval = 1.0f;
 
+    [HideInInspector]
     [Header("最终Boss第3阶段攻击间隔")]
     public float phase3FireInterval = 0.82f;
 
+    [HideInInspector]
     [Header("最终Boss攻击前预警提前时间")]
     public float warningLeadTime = 0.65f;
 
+    [HideInInspector]
     [Header("最终Boss每次攻击后的虚弱窗口时长")]
     public float vulnerableDuration = 0.85f;
 
+    [HideInInspector]
+    [Header("最终Boss虚弱状态承受伤害倍率")]
+    [Range(0.1f, 1f)] public float finalBossGuardedDamageTakenRatio = 0.9f;
+
+    [HideInInspector]
+    [Header("最终Boss虚弱状态承受伤害倍率")]
+    public float finalBossVulnerableDamageMultiplier = 1.45f;
+
+    [HideInInspector]
     [Header("最终Boss攻击前蓄力闪烁时长")]
     public float chargeFlashDuration = 0.58f;
 
+    [HideInInspector]
+    [Header("Boss蓄力期间是否暂停移动")]
+    public bool lockMoveDuringCharge = true;
+
+    [HideInInspector]
+    [Header("Boss蓄力时机体膨胀倍率")]
+    public float chargeScalePulse = 1.08f;
+
+    [HideInInspector]
+    [Header("Boss攻击命中节奏震屏时长")]
+    public float attackImpactShakeDuration = 0.18f;
+
+    [HideInInspector]
+    [Header("Boss扇形攻击震屏强度")]
+    public float sectorAttackImpactShakeStrength = 0.16f;
+
+    [HideInInspector]
+    [Header("Boss环形攻击震屏强度")]
+    public float circleAttackImpactShakeStrength = 0.22f;
+
+    [HideInInspector]
     [Header("最终Boss阶段切换震屏时长")]
     public float phaseChangeShakeDuration = 0.35f;
 
+    [HideInInspector]
+    [Header("最终Boss阶段切换停顿时长")]
+    public float phaseBreakDuration = 0.75f;
+
+    [HideInInspector]
+    [Header("最终Boss阶段切换冲击波范围")]
+    public float phaseBreakPulseScale = 5.8f;
+
+    [HideInInspector]
+    [Header("最终Boss每轮攻击后是否强制换位")]
+    [Range(0f, 1f)] public float phaseBreakDamageTakenRatio = 0.35f;
+
+    [HideInInspector]
+    [Header("最终Boss每轮攻击后是否强制换位")]
+    public bool finalBossRepositionAfterAttack = true;
+
+    [HideInInspector]
+    [Header("最终Boss换位目标距离攻击范围的倍率")]
+    public float finalBossRepositionRangeRatio = 0.82f;
+
+    [HideInInspector]
+    [Header("最终Boss换位最小偏转角度")]
+    public float finalBossRepositionMinAngle = 55f;
+
+    [HideInInspector]
+    [Header("最终Boss换位最大偏转角度")]
+    public float finalBossRepositionMaxAngle = 135f;
+
+    [HideInInspector]
+    [Header("最终Boss换位移动速度倍率")]
+    public float finalBossRepositionSpeedMultiplier = 1.16f;
+
+    [HideInInspector]
+    [Header("最终Boss换位到达判定距离")]
+    public float finalBossRepositionArrivalDistance = 0.45f;
+
+    [HideInInspector]
+    [Header("最终Boss换位最长持续时间")]
+    public float finalBossRepositionMaxDuration = 1.4f;
+
+    [HideInInspector]
+    [Header("最终Boss换位期间是否免疫伤害")]
+    public bool finalBossInvincibleDuringReposition = true;
+
+    [HideInInspector]
+    [Header("最终Boss额外血量基础倍率")]
+    public float finalBossExtraHpBaseRatio = 0.25f;
+
+    [HideInInspector]
+    [Header("最终Boss按玩家攻击力额外加血倍率")]
+    public float finalBossExtraHpPerAttack = 0.04f;
+
+    [HideInInspector]
+    [Header("最终Boss按玩家等级额外加血倍率")]
+    public float finalBossExtraHpPerLevel = 0.025f;
+
+    [HideInInspector]
+    [Header("最终Boss按构筑总层数额外加血倍率")]
+    public float finalBossExtraHpPerBuildStack = 0.035f;
+
+    [HideInInspector]
+    [Header("最终Boss按构筑流派数量额外加血倍率")]
+    public float finalBossExtraHpPerBuildTag = 0.04f;
+
+    [HideInInspector]
+    [Header("最终Boss按玩家当前血量比例额外加血倍率")]
+    public float finalBossExtraHpByPlayerHpProgress = 0.2f;
+
+    [HideInInspector]
+    [Header("最终Boss额外血量倍率上限")]
+    public float finalBossExtraHpMaxRatio = 1.5f;
+
+    [HideInInspector]
     [Header("最终Boss第2阶段切换震屏强度")]
     public float phase2ShakeStrength = 0.22f;
 
+    [HideInInspector]
     [Header("最终Boss第3阶段切换震屏强度")]
     public float phase3ShakeStrength = 0.32f;
 
+    [HideInInspector]
     [Header("最终Boss第2阶段标题字号")]
     public float phase2TitleSize = 1.05f;
 
+    [HideInInspector]
     [Header("最终Boss第3阶段标题字号")]
     public float phase3TitleSize = 1.22f;
 
-    [Header("最终Boss第1阶段暗场强度")]
+    [HideInInspector]
+    [Header("最终Boss环形预警第1阶段范围")]
     [Range(0f, 1f)] public float phase1DarkIntensity = 0.58f;
 
-    [Header("最终Boss第2阶段暗场强度")]
+    [HideInInspector]
+    [Header("最终Boss环形预警第1阶段范围")]
     [Range(0f, 1f)] public float phase2DarkIntensity = 0.66f;
 
-    [Header("最终Boss第3阶段暗场强度")]
+    [HideInInspector]
+    [Header("最终Boss环形预警第1阶段范围")]
     [Range(0f, 1f)] public float phase3DarkIntensity = 0.78f;
 
+    [HideInInspector]
     [Header("最终Boss环形预警第1阶段范围")]
     public float circleWarningScalePhase1 = 4.8f;
 
+    [HideInInspector]
     [Header("最终Boss环形预警第2阶段范围")]
     public float circleWarningScalePhase2 = 5.8f;
 
+    [HideInInspector]
     [Header("最终Boss环形预警第3阶段范围")]
     public float circleWarningScalePhase3 = 6.8f;
 
+    [HideInInspector]
     [Header("最终Boss扇形预警第1阶段半径")]
     public float sectorWarningRadiusPhase1 = 6.5f;
 
+    [HideInInspector]
     [Header("最终Boss扇形预警第2阶段半径")]
     public float sectorWarningRadiusPhase2 = 7.5f;
 
+    [HideInInspector]
     [Header("最终Boss扇形预警第3阶段半径")]
     public float sectorWarningRadiusPhase3 = 8.5f;
 
+    [HideInInspector]
     [Header("最终Boss扇形预警第1阶段角度")]
     public float sectorWarningAnglePhase1 = 54f;
 
+    [HideInInspector]
     [Header("最终Boss扇形预警第2阶段角度")]
     public float sectorWarningAnglePhase2 = 66f;
 
+    [HideInInspector]
     [Header("最终Boss扇形预警第3阶段角度")]
     public float sectorWarningAnglePhase3 = 78f;
 
+    [HideInInspector]
+    [Header("小Boss爆发开火间隔减少")]
+    [Range(0.1f, 1f)] public float miniBossGuardedDamageTakenRatio = 0.95f;
+
+    [HideInInspector]
+    [Header("小Boss爆发开火间隔减少")]
+    [Range(0.01f, 0.99f)] public float miniBossEnrageHpPercent = 0.5f;
+
+    [HideInInspector]
+    [Header("小Boss爆发开火间隔减少")]
+    public float miniBossEnrageFireIntervalReduce = 0.12f;
+
+    [HideInInspector]
+    [Header("小Boss爆发移速倍率")]
+    public float miniBossEnrageMoveSpeedMultiplier = 1.12f;
+
+    [HideInInspector]
+    [Header("小Boss压迫脉冲间隔")]
+    public float miniBossPressurePulseInterval = 3.2f;
+
+    [HideInInspector]
+    [Header("小Boss压迫脉冲震屏时长")]
+    public float miniBossPressurePulseShakeDuration = 0.12f;
+
+    [HideInInspector]
+    [Header("小Boss压迫脉冲震屏强度")]
+    public float miniBossPressurePulseShakeStrength = 0.1f;
+
+    float BossPressure()
+    {
+        return GameManager.Instance != null && GameManager.Instance.BalanceConfig != null && GameManager.Instance.BalanceConfig.designer != null
+            ? GameManager.Instance.BalanceConfig.designer.bossPressure
+            : 1f;
+    }
+
+    float FinalBossDurability()
+    {
+        return GameManager.Instance != null && GameManager.Instance.BalanceConfig != null && GameManager.Instance.BalanceConfig.designer != null
+            ? GameManager.Instance.BalanceConfig.designer.finalBossDurability
+            : 1f;
+    }
+
+    public float GetWarningLeadTime() => warningLeadTime * Mathf.Lerp(0.9f, 1.18f, Mathf.InverseLerp(0.5f, 2f, BossPressure()));
+    public float GetVulnerableDuration() => vulnerableDuration;
+    public float GetAttackImpactShakeDuration() => attackImpactShakeDuration;
+    public float GetSectorAttackImpactShakeStrength() => sectorAttackImpactShakeStrength * BossPressure();
+    public float GetCircleAttackImpactShakeStrength() => circleAttackImpactShakeStrength * BossPressure();
+    public float GetFinalBossExtraHpMaxRatio() => finalBossExtraHpMaxRatio * FinalBossDurability();
+    public float GetFinalBossExtraHpBaseRatio() => finalBossExtraHpBaseRatio * FinalBossDurability();
+
     public float GetFireInterval(int phase)
     {
-        return phase == 1 ? phase1FireInterval : phase == 2 ? phase2FireInterval : phase3FireInterval;
+        float interval = phase == 1 ? phase1FireInterval : phase == 2 ? phase2FireInterval : phase3FireInterval;
+        return interval / Mathf.Max(0.5f, BossPressure());
     }
 
     public float GetDarkIntensity(int phase)
@@ -414,12 +621,14 @@ public class BossCombatTuning
 
     public float GetCircleWarningScale(int phase)
     {
-        return phase == 1 ? circleWarningScalePhase1 : phase == 2 ? circleWarningScalePhase2 : circleWarningScalePhase3;
+        float scale = phase == 1 ? circleWarningScalePhase1 : phase == 2 ? circleWarningScalePhase2 : circleWarningScalePhase3;
+        return scale * Mathf.Lerp(0.9f, 1.15f, Mathf.InverseLerp(0.5f, 2f, BossPressure()));
     }
 
     public float GetSectorWarningRadius(int phase)
     {
-        return phase == 1 ? sectorWarningRadiusPhase1 : phase == 2 ? sectorWarningRadiusPhase2 : sectorWarningRadiusPhase3;
+        float radius = phase == 1 ? sectorWarningRadiusPhase1 : phase == 2 ? sectorWarningRadiusPhase2 : sectorWarningRadiusPhase3;
+        return radius * Mathf.Lerp(0.9f, 1.15f, Mathf.InverseLerp(0.5f, 2f, BossPressure()));
     }
 
     public float GetSectorWarningAngle(int phase)
@@ -432,85 +641,144 @@ public class BossCombatTuning
 public class EnemyDeathEffectTuning
 {
     [Header("普通怪死亡收缩时长")]
+    [Range(0.5f, 2f)] public float durationJuice = 1f;
+    [Range(0.5f, 2f)] public float shakeJuice = 1f;
+    [Range(0.5f, 2f)] public float pulseJuice = 1f;
+
+    [Header("普通怪死亡收缩时长")]
     public float normalDeathDuration = 0.4f;
 
+    [HideInInspector]
     [Header("普通怪死亡膨胀倍率")]
     public float normalDeathExpandScale = 1.25f;
 
+    [HideInInspector]
     [Header("精英怪死亡蓄力时长")]
     public float eliteChargeDuration = 0.18f;
 
+    [HideInInspector]
     [Header("Boss死亡蓄力时长")]
     public float bossChargeDuration = 0.28f;
 
+    [HideInInspector]
     [Header("精英怪死亡坍缩时长")]
     public float eliteCollapseDuration = 0.32f;
 
+    [HideInInspector]
     [Header("Boss死亡坍缩时长")]
     public float bossCollapseDuration = 0.46f;
 
+    [HideInInspector]
     [Header("精英怪死亡自身抖动强度")]
     public float eliteShakeStrength = 0.09f;
 
+    [HideInInspector]
     [Header("Boss死亡自身抖动强度")]
     public float bossShakeStrength = 0.18f;
 
+    [HideInInspector]
     [Header("精英怪死亡蓄力震屏时长")]
     public float eliteChargeShakeDuration = 0.12f;
 
+    [HideInInspector]
     [Header("Boss死亡蓄力震屏时长")]
     public float bossChargeShakeDuration = 0.22f;
 
+    [HideInInspector]
     [Header("精英怪死亡蓄力震屏强度")]
     public float eliteChargeShakeStrength = 0.12f;
 
+    [HideInInspector]
     [Header("Boss死亡蓄力震屏强度")]
     public float bossChargeShakeStrength = 0.24f;
 
+    [HideInInspector]
     [Header("精英怪死亡爆发震屏时长")]
     public float eliteCollapseShakeDuration = 0.18f;
 
+    [HideInInspector]
     [Header("Boss死亡爆发震屏时长")]
     public float bossCollapseShakeDuration = 0.34f;
 
+    [HideInInspector]
     [Header("精英怪死亡爆发震屏强度")]
     public float eliteCollapseShakeStrength = 0.18f;
 
+    [HideInInspector]
     [Header("Boss死亡爆发震屏强度")]
     public float bossCollapseShakeStrength = 0.34f;
 
+    [HideInInspector]
     [Header("精英和Boss死亡蓄力膨胀倍率")]
     public float heavyChargeExpandScale = 1.18f;
 
+    [HideInInspector]
     [Header("精英和Boss死亡横向压扁倍率")]
     public float heavyWideScaleX = 1.28f;
 
+    [HideInInspector]
     [Header("精英和Boss死亡纵向压扁倍率")]
     public float heavyWideScaleY = 0.74f;
 
+    [HideInInspector]
     [Header("精英和Boss死亡坍缩末段纵向倍率")]
     public float heavyFinalScaleY = 0.35f;
 
+    [HideInInspector]
     [Header("精英怪死亡旋转角度")]
     public float eliteCollapseRotateAngle = 22f;
 
+    [HideInInspector]
     [Header("Boss死亡旋转角度")]
     public float bossCollapseRotateAngle = 38f;
 
+    [HideInInspector]
     [Header("精英怪死亡冲击波范围")]
     public float eliteDeathPulseScale = 3.2f;
 
+    [HideInInspector]
     [Header("Boss死亡冲击波范围")]
     public float bossDeathPulseScale = 5.2f;
 
+    [HideInInspector]
     [Header("精英和Boss死亡冲击波时长")]
     public float heavyDeathPulseDuration = 0.35f;
 
+    [HideInInspector]
     [Header("最终Boss死亡奖励喷发震屏时长")]
     public float finalBossRewardShakeDuration = 0.55f;
 
+    [HideInInspector]
     [Header("最终Boss死亡奖励喷发震屏强度")]
     public float finalBossRewardShakeStrength = 0.45f;
+
+    float DeathWeight()
+    {
+        return GameManager.Instance != null && GameManager.Instance.BalanceConfig != null && GameManager.Instance.BalanceConfig.designer != null
+            ? GameManager.Instance.BalanceConfig.designer.deathWeight
+            : 1f;
+    }
+
+    public float GetNormalDeathDuration() => normalDeathDuration * durationJuice;
+    public float GetEliteChargeDuration() => eliteChargeDuration * durationJuice;
+    public float GetBossChargeDuration() => bossChargeDuration * durationJuice * DeathWeight();
+    public float GetEliteCollapseDuration() => eliteCollapseDuration * durationJuice;
+    public float GetBossCollapseDuration() => bossCollapseDuration * durationJuice * DeathWeight();
+    public float GetEliteShakeStrength() => eliteShakeStrength * shakeJuice;
+    public float GetBossShakeStrength() => bossShakeStrength * shakeJuice * DeathWeight();
+    public float GetEliteChargeShakeDuration() => eliteChargeShakeDuration * durationJuice;
+    public float GetBossChargeShakeDuration() => bossChargeShakeDuration * durationJuice;
+    public float GetEliteChargeShakeStrength() => eliteChargeShakeStrength * shakeJuice;
+    public float GetBossChargeShakeStrength() => bossChargeShakeStrength * shakeJuice * DeathWeight();
+    public float GetEliteCollapseShakeDuration() => eliteCollapseShakeDuration * durationJuice;
+    public float GetBossCollapseShakeDuration() => bossCollapseShakeDuration * durationJuice;
+    public float GetEliteCollapseShakeStrength() => eliteCollapseShakeStrength * shakeJuice;
+    public float GetBossCollapseShakeStrength() => bossCollapseShakeStrength * shakeJuice * DeathWeight();
+    public float GetEliteDeathPulseScale() => eliteDeathPulseScale * pulseJuice;
+    public float GetBossDeathPulseScale() => bossDeathPulseScale * pulseJuice * DeathWeight();
+    public float GetHeavyDeathPulseDuration() => heavyDeathPulseDuration * durationJuice;
+    public float GetFinalBossRewardShakeDuration() => finalBossRewardShakeDuration * durationJuice;
+    public float GetFinalBossRewardShakeStrength() => finalBossRewardShakeStrength * shakeJuice * DeathWeight();
 }
 
 [Serializable]
@@ -525,7 +793,7 @@ public class EnemyMovementTuning
     [Header("普通怪最长重新思考间隔")]
     public float normalThinkIntervalMax = 1.25f;
 
-    [Header("普通怪追击时横向偏移强度")]
+    [Header("血厚怪最短重新思考间隔")]
     [Range(0f, 1f)] public float normalDriftWeight = 0.18f;
 
     [Header("血厚怪最短重新思考间隔")]
@@ -537,7 +805,7 @@ public class EnemyMovementTuning
     [Header("血厚怪期望保持的攻击距离倍率")]
     public float thickDesiredRangeRatio = 0.82f;
 
-    [Header("血厚怪横向压迫移动强度")]
+    [Header("血厚怪移动速度倍率")]
     [Range(0f, 2f)] public float thickStrafeWeight = 0.42f;
 
     [Header("血厚怪移动速度倍率")]
@@ -552,10 +820,10 @@ public class EnemyMovementTuning
     [Header("精英怪期望保持的攻击距离倍率")]
     public float eliteDesiredRangeRatio = 0.78f;
 
-    [Header("精英怪横向绕行强度")]
+    [Header("精英怪移动速度倍率")]
     [Range(0f, 2f)] public float eliteStrafeWeight = 0.9f;
 
-    [Header("精英怪重新换位概率")]
+    [Header("精英怪移动速度倍率")]
     [Range(0f, 1f)] public float eliteRepositionChance = 0.36f;
 
     [Header("精英怪移动速度倍率")]
@@ -570,10 +838,10 @@ public class EnemyMovementTuning
     [Header("Boss期望保持的攻击距离倍率")]
     public float bossDesiredRangeRatio = 0.88f;
 
-    [Header("Boss横向巡航强度")]
+    [Header("Boss过近时开始后撤的距离倍率")]
     [Range(0f, 2f)] public float bossStrafeWeight = 0.58f;
 
-    [Header("Boss重新换位概率")]
+    [Header("Boss过近时开始后撤的距离倍率")]
     [Range(0f, 1f)] public float bossRepositionChance = 0.28f;
 
     [Header("Boss过近时开始后撤的距离倍率")]
@@ -646,7 +914,7 @@ public class PlayerTargetingTuning
     [Header("是否启用玩家子弹提前量瞄准")]
     public bool enablePredictiveAim = true;
 
-    [Header("目标移动速度参与预测的权重")]
+    [Header("最大提前预测时间")]
     [Range(0f, 1.5f)] public float targetVelocityWeight = 0.82f;
 
     [Header("最大提前预测时间")]
@@ -666,12 +934,17 @@ public class PlayerTargetingTuning
 public class RewardTuning
 {
     [Header("尸潮敌人死亡生成金币数量")]
+    [Range(0.5f, 2f)] public float coinJuice = 1f;
+    [Range(0.5f, 2f)] public float expJuice = 1f;
+    [Range(0.5f, 2f)] public float rewardSpreadJuice = 1f;
+
+    [Header("尸潮敌人死亡生成金币数量")]
     public int waveCoinCount = 2;
 
     [Header("尸潮敌人金币单个价值")]
     public int waveCoinValue = 1;
 
-    [Header("精英和Boss掉落宝箱概率")]
+    [Header("精英怪金币掉落数量")]
     [Range(0f, 1f)] public float eliteBossChestChance = 0.5f;
 
     [Header("精英怪金币掉落数量")]
@@ -713,6 +986,23 @@ public class RewardTuning
 
         return new EnemyReward { enemyType = enemyType, baseExp = 0f, expBallCount = 1, spreadRadius = 0f };
     }
+
+    float RewardJuice()
+    {
+        return GameManager.Instance != null && GameManager.Instance.BalanceConfig != null && GameManager.Instance.BalanceConfig.designer != null
+            ? GameManager.Instance.BalanceConfig.designer.rewardJuice
+            : 1f;
+    }
+
+    public int GetWaveCoinCount() => Mathf.Max(0, Mathf.RoundToInt(waveCoinCount * coinJuice * RewardJuice()));
+    public int GetWaveCoinValue() => Mathf.Max(1, Mathf.RoundToInt(waveCoinValue * coinJuice));
+    public int GetEliteCoinCount() => Mathf.Max(0, Mathf.RoundToInt(eliteCoinCount * coinJuice * RewardJuice()));
+    public int GetEliteCoinValue() => Mathf.Max(1, Mathf.RoundToInt(eliteCoinValue * coinJuice));
+    public int GetBossCoinCount() => Mathf.Max(0, Mathf.RoundToInt(bossCoinCount * coinJuice * RewardJuice()));
+    public int GetBossCoinValue() => Mathf.Max(1, Mathf.RoundToInt(bossCoinValue * coinJuice));
+    public float GetExpMultiplier(bool isCrit) => expJuice * RewardJuice() * (isCrit ? critExpMultiplier : 1f);
+    public int GetExpBallCount(EnemyReward reward) => Mathf.Max(1, Mathf.RoundToInt(reward.expBallCount * expJuice * RewardJuice()));
+    public float GetSpreadRadius(EnemyReward reward) => reward.spreadRadius * rewardSpreadJuice;
 }
 
 [Serializable]
@@ -765,68 +1055,121 @@ public enum UpgradeFeedbackType
 [Serializable]
 public class UpgradeEffectTuning
 {
-    [Header("子弹数量升级后的最小子弹数")]
+    [Header("第三层：高级细节参数，通常不用改")]
+    [Range(0.5f, 2f)] public float bulletUpgradeImpact = 1f;
+    [Range(0.5f, 2f)] public float powerUpgradeImpact = 1f;
+    [Range(0.5f, 2f)] public float fireUpgradeImpact = 1f;
+    [Range(0.5f, 2f)] public float specialUpgradeImpact = 1f;
+
+    [Header("第三层：高级细节参数，通常不用改")]
+    public UpgradeEffectAdvancedTuning advanced = new UpgradeEffectAdvancedTuning();
+
+    [Header("高级：子弹数量下限")]
     public int minBulletCount = 1;
 
-    [Header("子弹数量升级后的最大子弹数")]
+    [HideInInspector]
+    [Header("高级：子弹数量上限")]
     public int maxBulletCount = 10;
 
+    [HideInInspector]
     [Header("重型弹头额外强化齐射伤害倍率")]
     public float heavyBulletEnhancedShotDamageAdd = 0.08f;
 
+    [HideInInspector]
     [Header("重型弹头额外子弹缩放")]
     public float heavyBulletScaleAdd = 0.1f;
 
+    [HideInInspector]
     [Header("聚能核心额外强化齐射伤害倍率")]
     public float attackRatioEnhancedShotDamageAdd = 0.12f;
 
+    [HideInInspector]
     [Header("游击模式攻击力惩罚")]
     public float moveFastAttackPenalty = 0.2f;
 
+    [HideInInspector]
     [Header("重装炮台攻击力增加")]
     public float heavyModeAttackAdd = 1.5f;
 
+    [HideInInspector]
     [Header("重装炮台移速减少")]
     public float heavyModeMoveSpeedPenalty = 1f;
 
+    [HideInInspector]
     [Header("重装炮台开火间隔减少")]
     public float heavyModeFireIntervalReduce = 0.05f;
 
+    [HideInInspector]
     [Header("重装炮台防御增加")]
     public int heavyModeDefenceAdd = 2;
 
+    [HideInInspector]
     [Header("精准重炮攻击力增加")]
     public int lowBulletHighDamageAttackAdd = 2;
 
+    [HideInInspector]
     [Header("精准重炮子弹缩放增加")]
     public float lowBulletHighDamageBulletScaleAdd = 0.25f;
 
+    [HideInInspector]
     [Header("精准重炮强化齐射伤害倍率增加")]
     public float lowBulletHighDamageEnhancedShotDamageAdd = 0.35f;
 
+    [HideInInspector]
     [Header("精准重炮选择时震屏时长")]
     public float lowBulletHighDamageShakeDuration = 0.12f;
 
+    [HideInInspector]
     [Header("精准重炮选择时震屏强度")]
     public float lowBulletHighDamageShakeStrength = 0.12f;
 
+    [HideInInspector]
     [Header("无限火力开火间隔减少")]
     public float legendFireIntervalReduce = 0.15f;
 
+    [HideInInspector]
     [Header("强化齐射触发间隔最小值")]
     public int enhancedShotMinInterval = 3;
 
+    [HideInInspector]
     [Header("强化齐射每次升级减少的触发间隔")]
     public int enhancedShotIntervalReduce = 1;
 
+    [HideInInspector]
     [Header("强化齐射额外穿透上限")]
     public int enhancedShotMaxBonusPierce = 5;
 
+    [HideInInspector]
     [Header("强化齐射每次升级增加的额外穿透")]
     public int enhancedShotBonusPierceAdd = 1;
 
+    [HideInInspector]
     [Header("强化齐射每次升级增加的子弹缩放")]
     public float enhancedShotScaleAdd = 0.08f;
+
+    float Impact(DesignerTuning designer, float moduleImpact)
+    {
+        return (designer != null ? designer.upgradeImpact : 1f) * moduleImpact;
+    }
+
+    public int GetMinBulletCount() => advanced.overrideBulletLimits ? advanced.minBulletCount : minBulletCount;
+    public int GetMaxBulletCount() => advanced.overrideBulletLimits ? advanced.maxBulletCount : maxBulletCount;
+    public float GetHeavyBulletEnhancedShotDamageAdd(DesignerTuning designer) => heavyBulletEnhancedShotDamageAdd * Impact(designer, powerUpgradeImpact);
+    public float GetHeavyBulletScaleAdd(DesignerTuning designer) => heavyBulletScaleAdd * Impact(designer, powerUpgradeImpact);
+    public float GetAttackRatioEnhancedShotDamageAdd(DesignerTuning designer) => attackRatioEnhancedShotDamageAdd * Impact(designer, powerUpgradeImpact);
+    public float GetMoveFastAttackPenalty(DesignerTuning designer) => moveFastAttackPenalty * Impact(designer, powerUpgradeImpact);
+    public float GetHeavyModeAttackAdd(DesignerTuning designer) => heavyModeAttackAdd * Impact(designer, powerUpgradeImpact);
+    public float GetHeavyModeMoveSpeedPenalty(DesignerTuning designer) => heavyModeMoveSpeedPenalty * Impact(designer, powerUpgradeImpact);
+    public float GetHeavyModeFireIntervalReduce(DesignerTuning designer) => heavyModeFireIntervalReduce * Impact(designer, fireUpgradeImpact);
+    public int GetHeavyModeDefenceAdd(DesignerTuning designer) => Mathf.Max(1, Mathf.RoundToInt(heavyModeDefenceAdd * Impact(designer, powerUpgradeImpact)));
+    public int GetLowBulletHighDamageAttackAdd(DesignerTuning designer) => Mathf.Max(1, Mathf.RoundToInt(lowBulletHighDamageAttackAdd * Impact(designer, powerUpgradeImpact)));
+    public float GetLowBulletHighDamageBulletScaleAdd(DesignerTuning designer) => lowBulletHighDamageBulletScaleAdd * Impact(designer, powerUpgradeImpact);
+    public float GetLowBulletHighDamageEnhancedShotDamageAdd(DesignerTuning designer) => lowBulletHighDamageEnhancedShotDamageAdd * Impact(designer, specialUpgradeImpact);
+    public float GetLowBulletHighDamageShakeDuration() => lowBulletHighDamageShakeDuration;
+    public float GetLowBulletHighDamageShakeStrength(DesignerTuning designer) => lowBulletHighDamageShakeStrength * Impact(designer, specialUpgradeImpact);
+    public float GetLegendFireIntervalReduce(DesignerTuning designer) => legendFireIntervalReduce * Impact(designer, fireUpgradeImpact);
+    public int GetEnhancedShotIntervalReduce() => enhancedShotIntervalReduce;
+    public float GetEnhancedShotScaleAdd(DesignerTuning designer) => enhancedShotScaleAdd * Impact(designer, specialUpgradeImpact);
 
     public UpgradeFeedbackType GetFeedbackType(UpgradeType type)
     {
@@ -860,6 +1203,19 @@ public class UpgradeEffectTuning
                 return UpgradeFeedbackType.None;
         }
     }
+}
+
+[Serializable]
+public class UpgradeEffectAdvancedTuning
+{
+    [Header("是否覆盖子弹数量上下限")]
+    public bool overrideBulletLimits = false;
+
+    [Header("高级：子弹数量下限")]
+    public int minBulletCount = 1;
+
+    [Header("高级：子弹数量上限")]
+    public int maxBulletCount = 10;
 }
 
 [Serializable]
@@ -930,10 +1286,10 @@ public class FlowStageSnapshot
     [Header("快照模式下设置的玩家等级")]
     public int playerLevel = 1;
 
-    [Header("快照模式下当前等级经验进度")]
+    [Header("快照模式下自动套用的升级词条ID")]
     [Range(0f, 0.95f)] public float expRatio;
 
-    [Header("快照模式下玩家血量比例")]
+    [Header("快照模式下自动套用的升级词条ID")]
     [Range(0.01f, 1f)] public float hpRatio = 1f;
 
     [Header("快照模式下自动套用的升级词条ID")]

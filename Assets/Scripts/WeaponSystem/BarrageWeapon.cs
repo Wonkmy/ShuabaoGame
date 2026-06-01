@@ -16,7 +16,7 @@ public class BarrageWeapon : Weapon
     {
         Enemy enemy = entity as Enemy;
         return enemy != null && enemy.enemyType == EnemyType.Boss && enemy.IsFinalBoss
-            ? GameManager.Instance.BalanceConfig.bossCombat.warningLeadTime
+            ? GameManager.Instance.BalanceConfig.bossCombat.GetWarningLeadTime()
             : 0f;
     }
 
@@ -51,11 +51,7 @@ public class BarrageWeapon : Weapon
         int bulletCount = useCircle ? 18 + enemy.BossPhase * 2 : 7 + enemy.BossPhase;
         ChangeAttackType(enemy.attackType, enemy, bulletCount);
 
-        Color pulseColor = useCircle
-            ? new Color(1f, 0.2f, 0.12f, 0.5f)
-            : new Color(1f, 0.65f, 0.18f, 0.45f);
-        GameManager.Instance.SpwanEnemyAttackPulse(enemy.transform.position, pulseColor, useCircle ? 5.2f : 3.2f, 0.35f);
-        GameManager.Instance.ShakeMainCamera(useCircle ? 0.14f : 0.1f, useCircle ? 0.16f : 0.11f);
+        enemy.PlayBossAttackImpact(useCircle);
     }
 
     protected override void OnAfterProcessAttack()
@@ -64,7 +60,8 @@ public class BarrageWeapon : Weapon
         if (enemy == null || enemy.enemyType != EnemyType.Boss || !enemy.IsFinalBoss)
             return;
 
-        enemy.StartBossVulnerableWindow(GameManager.Instance.BalanceConfig.bossCombat.vulnerableDuration);
+        enemy.StartBossVulnerableWindow(GameManager.Instance.BalanceConfig.bossCombat.GetVulnerableDuration());
+        enemy.BeginFinalBossStateReposition();
     }
 
     public override void AttackLiner(Vector3 fireDirection, Vector3 firePos, int currentBulletCount)

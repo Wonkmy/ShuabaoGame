@@ -26,8 +26,13 @@ public class Enemy : Entity
     public Transform hp { get; set; }
     public int BossPhase { get; set; } = 1;
     public bool IsFinalBoss { get; private set; }
+    public bool IsChapterMiniBoss { get; private set; }
+    public bool IsBossCombatEncounter { get; private set; }
     public bool IsBossVulnerable { get; private set; }
+    public bool IsBossPhaseBreaking { get; private set; }
+    public bool IsFinalBossStateRepositioning { get; private set; }
     public Vector3 EstimatedVelocity { get; private set; }
+    float baseMoveSpeed = 0f;
 
     float attackRange = 0f;// 攻击范围，也就是敌人停止移动开始攻击的距离
     float findTargetRange = 10f;// 寻找目标的范围
@@ -35,12 +40,15 @@ public class Enemy : Entity
     float movementThinkTimer = 0f;
     float strafeSign = 1f;
     Vector3 repositionDestination;
+    Vector3 finalBossStateDestination;
+    float finalBossStateRepositionTimer;
 
     public void SetEnemy(EnemyData enemyData)
     {
         view = GetComponentInChildren<SpriteRenderer>();
         enemyType = enemyData.type;
         moveSpeed = enemyData.moveSpeed;
+        baseMoveSpeed = moveSpeed;
         transform.localScale = Vector3.one * enemyData.scale;
 
         baseHp = enemyData.hp;
@@ -91,8 +99,16 @@ public class Enemy : Entity
 
     public void ConfigureFinalBossCombat(bool isFinalBoss)
     {
+        ConfigureChapterBossCombat(isFinalBoss, isFinalBoss);
+    }
+
+    public void ConfigureChapterBossCombat(bool isFinalBoss, bool isChapterBoss)
+    {
         IsFinalBoss = isFinalBoss;
-        if (enemyType != EnemyType.Boss || !IsFinalBoss)
+        IsChapterMiniBoss = isChapterBoss && enemyType == EnemyType.Elite;
+        IsBossCombatEncounter = enemyType == EnemyType.Boss || IsChapterMiniBoss;
+
+        if (!IsBossCombatEncounter)
             return;
 
         BossCombatController controller = GetComponent<BossCombatController>();
@@ -101,7 +117,7 @@ public class Enemy : Entity
             controller = gameObject.AddComponent<BossCombatController>();
         }
 
-        controller.Init(this);
+        controller.Init(this, IsFinalBoss, IsChapterMiniBoss || (enemyType == EnemyType.Boss && !IsFinalBoss));
     }
 
     public void EnemyUpdate()
@@ -178,6 +194,12 @@ public class Enemy : Entity
         if (target == null || !CanMove)
             return;
 
+        if (IsFinalBossStateRepositioning)
+        {
+            MoveFinalBossStateReposition();
+            return;
+        }
+
         EnemyMovementTuning tuning = GameManager.Instance.BalanceConfig.enemyMovement;
         if (tuning == null || !tuning.enableMovementBrain)
         {
@@ -206,12 +228,33 @@ public class Enemy : Entity
         transform.position = nextPosition;
     }
 
+    void MoveFinalBossStateReposition()
+    {
+        BossCombatTuning tuning = GameManager.Instance.BalanceConfig.bossCombat;
+        Vector3 toDestination = finalBossStateDestination - transform.position;
+        toDestination.z = 0f;
+        finalBossStateRepositionTimer -= Time.deltaTime;
+
+        if (toDestination.magnitude <= tuning.finalBossRepositionArrivalDistance || finalBossStateRepositionTimer <= 0f)
+        {
+            IsFinalBossStateRepositioning = false;
+            movementThinkTimer = 0f;
+            EstimatedVelocity = Vector3.zero;
+            return;
+        }
+
+        Vector3 nextPosition = transform.position + toDestination.normalized * moveSpeed * tuning.finalBossRepositionSpeedMultiplier * Time.deltaTime;
+        MoveToPosition(nextPosition);
+    }
+
     void ResetMovementBrain()
     {
         moveIntent = EnemyMoveIntent.Chase;
         movementThinkTimer = Random.Range(0.05f, 0.35f);
         strafeSign = Random.value > 0.5f ? 1f : -1f;
         repositionDestination = transform.position;
+        finalBossStateDestination = transform.position;
+        finalBossStateRepositionTimer = 0f;
     }
 
     void UpdateMovementBrain(EnemyMovementTuning tuning)
@@ -432,16 +475,41 @@ public class Enemy : Entity
 
     public override Entity GetNearestTarget()
     {
+        if (IsFinalBossStateRepositioning)
+            return null;
+
         return target.GetComponent<Entity>();
     }
 
     public override void TakeDamage(int damage, bool isCrit)
     {
-        if (enemyType == EnemyType.Boss && IsFinalBoss && IsBossVulnerable)
+        BossCombatTuning bossTuning = GameManager.Instance.BalanceConfig.bossCombat;
+        if (enemyType == EnemyType.Boss && IsFinalBoss)
         {
-            damage = Mathf.RoundToInt(damage * 1.25f);
+            if (IsFinalBossStateRepositioning && bossTuning.finalBossInvincibleDuringReposition)
+            {
+                return;
+            }
+
+            if (IsBossPhaseBreaking)
+            {
+                damage = Mathf.RoundToInt(damage * bossTuning.phaseBreakDamageTakenRatio);
+            }
+            else if (IsBossVulnerable)
+            {
+                damage = Mathf.RoundToInt(damage * bossTuning.finalBossVulnerableDamageMultiplier);
+            }
+            else
+            {
+                damage = Mathf.RoundToInt(damage * bossTuning.finalBossGuardedDamageTakenRatio);
+            }
+        }
+        else if (IsChapterMiniBoss)
+        {
+            damage = Mathf.RoundToInt(damage * bossTuning.miniBossGuardedDamageTakenRatio);
         }
 
+        damage = Mathf.Max(1, damage);
         currentHp -= damage;
 
         //GameManager.Instance.SpwanHitFx(transform.position);//  命中特效
@@ -490,12 +558,13 @@ public class Enemy : Entity
         if (GameManager.Instance.isWave)
         {
             RewardTuning rewardTuning = GameManager.Instance.BalanceConfig.reward;
-            for (int i = 0; i < rewardTuning.waveCoinCount; i++)
+            int waveCoinCount = rewardTuning.GetWaveCoinCount();
+            for (int i = 0; i < waveCoinCount; i++)
             {
-                float angle = i * (360f / rewardTuning.waveCoinCount);
+                float angle = i * (360f / waveCoinCount);
                 Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * 0.55f;
                 Vector3 randomOffset = new Vector3(Random.Range(-0.12f, 0.2f), Random.Range(-0.2f, 0.35f), 0);
-                GameManager.Instance.SpwanCoin(transform.position + offset + randomOffset, rewardTuning.waveCoinValue);
+                GameManager.Instance.SpwanCoin(transform.position + offset + randomOffset, rewardTuning.GetWaveCoinValue());
             }
         }
         else
@@ -508,8 +577,8 @@ public class Enemy : Entity
             }
             else
             {
-                int baseCoinCount = enemyType == EnemyType.Elite ? rewardTuning.eliteCoinCount : rewardTuning.bossCoinCount;// 数量
-                int baseCoinValue = enemyType == EnemyType.Elite ? rewardTuning.eliteCoinValue : rewardTuning.bossCoinValue;// 价值
+                int baseCoinCount = enemyType == EnemyType.Elite ? rewardTuning.GetEliteCoinCount() : rewardTuning.GetBossCoinCount();// 数量
+                int baseCoinValue = enemyType == EnemyType.Elite ? rewardTuning.GetEliteCoinValue() : rewardTuning.GetBossCoinValue();// 价值
                 if (baseCoinCount > 0)
                 {
                     for (int i = 0; i < baseCoinCount; i++)
@@ -532,6 +601,47 @@ public class Enemy : Entity
         return Mathf.Clamp01((float)currentHp / totalHp);
     }
 
+    public void ApplyFinalBossDynamicHp(Player player)
+    {
+        if (enemyType != EnemyType.Boss || !IsFinalBoss || player == null)
+            return;
+
+        BossCombatTuning tuning = GameManager.Instance.BalanceConfig.bossCombat;
+        float attackAboveStart = Mathf.Max(0f, player.playerData.Atk - GameManager.Instance.BalanceConfig.player.startAttack);
+        int levelAboveStart = Mathf.Max(0, player.GetCurrentLevel() - 1);
+        int buildStackCount = 0;
+        int buildTagCount = 0;
+
+        if (player.buildDict != null)
+        {
+            buildTagCount = player.buildDict.Count;
+            foreach (KeyValuePair<string, int> pair in player.buildDict)
+            {
+                buildStackCount += Mathf.Max(0, pair.Value);
+            }
+        }
+
+        float extraRatio =
+            tuning.GetFinalBossExtraHpBaseRatio() +
+            attackAboveStart * tuning.finalBossExtraHpPerAttack +
+            levelAboveStart * tuning.finalBossExtraHpPerLevel +
+            buildStackCount * tuning.finalBossExtraHpPerBuildStack +
+            buildTagCount * tuning.finalBossExtraHpPerBuildTag +
+            player.GetHpProgress() * tuning.finalBossExtraHpByPlayerHpProgress;
+
+        extraRatio = Mathf.Clamp(extraRatio, 0f, tuning.GetFinalBossExtraHpMaxRatio());
+        int extraHp = Mathf.FloorToInt(totalHp * extraRatio);
+        if (extraHp <= 0)
+            return;
+
+        totalHp += extraHp;
+        currentHp += extraHp;
+        if (hp != null)
+        {
+            hp.Find("slider").localScale = new Vector3((float)currentHp / totalHp, 1, 1);
+        }
+    }
+
     public void ApplyBossPhase(int phase)
     {
         if (enemyType != EnemyType.Boss || !IsFinalBoss)
@@ -542,6 +652,116 @@ public class Enemy : Entity
         {
             weapon.SetFireInterval(GameManager.Instance.BalanceConfig.bossCombat.GetFireInterval(BossPhase));
         }
+    }
+
+    public void ApplyMiniBossEnrage()
+    {
+        if (!IsBossCombatEncounter || IsFinalBoss)
+            return;
+
+        BossCombatTuning tuning = GameManager.Instance.BalanceConfig.bossCombat;
+        moveSpeed = baseMoveSpeed * tuning.miniBossEnrageMoveSpeedMultiplier;
+        Weapon currentWeapon = GetCurrentWeapon();
+        if (currentWeapon != null)
+        {
+            currentWeapon.ChangeFireInterval(-tuning.miniBossEnrageFireIntervalReduce);
+        }
+
+        PlayCombatWeightPulse(new Color(1f, 0.42f, 0.12f, 0.48f), 3.2f, 0.32f);
+    }
+
+    public void PlayBossAttackImpact(bool circleAttack)
+    {
+        if (enemyType != EnemyType.Boss)
+            return;
+
+        BossCombatTuning tuning = GameManager.Instance.BalanceConfig.bossCombat;
+        float shakeStrength = circleAttack ? tuning.GetCircleAttackImpactShakeStrength() : tuning.GetSectorAttackImpactShakeStrength();
+        GameManager.Instance.ShakeMainCamera(tuning.GetAttackImpactShakeDuration(), shakeStrength);
+        PlayCombatWeightPulse(
+            circleAttack ? new Color(1f, 0.14f, 0.06f, 0.46f) : new Color(1f, 0.62f, 0.08f, 0.42f),
+            circleAttack ? 5.8f : 3.8f,
+            0.34f);
+    }
+
+    public void BeginFinalBossStateReposition()
+    {
+        if (enemyType != EnemyType.Boss || !IsFinalBoss || Dead || target == null)
+            return;
+
+        BossCombatTuning tuning = GameManager.Instance.BalanceConfig.bossCombat;
+        if (!tuning.finalBossRepositionAfterAttack)
+            return;
+
+        Vector3 fromPlayer = transform.position - target.position;
+        fromPlayer.z = 0f;
+        if (fromPlayer.sqrMagnitude <= 0.001f)
+        {
+            fromPlayer = Random.value > 0.5f ? Vector3.right : Vector3.up;
+        }
+
+        float side = Random.value > 0.5f ? 1f : -1f;
+        float angle = Random.Range(tuning.finalBossRepositionMinAngle, tuning.finalBossRepositionMaxAngle) * side;
+        float desiredRange = Mathf.Max(2.5f, attackRange * tuning.finalBossRepositionRangeRatio);
+        Vector3 dir = Quaternion.Euler(0f, 0f, angle) * fromPlayer.normalized;
+        finalBossStateDestination = target.position + dir * desiredRange;
+        finalBossStateRepositionTimer = tuning.finalBossRepositionMaxDuration;
+        IsFinalBossStateRepositioning = true;
+        moveIntent = EnemyMoveIntent.Reposition;
+
+        if (weapon != null)
+        {
+            weapon.lockedTarget = null;
+        }
+
+        PlayCombatWeightPulse(new Color(1f, 0.36f, 0.08f, 0.32f), 2.4f, 0.24f);
+    }
+
+    public void PlayCombatWeightPulse(Color color, float scale, float duration)
+    {
+        GameManager.Instance.SpwanEnemyAttackPulse(transform.position, color, scale, duration);
+    }
+
+    public void StartBossPhaseBreak(float duration, int phase)
+    {
+        if (enemyType != EnemyType.Boss || !IsFinalBoss)
+            return;
+
+        StartCoroutine(BossPhaseBreak(duration, phase));
+    }
+
+    IEnumerator BossPhaseBreak(float duration, int phase)
+    {
+        IsBossPhaseBreaking = true;
+        bool wasCanMove = CanMove;
+        CanMove = false;
+        SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>();
+        Color startColor = sr != null ? sr.color : Color.white;
+        Vector3 originalScale = transform.localScale;
+        BossCombatTuning tuning = GameManager.Instance.BalanceConfig.bossCombat;
+        GameManager.Instance.SpwanEnemyAttackPulse(transform.position, new Color(1f, 0.08f, 0.04f, 0.5f), tuning.phaseBreakPulseScale + phase * 0.45f, duration);
+
+        float timer = 0f;
+        while (timer < duration && !Dead)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Clamp01(timer / duration);
+            float pulse = Mathf.Sin(t * Mathf.PI);
+            transform.localScale = Vector3.Lerp(originalScale, originalScale * (1f + phase * 0.08f), pulse);
+            if (sr != null)
+            {
+                sr.color = Color.Lerp(startColor, new Color(1f, 0.26f, 0.1f, 1f), Mathf.Abs(Mathf.Sin(timer * 16f)));
+            }
+            yield return null;
+        }
+
+        transform.localScale = originalScale;
+        if (sr != null && !Dead)
+        {
+            sr.color = Color.white;
+        }
+        CanMove = wasCanMove && !Dead;
+        IsBossPhaseBreaking = false;
     }
 
     public void PlayBossChargeFlash(bool circleAttack)
@@ -566,19 +786,31 @@ public class Enemy : Entity
         Color startColor = sr.color;
         Color chargeColor = circleAttack ? new Color(1f, 0.22f, 0.12f, 1f) : new Color(1f, 0.72f, 0.18f, 1f);
         float timer = 0f;
-        float duration = GameManager.Instance.BalanceConfig.bossCombat.chargeFlashDuration;
+        BossCombatTuning tuning = GameManager.Instance.BalanceConfig.bossCombat;
+        float duration = tuning.chargeFlashDuration;
+        bool wasCanMove = CanMove;
+        Vector3 originalScale = transform.localScale;
+        if (tuning.lockMoveDuringCharge)
+        {
+            CanMove = false;
+        }
         while (timer < duration && !Dead)
         {
             timer += Time.deltaTime;
+            float normalized = Mathf.Clamp01(timer / duration);
+            float pulse = Mathf.Sin(normalized * Mathf.PI);
             float t = Mathf.Abs(Mathf.Sin(timer * 18f));
             sr.color = Color.Lerp(startColor, chargeColor, t);
+            transform.localScale = Vector3.Lerp(originalScale, originalScale * tuning.chargeScalePulse, pulse);
             yield return null;
         }
 
+        transform.localScale = originalScale;
         if (!Dead)
         {
             sr.color = Color.white;
         }
+        CanMove = wasCanMove && !Dead;
 
         bossChargeCoroutine = null;
     }
@@ -620,11 +852,12 @@ public class Enemy : Entity
     {
         RewardTuning rewardTuning = GameManager.Instance.BalanceConfig.reward;
         EnemyReward reward = rewardTuning.GetEnemyReward(enemyType);
-        float finalExp = reward.baseExp * (isCrit ? rewardTuning.critExpMultiplier : 1f);
+        float finalExp = reward.baseExp * rewardTuning.GetExpMultiplier(isCrit);
         int expValue = Mathf.FloorToInt(finalExp);
-        int expBallCount = Mathf.Max(1, reward.expBallCount);
+        int expBallCount = rewardTuning.GetExpBallCount(reward);
+        float spreadRadius = rewardTuning.GetSpreadRadius(reward);
 
-        if (expBallCount <= 1 || reward.spreadRadius <= 0f)
+        if (expBallCount <= 1 || spreadRadius <= 0f)
         {
             GameManager.Instance.SpwanExpBall(transform.position, enemyType, expValue);
             return;
@@ -633,7 +866,7 @@ public class Enemy : Entity
         for (int i = 0; i < expBallCount; i++)
         {
             float angle = i * (360f / expBallCount);
-            Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * reward.spreadRadius;
+            Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad), 0) * spreadRadius;
             Vector3 randomOffset = new Vector3(Random.Range(-0.25f, 0.25f), Random.Range(-0.25f, 0.25f), 0);
             GameManager.Instance.SpwanExpBall(transform.position + offset + randomOffset, enemyType, expValue);
         }
@@ -729,7 +962,7 @@ public class Enemy : Entity
     IEnumerator LightDeathCollapse()
     {
         EnemyDeathEffectTuning tuning = GameManager.Instance.BalanceConfig.deathEffect;
-        float duration = Mathf.Max(0.05f, tuning.normalDeathDuration);
+        float duration = Mathf.Max(0.05f, tuning.GetNormalDeathDuration());
         float elapsed = 0f;
         Vector3 originalScale = transform.localScale;
         Quaternion originalRotation = transform.rotation;
@@ -754,13 +987,13 @@ public class Enemy : Entity
         bool isBoss = enemyType == EnemyType.Boss;
         Vector3 originalScale = transform.localScale;
         Quaternion originalRotation = transform.rotation;
-        float shakeStrength = isBoss ? tuning.bossShakeStrength : tuning.eliteShakeStrength;
-        float chargeDuration = Mathf.Max(0.05f, isBoss ? tuning.bossChargeDuration : tuning.eliteChargeDuration);
-        float collapseDuration = Mathf.Max(0.05f, isBoss ? tuning.bossCollapseDuration : tuning.eliteCollapseDuration);
+        float shakeStrength = isBoss ? tuning.GetBossShakeStrength() : tuning.GetEliteShakeStrength();
+        float chargeDuration = Mathf.Max(0.05f, isBoss ? tuning.GetBossChargeDuration() : tuning.GetEliteChargeDuration());
+        float collapseDuration = Mathf.Max(0.05f, isBoss ? tuning.GetBossCollapseDuration() : tuning.GetEliteCollapseDuration());
 
         GameManager.Instance.ShakeMainCamera(
-            isBoss ? tuning.bossChargeShakeDuration : tuning.eliteChargeShakeDuration,
-            isBoss ? tuning.bossChargeShakeStrength : tuning.eliteChargeShakeStrength);
+            isBoss ? tuning.GetBossChargeShakeDuration() : tuning.GetEliteChargeShakeDuration(),
+            isBoss ? tuning.GetBossChargeShakeStrength() : tuning.GetEliteChargeShakeStrength());
 
         float elapsed = 0f;
         while (elapsed < chargeDuration)
@@ -776,8 +1009,8 @@ public class Enemy : Entity
         }
 
         GameManager.Instance.ShakeMainCamera(
-            isBoss ? tuning.bossCollapseShakeDuration : tuning.eliteCollapseShakeDuration,
-            isBoss ? tuning.bossCollapseShakeStrength : tuning.eliteCollapseShakeStrength);
+            isBoss ? tuning.GetBossCollapseShakeDuration() : tuning.GetEliteCollapseShakeDuration(),
+            isBoss ? tuning.GetBossCollapseShakeStrength() : tuning.GetEliteCollapseShakeStrength());
 
         elapsed = 0f;
         Vector3 wideScale = new Vector3(originalScale.x * tuning.heavyWideScaleX, originalScale.y * tuning.heavyWideScaleY, originalScale.z);
@@ -796,8 +1029,8 @@ public class Enemy : Entity
                 GameManager.Instance.SpwanEnemyAttackPulse(
                     transform.position,
                     new Color(1f, 0.24f, 0.08f, 0.42f),
-                    isBoss ? tuning.bossDeathPulseScale : tuning.eliteDeathPulseScale,
-                    tuning.heavyDeathPulseDuration);
+                    isBoss ? tuning.GetBossDeathPulseScale() : tuning.GetEliteDeathPulseScale(),
+                    tuning.GetHeavyDeathPulseDuration());
             }
 
             yield return null;

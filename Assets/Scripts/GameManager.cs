@@ -1063,7 +1063,7 @@ public class GameManager : MonoBehaviour
 
         Destroy(warning);
         Destroy(centerObj);
-        StartRuntimeCoroutine(SpawnSpecialEnemy(enemyType, enemyType == EnemyType.Boss));
+        StartRuntimeCoroutine(SpawnSpecialEnemy(enemyType, enemyType == EnemyType.Boss, true));
     }
 
 
@@ -1285,7 +1285,7 @@ public class GameManager : MonoBehaviour
     }
 
     // 生成特殊敌人
-    IEnumerator SpawnSpecialEnemy(EnemyType enemyType, bool isFinalBoss = false)
+    IEnumerator SpawnSpecialEnemy(EnemyType enemyType, bool isFinalBoss = false, bool isChapterBoss = false)
     {
         // 如果enemyType是Elite，则生成两只。如果是Boss，则生成一只。
         int count = enemyType == EnemyType.Elite ? 2 : 1;
@@ -1306,7 +1306,11 @@ public class GameManager : MonoBehaviour
             Enemy enemy = newEnemy.GetComponent<Enemy>();
             enemy.target = player.transform;
             enemy.SetEnemy(DataManager.enemyDataDict[(int)enemyType]);
-            enemy.ConfigureFinalBossCombat(isFinalBoss);
+            enemy.ConfigureChapterBossCombat(isFinalBoss, isChapterBoss);
+            if (isFinalBoss)
+            {
+                enemy.ApplyFinalBossDynamicHp(player.GetComponent<Player>());
+            }
             enemy.IsSpecialEnemy = true;
             // 屏幕外随机位置
             Vector3 centerPos2 = GetEnemyGroupCenter();
@@ -1557,20 +1561,21 @@ public class GameManager : MonoBehaviour
     void ApplyUpgradeStats(Player p, UpgradeData data)
     {
         UpgradeEffectTuning effectTuning = BalanceConfig.upgradeEffects;
+        DesignerTuning designer = BalanceConfig.designer;
         switch (data.type)
         {
             // 子弹数量
             case UpgradeType.BulletCount:
                 p.CurrentBulletCount += (int)data.value;
                 // 最大限制
-                p.CurrentBulletCount = Mathf.Clamp(p.CurrentBulletCount, effectTuning.minBulletCount, effectTuning.maxBulletCount);
+                p.CurrentBulletCount = Mathf.Clamp(p.CurrentBulletCount, effectTuning.GetMinBulletCount(), effectTuning.GetMaxBulletCount());
                 break;
 
             // 重型弹头
             case UpgradeType.HeavyBullet:
                 p.GetCurrentWeapon().ChangeAttack((int)data.value);
-                p.EnhancedShotDamageMultiplier += effectTuning.heavyBulletEnhancedShotDamageAdd;
-                p.GetCurrentWeapon().ChangeBulletScale(effectTuning.heavyBulletScaleAdd);
+                p.EnhancedShotDamageMultiplier += effectTuning.GetHeavyBulletEnhancedShotDamageAdd(designer);
+                p.GetCurrentWeapon().ChangeBulletScale(effectTuning.GetHeavyBulletScaleAdd(designer));
                 break;
             // 穿透
             case UpgradeType.Pierce:
@@ -1579,33 +1584,33 @@ public class GameManager : MonoBehaviour
             // 攻击倍率
             case UpgradeType.AtkRatio:
                 p.playerData.Atk += data.value;
-                p.EnhancedShotDamageMultiplier += effectTuning.attackRatioEnhancedShotDamageAdd;
+                p.EnhancedShotDamageMultiplier += effectTuning.GetAttackRatioEnhancedShotDamageAdd(designer);
                 break;
             // 游击模式
             case UpgradeType.MoveFast:
                 p.moveSpeed += data.value;
                 // 高移速低伤害
-                p.playerData.Atk -= effectTuning.moveFastAttackPenalty;
+                p.playerData.Atk -= effectTuning.GetMoveFastAttackPenalty(designer);
                 break;
             // 重装炮台
             case UpgradeType.HeavyMode:
-                p.playerData.Atk += effectTuning.heavyModeAttackAdd;
-                p.moveSpeed -= effectTuning.heavyModeMoveSpeedPenalty;
+                p.playerData.Atk += effectTuning.GetHeavyModeAttackAdd(designer);
+                p.moveSpeed -= effectTuning.GetHeavyModeMoveSpeedPenalty(designer);
                 // 提升攻速
-                p.GetCurrentWeapon().ChangeFireInterval(-effectTuning.heavyModeFireIntervalReduce);
+                p.GetCurrentWeapon().ChangeFireInterval(-effectTuning.GetHeavyModeFireIntervalReduce(designer));
                 // 提升防御。
-                p.AddDefence(effectTuning.heavyModeDefenceAdd);
+                p.AddDefence(effectTuning.GetHeavyModeDefenceAdd(designer));
                 break;
             // 精准重炮
             case UpgradeType.LowBulletHighDamage:
-                p.GetCurrentWeapon().ChangeAttack(effectTuning.lowBulletHighDamageAttackAdd);
-                p.GetCurrentWeapon().ChangeBulletScale(effectTuning.lowBulletHighDamageBulletScaleAdd);
-                p.EnhancedShotDamageMultiplier += effectTuning.lowBulletHighDamageEnhancedShotDamageAdd;
-                ShakeMainCamera(effectTuning.lowBulletHighDamageShakeDuration, effectTuning.lowBulletHighDamageShakeStrength);
+                p.GetCurrentWeapon().ChangeAttack(effectTuning.GetLowBulletHighDamageAttackAdd(designer));
+                p.GetCurrentWeapon().ChangeBulletScale(effectTuning.GetLowBulletHighDamageBulletScaleAdd(designer));
+                p.EnhancedShotDamageMultiplier += effectTuning.GetLowBulletHighDamageEnhancedShotDamageAdd(designer);
+                ShakeMainCamera(effectTuning.GetLowBulletHighDamageShakeDuration(), effectTuning.GetLowBulletHighDamageShakeStrength(designer));
                 break;
             // 无限火力
             case UpgradeType.LegendFire:
-                p.GetCurrentWeapon().ChangeFireInterval(-effectTuning.legendFireIntervalReduce);
+                p.GetCurrentWeapon().ChangeFireInterval(-effectTuning.GetLegendFireIntervalReduce(designer));
                 break;
             case UpgradeType.CritChance:
                 p.GetCurrentWeapon().ChangeCritical(data.value);
@@ -1614,10 +1619,10 @@ public class GameManager : MonoBehaviour
                 p.GetCurrentWeapon().ChangeFireInterval(-Mathf.Abs(data.value));
                 break;
             case UpgradeType.EnhancedShot:
-                p.EnhancedShotInterval = Mathf.Max(effectTuning.enhancedShotMinInterval, p.EnhancedShotInterval - effectTuning.enhancedShotIntervalReduce);
+                p.EnhancedShotInterval = Mathf.Max(effectTuning.enhancedShotMinInterval, p.EnhancedShotInterval - effectTuning.GetEnhancedShotIntervalReduce());
                 p.EnhancedShotDamageMultiplier += data.value;
                 p.EnhancedShotBonusPierce = Mathf.Min(effectTuning.enhancedShotMaxBonusPierce, p.EnhancedShotBonusPierce + effectTuning.enhancedShotBonusPierceAdd);
-                p.EnhancedShotScaleMultiplier += effectTuning.enhancedShotScaleAdd;
+                p.EnhancedShotScaleMultiplier += effectTuning.GetEnhancedShotScaleAdd(designer);
                 break;
             default:
                 break;
@@ -2109,7 +2114,7 @@ public class GameManager : MonoBehaviour
     public void PlayFinalBossDeathReward(Vector3 pos)
     {
         EnemyDeathEffectTuning tuning = BalanceConfig.deathEffect;
-        ShakeMainCamera(tuning.finalBossRewardShakeDuration, tuning.finalBossRewardShakeStrength);
+        ShakeMainCamera(tuning.GetFinalBossRewardShakeDuration(), tuning.GetFinalBossRewardShakeStrength());
         var title = SpwanWorldTxt("最终Boss击破！", 1.25f);
         StartRuntimeCoroutine(ShowFlashWarningTxt(title));
 
