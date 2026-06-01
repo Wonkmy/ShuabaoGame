@@ -13,18 +13,18 @@ MonoBehaviour:
   m_Name: GameBalanceConfig
   m_EditorClassIdentifier: 
   designer:
-    upgradeImpact: 1
-    rewardJuice: 2
-    deathWeight: 1
-    bossPressure: 1
-    finalBossDurability: 1
+    upgradeImpact: 1.303
+    rewardJuice: 1.765
+    deathWeight: 1.248
+    bossPressure: 1.155
+    finalBossDurability: 1.209
   player:
-    startHp: 800
-    startAttack: 12
-    startMoveSpeed: 5.4
-    startDefence: 20
-    firstLevelExp: 34
-    expGrowth: 1.44
+    startHp: 1000
+    startAttack: 100
+    startMoveSpeed: 6.2
+    startDefence: 50
+    firstLevelExp: 28
+    expGrowth: 1.28
   wave:
     spawnWaveIntervalBase: 5
     normalGroupMin: 2
@@ -36,7 +36,7 @@ MonoBehaviour:
     waveDuration: 7
     maxEnemyCount: 36
     initialEnemyCountPerGroup: 5
-    groupSpawnDelay: 0.2
+    groupSpawnDelay: 0.25
   dynamicDifficulty:
     initialDifficulty: 2
     difficultyBase: 1.5
@@ -117,7 +117,7 @@ MonoBehaviour:
     finalBossRepositionMaxAngle: 135
     finalBossRepositionSpeedMultiplier: 1.16
     finalBossRepositionArrivalDistance: 0.45
-    finalBossRepositionMaxDuration: 1.4
+    finalBossRepositionMaxDuration: 2.2
     finalBossInvincibleDuringReposition: 1
     finalBossExtraHpBaseRatio: 0.25
     finalBossExtraHpPerAttack: 0.04
@@ -213,9 +213,9 @@ MonoBehaviour:
     minTargetSpeedForLead: 0.15
     rotateToPredictedPoint: 1
   reward:
-    coinJuice: 1
-    expJuice: 1
-    rewardSpreadJuice: 1
+    coinJuice: 2
+    expJuice: 2
+    rewardSpreadJuice: 2
     waveCoinCount: 2
     waveCoinValue: 1
     eliteBossChestChance: 0.605

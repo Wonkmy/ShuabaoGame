@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Custom_LowHpEffect
-  m_Shader: {fileID: 4800000, guid: 5e1cd89839681de46ac77403b8a174a8, type: 3}
+  m_Name: Custom_SpriteSkew
+  m_Shader: {fileID: 4800000, guid: a2e4b561b1e5b874bab53b8f49386ffa, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -29,7 +29,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _DarkIntensity: 0.78
-    - _Intensity: 1
-    m_Colors: []
+    - _Perspective: 0.6
+    - _RollAngle: 0
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

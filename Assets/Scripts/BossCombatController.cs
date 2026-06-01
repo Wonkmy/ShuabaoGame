@@ -101,6 +101,7 @@ public class BossCombatController : MonoBehaviour
         GameObject warning = GameManager.Instance.SpwanWorldTxt(text, titleSize);
         GameManager.Instance.StartRuntimeCoroutine(GameManager.Instance.ShowFlashWarningTxt(warning));
         yield return new WaitForSeconds(tuning.phaseBreakDuration);
+        yield return null;
 
         currentPhase = phase;
         boss.ApplyBossPhase(currentPhase);

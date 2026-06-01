@@ -223,13 +223,13 @@ public class Bullet : MonoBehaviour
                 continue;
             }
 
+            Enemy enemy = entity as Enemy;
             float distance = Vector3.Distance(transform.position, DataManager.allEnemyDict[i].transform.position);
-            float destinationDis = 0.7f + 0.7f * currentScale;
+            float destinationDis = GetBulletHitRadius() + GetEnemyHitRadius(enemy);
             if (distance < destinationDis)// 这个数值要根据子弹大小调整大小的
             {
                 if (entity.EntityTag == "enemy")
                 {
-                    Enemy enemy = (Enemy)entity;
                     if (!enemy.HasEnterScreen)
                     {
                         continue;
@@ -243,6 +243,25 @@ public class Bullet : MonoBehaviour
                 break;
             }
         }
+    }
+
+    float GetBulletHitRadius()
+    {
+        return 0.35f + 0.35f * Mathf.Max(0f, currentScale);
+    }
+
+    float GetEnemyHitRadius(Enemy enemy)
+    {
+        if (enemy == null)
+            return 0.7f;
+
+        SpriteRenderer sr = enemy.GetComponentInChildren<SpriteRenderer>();
+        if (sr == null)
+            return Mathf.Max(0.7f, enemy.transform.localScale.x * 0.7f);
+
+        Bounds bounds = sr.bounds;
+        float visualRadius = Mathf.Max(bounds.extents.x, bounds.extents.y) * 0.65f;
+        return Mathf.Clamp(visualRadius, 0.45f, 3.5f);
     }
 
     void HandleDamage(Entity entity)

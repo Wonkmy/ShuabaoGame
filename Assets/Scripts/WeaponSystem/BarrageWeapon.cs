@@ -61,7 +61,6 @@ public class BarrageWeapon : Weapon
             return;
 
         enemy.StartBossVulnerableWindow(GameManager.Instance.BalanceConfig.bossCombat.GetVulnerableDuration());
-        enemy.BeginFinalBossStateReposition();
     }
 
     public override void AttackLiner(Vector3 fireDirection, Vector3 firePos, int currentBulletCount)
